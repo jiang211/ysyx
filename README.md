@@ -1,5 +1,17 @@
+<<<<<<< HEAD
 # Welcome to GitHub Desktop!
 
 This is your README. READMEs are where you can communicate what your project is and how to use it.
 
 Write your name on line 6, save it, and then head back to GitHub Desktop.
+=======
+# "一生一芯"工程项目
+
+这是"一生一芯"的工程项目. 通过运行
+```bash
+bash init.sh subproject-name
+```
+进行初始化, 具体请参考[实验讲义][lecture note].
+
+[lecture note]: https://ysyx.oscc.cc/docs/
+>>>>>>> 4cf2c3a (22)
