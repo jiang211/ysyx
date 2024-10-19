@@ -95,7 +95,6 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   if(ren){
     if(raddr == RTC_ADDR1){
       uint64_t us = get_time();
-      printf("%ld\n",us);
       *rdata = (uint32_t)us;
       
     }
