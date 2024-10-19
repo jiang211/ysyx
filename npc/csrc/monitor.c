@@ -93,7 +93,7 @@ void init_monitor(int argc, char** argv) {
 
   /* Parse arguments. */
   parse_args(argc, argv);
-  sdb_set_batch_mode();
+  //sdb_set_batch_mode();
   //parse_elf(elf_file);
   /* Set random seen. */
   init_rand();
