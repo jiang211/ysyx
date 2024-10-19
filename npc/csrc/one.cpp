@@ -95,6 +95,7 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   if(ren){
     if(raddr == RTC_ADDR1){
       uint64_t us = get_time();
+      printf("%ld\n",us);
       *rdata = (uint32_t)us;
       
     }
@@ -129,12 +130,12 @@ void run_step(Decode *s, CPU_state *cpu, bool *vpmem_read_called ) {
       
       
        
-      top->clk = 1;
+      top->clk = 0;
       top->eval();
       
       tfp->dump(main_time);
       main_time ++;
-      top->clk = 0;
+      top->clk = 1;
 
       top->eval(); 
 
