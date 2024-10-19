@@ -130,12 +130,12 @@ void run_step(Decode *s, CPU_state *cpu, bool *vpmem_read_called ) {
       
       
        
-      top->clk = 0;
+      top->clk = 1;
       top->eval();
       
       tfp->dump(main_time);
       main_time ++;
-      top->clk = 1;
+      top->clk = 0;
 
       top->eval(); 
 

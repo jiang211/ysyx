@@ -129,9 +129,9 @@ import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input
 reg [31:0] rdata;
 
 always @(*) begin
-    vpmem_read(raddr,{7'b0, mren&~clk},rdata);
+    vpmem_read(raddr,{7'b0, mren&clk},rdata);
 
-    vpmem_write(waddr, {4'b0, wlen},wdata,{7'b0, mwen&~clk});
+    vpmem_write(waddr, {4'b0, wlen},wdata,{7'b0, mwen&clk});
     
 end
  
