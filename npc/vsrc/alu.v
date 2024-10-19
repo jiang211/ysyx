@@ -99,7 +99,7 @@ assign alu_out =( ( {32{sub}} & (udata1 - udata2) ) |
                      ( {32{divu}} &  (udata1 / udata2) ) |
                      ( {32{div}} &  (data1 / data2) ) |
                      ( {32{sltu}} &  ((udata1 < udata2) ? 32'b1 : 32'b0) ) |
-                     ( {32{sra}} &  (data1 >> (data2&32'h0000001F)) ) |
+                     ( {32{sra}} &  (data1 >> (data2[5:0])) ) |
                      ( {32{xor_}} &  (udata1 ^ udata2) ) |
                      ( {32{or_}} &  (udata1 | udata2) ) |
                      ( {32{and_}} &  (udata1 & udata2) ) |
