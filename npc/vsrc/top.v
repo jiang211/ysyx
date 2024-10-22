@@ -1,7 +1,6 @@
 module top(
     input clk,
     input rstn,
-    input [31:0] pc_,
     input [31:0] instr,
     output reg[31:0] pc,
     output [31:0] dnpc,
@@ -23,10 +22,10 @@ wire [4:0] rs2;
 wire [4:0] rd;
 wire [31:0]rs2_data;
 wire d_en;
-//wire n;
+
 wire wen;
 wire [31:0] alu_out;
-
+wire [31:0] inst_addr;
 
 ifu my_ifu(
     .clk(clk),
@@ -34,8 +33,8 @@ ifu my_ifu(
     .d_en(d_en),
     .pc(pc),
     .dnpc_d(dnpc_d),
-    .pc_(pc_),
-    .dnpc(dnpc)
+    .dnpc(dnpc),
+    .inst_addr_o(inst_addr)
 );
 wire [4:0] shamt;
 Decoder my_decoder(
@@ -65,7 +64,7 @@ RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
     );
 
 dpc my_dpc(
-        .pc(pc_), 
+        .pc(inst_addr), 
         .rs1_data(rs1_data),
         .opcode(opcode),
         .imm(imm),
@@ -76,7 +75,7 @@ dpc my_dpc(
     );
 
 alu my_alu(
-        .pc(pc_), 
+        .pc(inst_addr), 
         .shamt(shamt),
         .rs1_data(rs1_data),
         .opcode(opcode),
