@@ -145,7 +145,7 @@ void run_step(Decode *s, CPU_state *cpu, bool *vpmem_read_called ) {
         
        
         s->dnpc = top->dnpc;
-       
+       printf("s->dnpc = %08x\n",top->dnpc);
         
         s->isa.inst.val = top->instr;
         for (int i=0; i<32; i++) {
