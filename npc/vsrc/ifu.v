@@ -10,24 +10,12 @@ module ifu(
 
 assign dnpc = (d_en)? dnpc_d : pc + 32'h4;
 assign inst_addr_o = pc;
-reg den_1;
-wire pos_den;
-always@(posedge clk)
-begin 
-   if(!rstn)begin
-    den_1<='b0;
-    end
-    else begin
-    den_1<=d_en;
-    end
-end
-assign pos_den = (~d_en) & den_1;
 always@(posedge clk)
 begin 
    if(!rstn)begin
     pc<=32'h80000000 - 32'h4;
     end
-    else if(pos_den)begin
+    else if(d_en)begin
     pc<=dnpc;
     end
     else begin
