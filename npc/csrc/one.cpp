@@ -126,7 +126,7 @@ void run_step(Decode *s, CPU_state *cpu, bool *vpmem_read_called ) {
 
       
       
-      top->instr =inst_fetch(&s->pc, 4);
+      top->instr =inst_fetch(&s->snpc, 4);
       printf("inst = %08x\n",top->instr);
       
        
