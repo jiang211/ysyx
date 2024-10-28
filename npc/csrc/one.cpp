@@ -14,7 +14,7 @@
 #define RTC_ADDR1   0xa0000048
 #define RTC_ADDR2   0xa000004c
 #define SERIAL_ADDR 0xa00003f8
-
+#define MTRACE
 uint64_t get_time();
 
 
@@ -76,7 +76,9 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
   // `wmask`中每比特表示`wdata`中1个字节的掩码,
   // 如`wmask = 0x3`代表只写入最低2个字节, 内存中的其它字节保持不变
   if(wen ){
-     
+     #ifdef MTRACE
+      printf("write at pc = %08x \n",waddr);
+  #endif
     if(waddr == SERIAL_ADDR){
       
       putchar(wdata);
@@ -85,9 +87,7 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
       paddr_write((paddr_t)(waddr), wlen, wdata);
     }
    
-  #ifdef MTRACE
-      printf("write at pc = %08x \n",waddr);
-  #endif
+  
   }
 }
 
@@ -175,7 +175,7 @@ void delete_module() {
   //end_sim(); 
   tfp->close();
 
-//delete tfp;
+delete tfp;
   top->final();
 
   // Destory model
