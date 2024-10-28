@@ -54,7 +54,6 @@ wire     alu_src2;
 wire     zero;
 wire     U_type_1;
 assign pc = inst_addr_o;
-
 wire clk_neg;
 reg clk_reg;
 PC my_pc(
