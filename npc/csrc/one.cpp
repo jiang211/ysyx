@@ -175,7 +175,7 @@ void delete_module() {
   //end_sim(); 
   tfp->close();
 
-delete tfp;
+//delete tfp;
   top->final();
 
   // Destory model
