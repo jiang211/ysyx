@@ -7,7 +7,7 @@ module PC(
     output [31:0] inst_addr_o
 );
 reg [31:0] pc;
-always @(posedge clk or negedge rstn) begin
+always @(pc) begin
     case(pcsrc)
         1'b0: dnpc <= pc + 32'h4;
         1'b1: dnpc <= alu_out;
