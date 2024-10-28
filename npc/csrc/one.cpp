@@ -92,7 +92,7 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
 }
 
 extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
-  if(ren){
+  if(ren & ~top->clk){
     if(raddr == RTC_ADDR1){
       uint64_t us = get_time();
       printf("%ld\n",us);

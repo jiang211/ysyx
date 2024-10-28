@@ -21,7 +21,7 @@ module mmu(
                    ( {32{sw}} & rs2_data);
 
     assign rdata = ( {32{lb}} & {{24{rdata_in[7]}},rdata_in[7:0]}) |
-                   ( {32{lh}} & {{16{rdata_in[7]}},rdata_in[15:0]}) |
+                   ( {32{lh}} & {{16{rdata_in[15]}},rdata_in[15:0]}) |
                    ( {32{lw}} & rdata_in) |
                    ( {32{lbu}} & {24'b0,rdata_in[7:0]}) |
                    ( {32{lhu}} & {16'b0,rdata_in[15:0]});
