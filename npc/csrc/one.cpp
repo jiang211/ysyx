@@ -11,11 +11,9 @@
 #include "Vtop__Dpi.h"
 #include <cpu.h>
 
-#define RTC_ADDR1   0xa0000048
-#define RTC_ADDR2   0xa000004c
-#define SERIAL_ADDR 0xa00003f8
+
 #define MTRACE
-uint64_t get_time();
+
 
 
 
@@ -79,13 +77,9 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
      #ifdef MTRACE
       printf("write at pc = %08x \n",waddr);
   #endif
-    if(waddr == SERIAL_ADDR){
-      
-      putchar(wdata);
-    }
-    else {
+    
       paddr_write((paddr_t)(waddr), wlen, wdata);
-    }
+    
    
   
   }
@@ -93,27 +87,15 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
 
 extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   if(ren & ~top->clk){
-    if(raddr == RTC_ADDR1){
-      uint64_t us = get_time();
-      printf("%ld\n",us);
-      *rdata = (uint32_t)us;
-      
-    }
-    else if(raddr == RTC_ADDR2) {
-      uint64_t us = get_time()>>32;
-      *rdata = (uint32_t)us;
-    }
-    else{
+    
       *rdata = paddr_read((paddr_t)(raddr),4);
-    }
+    
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,rdata);
     #endif
    
   }
-  
-  //printf("addr = %08x , rdata = %08x\n",raddr,rdata);
-  // 总是读取地址为`raddr & ~0x3u`的4字节返回
+
 }
 /*
 extern "C" void call(word_t pc , word_t dnpc);
