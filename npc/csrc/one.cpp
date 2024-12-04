@@ -137,16 +137,9 @@ void run_step(Decode *s, CPU_state *cpu, bool *vpmem_read_called ) {
       printf("s->dnpc = %08x\n",top->dnpc);
         printf("s->pc = %08x\n",top->pc);
       if(top->ebreak)  { 
-        npc_trap(NPC_END , top->dnpc, cpu_gpr[10]);
+        npc_trap(NPC_END , top->pc, cpu_gpr[10]);
         return ;
       }
-        
-    
-       
-      
-      
-
-       
       
       
 }
