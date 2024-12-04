@@ -132,7 +132,7 @@ alu my_alu(
     .rs1_data       (rs1_data   ),
     .rs2_data       (rs2_data   ),
     .imm_data       (imm        ),
-    .pc_data        (inst_addr_o),
+    .pc_data        (inst_addr_o + 4),
     .alu_src1       (alu_src1   ),
     .alu_src2       (alu_src2   ),
     .branch         (branch     ),   
