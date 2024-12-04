@@ -52,6 +52,8 @@ wire     mul_high;
 wire     alu_src1;
 wire     alu_src2;
 wire     zero;
+wire jal;
+wire jalr;
 wire     U_type_1;
 wire     J_type_1;
 assign pc = inst_addr_o;
@@ -62,6 +64,9 @@ PC my_pc(
     .rstn           (rstn       ),
     .pcsrc          (pcsrc      ),
     .imm            (imm        ),
+    .rs1_data       (rs1_data   ),
+    .jal            (jal        ),
+    .jalr           (jalr       ),
     .dnpc           (dnpc       ),
     .inst_addr_o    (inst_addr_o)
 );
@@ -95,6 +100,8 @@ control my_crtl(
     .mem_read       (mem_read   ), 
     .mem_write      (mem_write  ), 
     .reg_write      (reg_write  ), 
+    .jal            (jal        ),
+    .jalr           (jalr       ),
     .lw             (lw         ), 
     .lh             (lh         ), 
     .lb             (lb         ),   

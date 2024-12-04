@@ -3,14 +3,20 @@ module PC(
     input rstn,
     input pcsrc,
     input [31:0] imm,
+    input [31:0] rs1_data,
+    input jalr,
+    input jal,
     output reg[31:0] dnpc,
     output [31:0] inst_addr_o
 );
 reg [31:0] pc;
+wire [31:0] d_pc;
+
+assign d_pc = (jal) ? pc + imm : (jalr) ? rs1_data + imm : pc + 4;
 always @(pc) begin
     case(pcsrc)
         1'b0: dnpc <= pc + 32'h4;
-        1'b1: dnpc <= pc + imm;
+        1'b1: dnpc <= d_pc;
         default: dnpc <= pc + 32'h4;
     endcase
 end

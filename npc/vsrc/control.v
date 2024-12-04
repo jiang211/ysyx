@@ -14,6 +14,8 @@ module control(
     output        mem_read,
     output        mem_write,
     output        reg_write,
+    output        jal,
+    output        jalr,
     output        lw,
     output        lh,
     output        lb,
@@ -42,12 +44,13 @@ assign S_type = (opcode == 7'b0100011);
 assign U_type = (opcode == 7'b0110111 || opcode == 7'b0010111);
 assign B_type = (opcode == 7'b1100011);
 assign J_type = (opcode == 7'b1101111 || opcode == 7'b1011111);
-assign J_type_1 = (opcode == 7'b1101111);
+assign J_type_1 = (opcode == 7'b1101111) || I_type_2; 
 wire I_type_1 = (opcode == 7'b0010011);
 wire I_type_2 = (opcode == 7'b1100111);
 wire I_type_3 = (opcode == 7'b0000011);
 
-
+assign jalr = (opcode == 7'b1100111);
+assign jal  = (opcode == 7'b1101111);
 assign U_type_1 = (opcode == 7'b0110111);
 
 assign lh   = (I_type_3 && funct3 == 3'b001);
