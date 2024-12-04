@@ -9,6 +9,7 @@ module alu(
     input u_alu_type,
     input mul_high,
     input U_type_1,
+    input J_type_1,
     input [3:0] alu_crtl,
     output reg [31:0] alu_out,
     output reg zero
@@ -16,7 +17,7 @@ module alu(
     wire [31:0] a;
     wire [31:0] b;
     assign a = (alu_src1)? rs1_data : (U_type_1) ? 32'h00000000 : pc_data;
-    assign b = (alu_src2)? rs2_data : imm_data;
+    assign b = (alu_src2)? rs2_data : (J_type_1) ? 32'h00000004 : imm_data;
     wire signed [31:0] signed_a = $signed(a);
     wire signed [31:0] signed_b = $signed(b);
     wire unsigned [31:0] unsigned_a = a;

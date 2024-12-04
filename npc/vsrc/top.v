@@ -53,6 +53,7 @@ wire     alu_src1;
 wire     alu_src2;
 wire     zero;
 wire     U_type_1;
+wire     J_type_1;
 assign pc = inst_addr_o;
 wire clk_neg;
 reg clk_reg;
@@ -60,7 +61,7 @@ PC my_pc(
     .clk            (clk        ),
     .rstn           (rstn       ),
     .pcsrc          (pcsrc      ),
-    .alu_out        (alu_out    ),
+    .imm            (imm        ),
     .dnpc           (dnpc       ),
     .inst_addr_o    (inst_addr_o)
 );
@@ -105,6 +106,7 @@ control my_crtl(
     .ebreak         (ebreak     ),
     .shamt          (shamt      ),
     .U_type_1       (U_type_1   ),
+    .J_type_1       (J_type_1   ),
     .pcsrc          (pcsrc      )
 );
 
@@ -132,10 +134,11 @@ alu my_alu(
     .rs1_data       (rs1_data   ),
     .rs2_data       (rs2_data   ),
     .imm_data       (imm        ),
-    .pc_data        (inst_addr_o +4),
+    .pc_data        (inst_addr_o + 4),
     .alu_src1       (alu_src1   ),
     .alu_src2       (alu_src2   ),
     .branch         (branch     ),   
+    .J_type_1       (J_type_1   ),
     .u_alu_type     (u_alu_type ),
     .mul_high       (mul_high   ),
     .U_type_1       (U_type_1   ),
