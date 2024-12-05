@@ -25,7 +25,7 @@ __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction)
   else if(direction == DIFFTEST_TO_REF){
     memcpy(guest_to_host(RESET_VECTOR),addr - 0x80000000 + buf,n);
   }
-  assert(0);
+  
 }
 
 __EXPORT void difftest_regcpy(CPU_state *dut, bool direction) {
@@ -39,20 +39,20 @@ __EXPORT void difftest_regcpy(CPU_state *dut, bool direction) {
       
     }
   }
-  assert(0);
+ 
 }
 
 __EXPORT void difftest_exec(uint64_t n) {
   cpu_exec(n);
-  assert(0);
+  
 }
 
 __EXPORT void difftest_raise_intr(word_t NO) {
   assert(0);
 }
-
+void init_mem();
 __EXPORT void difftest_init(int port) {
-  void init_mem();
+  
   init_mem();
   /* Perform ISA dependent initialization. */
   init_isa();
