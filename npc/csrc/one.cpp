@@ -102,11 +102,10 @@ extern "C" void call(word_t pc , word_t dnpc);
 
 extern "C" ret(word_t pc );
 */
-void run_step(Decode *s, CPU_state *cpu, bool *vpmem_read_called ) {
+void run_step(Decode *s, CPU_state *cpu) {
 
        
 
-      
       
       top->instr =inst_fetch(&s->snpc, 4);
       printf("inst = %08x\n",top->instr);

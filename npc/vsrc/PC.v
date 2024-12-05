@@ -12,7 +12,7 @@ module PC(
 reg [31:0] pc;
 wire [31:0] d_pc;
 
-assign d_pc = (jal) ? pc + 4 : (jalr) ? rs1_data + imm : pc + 4;
+assign d_pc = (jal) ? pc + imm : (jalr) ? rs1_data + imm : pc + 4;
 always @(pc) begin
     case(pcsrc)
         1'b0: dnpc <= pc + 32'h4;
