@@ -75,7 +75,7 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
   // 如`wmask = 0x3`代表只写入最低2个字节, 内存中的其它字节保持不变
   if(wen ){
      #ifdef MTRACE
-      printf("write at pc = %08x \n",waddr);
+      printf("write at pc = %08x, data = %08x\n",waddr,wdata);
   #endif
     
       paddr_write((paddr_t)(waddr), wlen, wdata);
