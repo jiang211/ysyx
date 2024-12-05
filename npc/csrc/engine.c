@@ -1,7 +1,7 @@
 #include <common.h>
 #include <readline/history.h>
 #include <readline/readline.h>
-
+#include <paddr.h>
 
 void cpu_exec(uint64_t n);
 void npc_quit();
@@ -52,6 +52,21 @@ static int cmd_info(char *args) {
 }
 
 static int cmd_x(char *args){
+  if(args == NULL){
+	printf("No args\n");
+	return 0;
+    }
+    char* n = strtok(args," ");
+    char* addr_ = strtok(NULL," ");
+    int len = 0;
+    paddr_t addr = 0;
+    sscanf(n, "%d", &len);
+    sscanf(addr_,"%x", &addr);
+    for(int i = 0 ; i < len ; i ++)
+    {
+	printf("addr : %08x\n",paddr_read(addr,4));
+	addr = addr + 4;
+    }	      
   return 0;
   }
 
