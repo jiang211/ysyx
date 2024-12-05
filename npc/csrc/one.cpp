@@ -86,7 +86,7 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
 }
 
 extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
-  if(ren & top->clk & raddr != 0){
+  if(ren & top->clk){
     
       *rdata = paddr_read((paddr_t)(raddr),4);
     
