@@ -87,12 +87,12 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
 
 extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   if(ren){
-    
-      *rdata = paddr_read((paddr_t)(raddr),4);
-    
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,rdata);
     #endif
+      *rdata = paddr_read((paddr_t)(raddr),4);
+    
+    
    
   }
 
