@@ -40,6 +40,6 @@ module mmu(
                    ({32{lhu}}& alu_result)|
                    ({32{lb}}&alu_result);
 always @(*) begin
-    $display("Value of signal rdata_in is %x", rdata_in);
+    $display("Value of signal rdata is %x", rdata);
 end
 endmodule
