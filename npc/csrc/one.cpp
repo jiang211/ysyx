@@ -86,7 +86,7 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
 }
 
 extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
-  if(ren & top->clk & raddr != 0){
+  if(ren & top->clk){
     
       *rdata = paddr_read((paddr_t)(raddr),4);
     
@@ -108,7 +108,6 @@ void run_step(Decode *s, CPU_state *cpu) {
 
       
       top->instr =inst_fetch(&s->snpc, 4);
-      printf("inst = %08x\n",top->instr);
       
        
       top->clk = 1;
@@ -132,9 +131,6 @@ void run_step(Decode *s, CPU_state *cpu) {
         for (int i=0; i<32; i++) {
           cpu->gpr[i] = cpu_gpr[i];
         }
-
-      printf("s->dnpc = %08x\n",top->dnpc);
-        printf("s->pc = %08x\n",top->pc);
       if(top->ebreak)  { 
         npc_trap(NPC_END , top->pc, cpu_gpr[10]);
         return ;

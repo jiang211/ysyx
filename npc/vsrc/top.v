@@ -118,7 +118,10 @@ control my_crtl(
 );
 
 assign wdata_in = (mem_to_reg)? rdata : alu_out;
-
+wire ren;
+wire wen;
+assign wen = mem_write;
+assign ren = mem_read;
 RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
         .clk(clk),
         .wdata(wdata_in),
@@ -187,12 +190,12 @@ end
 assign clk_neg = ~clk & clk_reg;
 
 always @(*) begin
-    vpmem_read(raddr,{7'b0, mem_read},rdata_in);
+    vpmem_read(raddr,{7'b0, ren},rdata_in);
 end
 
 always @(posedge clk_neg) begin
 
-    vpmem_write(waddr, {4'b0, wlen},wdata,{7'b0, mem_write});
+    vpmem_write(waddr, {4'b0, wlen},wdata,{7'b0, wen});
     
 end
 
