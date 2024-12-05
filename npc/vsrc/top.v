@@ -188,7 +188,7 @@ assign clk_neg = ~clk & clk_reg;
 
 always @(raddr) begin
     vpmem_read(raddr,{7'b0, mem_read},rdata_in);
-    $display("Value of signal rdata_in is %x", rdata_in);
+    //$display("Value of signal rdata_in is %x", rdata_in);
 end
 
 always @(posedge clk_neg) begin
