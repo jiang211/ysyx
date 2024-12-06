@@ -86,7 +86,7 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
 }
 
 extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
-  if(ren & top->clk){
+  if(ren){
     
       *rdata = paddr_read((paddr_t)(raddr),4);
     
@@ -107,15 +107,16 @@ void run_step(Decode *s, CPU_state *cpu) {
        
 
       
-      top->instr =inst_fetch(&s->snpc, 4);
+      
       
        
-      top->clk = 1;
+      top->clk  = !top->clk;
+      top->instr =inst_fetch(&s->snpc, 4);
       top->eval();
       
       tfp->dump(main_time);
       main_time ++;
-      top->clk = 0;
+      top->clk  = !top->clk;
 
       top->eval(); 
 

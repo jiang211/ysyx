@@ -189,7 +189,8 @@ begin
 end
 assign clk_neg = ~clk & clk_reg;
 
-always @(posedge clk) begin
+
+always @(posedge clk_neg) begin
     vpmem_read(raddr,{7'b0, ren},rdata_in);
 end
 
