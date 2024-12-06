@@ -194,7 +194,7 @@ always @(*) begin
    $display("Value of signal wdata_in is %08x", wdata_in);
 end
 
-always @(ren) begin
+always @(*) begin
     vpmem_read(addr,{7'b0, ren},rdata_in);
 end
 
