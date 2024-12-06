@@ -21,7 +21,7 @@ module RegisterFile #(
     initial set_gpr_ptr(rf); 
 
     
-    always @(posedge clk) begin
+    always @(negedge clk) begin
         if (wen & waddr != 0) rf[waddr] <= wdata; 
     end
     
