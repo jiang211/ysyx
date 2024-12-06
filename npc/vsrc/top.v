@@ -191,6 +191,7 @@ assign clk_neg = ~clk & clk_reg;
 always @(*) begin
    $display("Value of signal rdata_in is %08x", rdata_in);
    $display("Value of signal rdata is %08x", rdata);
+   $display("Value of signal wdata_in is %08x", wdata_in);
 end
 
 always @(ren) begin
