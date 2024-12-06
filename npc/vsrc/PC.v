@@ -26,7 +26,7 @@ assign inst_addr_o = pc;
 always@(posedge clk)
 begin 
    if(!rstn)begin
-    pc<=32'h80000000 - 32'h4;
+    pc<=32'h80000000;
     end
     else begin
     pc<=dnpc;
