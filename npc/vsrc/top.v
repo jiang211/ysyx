@@ -120,15 +120,9 @@ control my_crtl(
 assign wdata_in = (mem_to_reg)? rdata : alu_out;
 wire ren;
 wire wen;
-always@(posedge clk)
-begin 
-   $display("Value of signal wdata_in is %08x", wdata_in);
-   $display("Value of signal rdata is %08x", rdata);
-   $display("Value of signal alu_out is %08x", alu_out);
-   $display("Value of signal clk is %d", clk);
-end
+
 assign wen = mem_write;
-assign ren = mem_read & (raddr != rs1_data);
+assign ren = mem_read;
 RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
         .clk(clk),
         .wdata(wdata_in),
