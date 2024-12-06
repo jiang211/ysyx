@@ -121,7 +121,7 @@ assign wdata_in = (mem_to_reg)? rdata : alu_out;
 wire ren;
 wire wen;
 assign wen = mem_write;
-assign ren = mem_read & (!clk);
+assign ren = mem_read;
 RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
         .clk(clk),
         .wdata(wdata_in),
