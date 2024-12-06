@@ -158,6 +158,7 @@ alu my_alu(
 );
 
 mmu my_mmu(
+    .clk            (clk         ),
     .lw             (lw          ),
     .lh             (lh          ),           
     .lb             (lb          ),   
@@ -173,7 +174,7 @@ mmu my_mmu(
     .rdata_in       (rdata_in    ), 
     .wdata          (wdata       ),
     .waddr          (waddr       ),
-    .raddr          (raddr       )
+    .raddr_          (raddr       )
 );
 import "DPI-C" function void vpmem_read(input int raddr,input byte ren,output int rdata);
 import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
