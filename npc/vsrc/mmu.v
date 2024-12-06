@@ -13,8 +13,7 @@ module mmu(
     output   [3:0] wlen,
     input    [31:0] rdata_in,    
     output   [31:0] wdata,
-    output   [31:0] waddr,
-    output   [31:0] raddr
+    output   [31:0] addr
 );
     assign wdata = ( {32{sb}} & {24'b0,rs2_data[7:0]}) |
                    ( {32{sh}} & {16'b0,rs2_data[15:0]}) |
@@ -30,14 +29,6 @@ module mmu(
                    ( {4{sh}} & 4'd2 )  |
                    ( {4{sw}} & 4'd4 ) ;
 
-    assign waddr = ({32{sh}}&alu_result)|
-                   ({32{sw}}& alu_result)|
-                   ({32{sb}}&alu_result);
-
-    assign raddr = ({32{lh}}&alu_result)|
-                   ({32{lw}}& alu_result)|
-                   ({32{lbu}}& alu_result)|
-                   ({32{lhu}}& alu_result)|
-                   ({32{lb}}&alu_result);
+    assign addr = alu_result;
 
 endmodule

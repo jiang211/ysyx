@@ -19,16 +19,9 @@ module RegisterFile #(
     reg [DATA_WIDTH-1:0] rf[31:0];
     import "DPI-C" function void set_gpr_ptr(input logic [31:0] a []);
     initial set_gpr_ptr(rf); 
-    wire clk_neg;
-    reg clk_reg;
-    always@(posedge clk)
-    begin 
-    clk_reg <= clk;
-    end
+
     
-assign clk_neg = ~clk & clk_reg;
-    always @(posedge clk_neg) begin
-        $display("Value of signal wdata is %08x", wdata);
+    always @(posedge clk) begin
         if (wen & waddr != 0) rf[waddr] <= wdata; 
     end
     

@@ -24,8 +24,7 @@ wire [31:0] wdata_in;
 wire [31:0] rdata;
 reg  [31:0] rdata_in;
 wire [31:0] wdata;
-wire [31:0] waddr;
-wire [31:0] raddr;
+wire [31:0] addr;
 wire [3:0] wlen;
 wire [31:0] inst_addr_o;
 wire        pcsrc;
@@ -145,7 +144,7 @@ alu my_alu(
     .rs1_data       (rs1_data   ),
     .rs2_data       (rs2_data   ),
     .imm_data       (imm        ),
-    .pc_data        (inst_addr_o),
+    .pc_data        (inst_addr_o + 4),
     .alu_src1       (alu_src1   ),
     .alu_src2       (alu_src2   ),
     .branch         (branch     ),   
@@ -173,8 +172,7 @@ mmu my_mmu(
     .wlen           (wlen        ),
     .rdata_in       (rdata_in    ), 
     .wdata          (wdata       ),
-    .waddr          (waddr       ),
-    .raddr          (raddr       )
+    .addr           (addr        )
 );
 import "DPI-C" function void vpmem_read(input int raddr,input byte ren,output int rdata);
 import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
@@ -190,15 +188,18 @@ begin
 end
 assign clk_neg = ~clk & clk_reg;
 
-
-
 always @(*) begin
-    vpmem_read(raddr,{7'b0, ren && !clk},rdata_in);
+   $display("Value of signal rdata_in is %08x", rdata_in);
+   $display("Value of signal rdata is %08x", rdata);
+end
+
+always @(ren) begin
+    vpmem_read(addr,{7'b0, ren},rdata_in);
 end
 
 always @(posedge clk_neg) begin
 
-    vpmem_write(waddr, {4'b0, wlen},wdata,{7'b0, wen});
+    vpmem_write(addr, {4'b0, wlen},wdata,{7'b0, wen});
     
 end
 

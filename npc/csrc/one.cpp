@@ -38,14 +38,14 @@ void init_verilator(int argc, char** argv, char** env) {
    
 }
 static void single_cycle() {
-top->clk  = !top->clk;
-
-top->eval(); 
-tfp->dump(main_time);
-top->clk  = !top->clk;
-main_time ++;
-top->eval(); 
-//tfp->dump(main_time);
+  top->clk  = !top->clk;
+  
+  top->eval(); 
+  tfp->dump(main_time);
+  top->clk  = !top->clk;
+  main_time ++;
+  top->eval(); 
+  //tfp->dump(main_time);
 
 }
 
