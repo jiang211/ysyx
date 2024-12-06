@@ -29,13 +29,13 @@ module alu(
     wire [63:0] m_result = (u_alu_type) ? mulhu_result : mulh_result;
     assign opdata1 = (u_alu_type)? unsigned_a : signed_a;
     assign opdata2 = (u_alu_type)? unsigned_b : signed_b;
-    
+    /*
     always @(*) begin
     $display("Value of signal opdata1 is %08x", opdata1);
     $display("Value of signal opdata2 is %08x", opdata2);
     $display("Value of signal alu_out is %08x", alu_out);
     end
-    
+    */
     always @(*) begin
         case (alu_crtl)
             4'b0000: alu_out = opdata1 + opdata2;
