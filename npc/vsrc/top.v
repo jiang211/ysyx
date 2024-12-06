@@ -187,13 +187,13 @@ begin
     end
 end
 assign clk_neg = ~clk & clk_reg;
-
+/*
 always @(*) begin
    $display("Value of signal rdata_in is %08x", rdata_in);
    $display("Value of signal rdata is %08x", rdata);
    $display("Value of signal wdata_in is %08x", wdata_in);
 end
-
+*/
 always @(*) begin
     vpmem_read(addr,{7'b0, ren},rdata_in);
 end
