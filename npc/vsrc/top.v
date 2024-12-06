@@ -120,8 +120,15 @@ control my_crtl(
 assign wdata_in = (mem_to_reg)? rdata : alu_out;
 wire ren;
 wire wen;
+always@(posedge clk)
+begin 
+   $display("Value of signal wdata_in is %08x", wdata_in);
+   $display("Value of signal rdata is %08x", rdata);
+   $display("Value of signal alu_out is %08x", alu_out);
+   $display("Value of signal clk is %d", clk);
+end
 assign wen = mem_write;
-assign ren = mem_read;
+assign ren = mem_read & (raddr != rs1_data);
 RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
         .clk(clk),
         .wdata(wdata_in),
@@ -158,7 +165,6 @@ alu my_alu(
 );
 
 mmu my_mmu(
-    .clk            (clk         ),
     .lw             (lw          ),
     .lh             (lh          ),           
     .lb             (lb          ),   
@@ -174,7 +180,7 @@ mmu my_mmu(
     .rdata_in       (rdata_in    ), 
     .wdata          (wdata       ),
     .waddr          (waddr       ),
-    .raddr_          (raddr       )
+    .raddr          (raddr       )
 );
 import "DPI-C" function void vpmem_read(input int raddr,input byte ren,output int rdata);
 import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
@@ -189,6 +195,7 @@ begin
     end
 end
 assign clk_neg = ~clk & clk_reg;
+
 
 
 always @(*) begin

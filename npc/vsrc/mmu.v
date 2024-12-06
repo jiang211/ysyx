@@ -1,5 +1,4 @@
 module mmu(
-    input           clk,
     input           lw,
     input           lh,
     input           lb,
@@ -15,9 +14,8 @@ module mmu(
     input    [31:0] rdata_in,    
     output   [31:0] wdata,
     output   [31:0] waddr,
-    output   reg [31:0] raddr_
+    output   [31:0] raddr
 );
-    wire [31:0] raddr;
     assign wdata = ( {32{sb}} & {24'b0,rs2_data[7:0]}) |
                    ( {32{sh}} & {16'b0,rs2_data[15:0]}) |
                    ( {32{sw}} & rs2_data);
@@ -41,7 +39,5 @@ module mmu(
                    ({32{lbu}}& alu_result)|
                    ({32{lhu}}& alu_result)|
                    ({32{lb}}&alu_result);
-    always @(posedge clk) begin
-        raddr_  <= raddr;
-    end
+
 endmodule

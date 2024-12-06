@@ -22,6 +22,7 @@ module RegisterFile #(
 
     
     always @(posedge clk) begin
+        $display("Value of signal wdata is %08x", wdata);
         if (wen & waddr != 0) rf[waddr] <= wdata; 
     end
     
