@@ -32,7 +32,7 @@ module alu(
     
     always @(*) begin
     $display("Value of signal opdata1 is %08x", opdata1);
-    $display("Value of signal opdata2 is %08x", opdata2);
+    $display("Value of signal opdata2 is %08x", opdata2&32'h0000001f);
     $display("Value of signal alu_out is %08x", alu_out);
     end
     
