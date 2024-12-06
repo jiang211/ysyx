@@ -30,6 +30,10 @@ module alu(
     assign opdata1 = (u_alu_type)? unsigned_a : signed_a;
     assign opdata2 = (u_alu_type)? unsigned_b : signed_b;
     always @(*) begin
+    $display("Value of signal opdata1 is %08x", opdata1);
+    $display("Value of signal opdata2 is %08x", opdata2);
+    end
+    always @(*) begin
         case (alu_crtl)
             4'b0000: alu_out = opdata1 + opdata2;
             4'b0001: alu_out = opdata1 - opdata2;
