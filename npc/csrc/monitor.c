@@ -2,7 +2,7 @@
 #include <getopt.h>
 #include <common.h>
 #include <paddr.h>
-//#define CONFIG_DIFFTEST
+#define CONFIG_DIFFTEST
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
