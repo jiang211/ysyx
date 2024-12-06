@@ -55,7 +55,7 @@ module alu(
                     alu_out = (opdata1 < opdata2) ? 1 : 0;
             end
             4'b0100: alu_out = opdata1 ^ opdata2;
-            4'b0101: alu_out = opdata1 >> opdata2;
+            4'b0101: alu_out = opdata1 >> (opdata2 & 32'h0000001f);
             4'b0110: alu_out = $signed(opdata1) >>> (opdata2 & 32'h0000001f);
             4'b0111: alu_out = opdata1 | opdata2;
             4'b1000: alu_out = opdata1 & opdata2;
