@@ -4,7 +4,7 @@
 #include <paddr.h>
 #include <elf.h>
 #define MAX_INST_TO_PRINT 30
-#define CONFIG_DIFFTEST
+//#define CONFIG_DIFFTEST
 typedef struct {
     char name[64];
     paddr_t addr;      //the function head address
