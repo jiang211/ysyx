@@ -30,16 +30,12 @@ module alu(
     assign opdata1 = (u_alu_type)? unsigned_a : signed_a;
     assign opdata2 = (u_alu_type)? unsigned_b : signed_b;
     
-    wire [31:0] compare_rs1;
-    wire [31:0] compare_rs2;
-    assign compare_rs1 = (u_alu_type)? rs1_data : {1'b0,rs1_data[30:0]};
-    assign compare_rs2 = (u_alu_type)? rs2_data : {1'b0,rs2_data[30:0]};
     always @(*) begin
     $display("Value of signal opdata1 is %08x", opdata1);
     $display("Value of signal opdata2 is %08x", opdata2&32'h0000001f);
     $display("Value of signal alu_out is %08x", alu_out);
-    $display("Value of signal compare_rs1 is %032b", compare_rs1);
-    $display("Value of signal compare_rs2 is %032b", compare_rs2);
+    $display("Value of signal compare_rs1 is %032b", $signed(rs1_data));
+    $display("Value of signal compare_rs2 is %032b", $signed(rs2_data));
     end
     
     always @(*) begin
@@ -58,7 +54,7 @@ module alu(
                 end
             4'b0011: begin
                 if(branch)
-                    if(compare_rs1 < compare_rs2)begin
+                    if(rs1_data < rs2_data)begin
                         alu_out = pc_data + imm_data;
                         zero = 1'b1;
                     end
@@ -107,22 +103,35 @@ module alu(
                     zero = 1'b0;
                 end
             4'b1100:
-                if(branch)
-                    if(compare_rs1 >= compare_rs2)begin
-                        alu_out = pc_data + imm_data;
-                        zero = 1'b1;
+                if(branch)begin
+                    if(u_alu_type) begin
+                        if(rs1_data >= rs2_data)begin
+                            alu_out = pc_data + imm_data;
+                            zero = 1'b1;
+                        end
+                        else begin
+                            alu_out = pc_data + 32'h4;
+                            zero = 1'b0;
+                        end
                     end
                     else begin
-                        alu_out = pc_data + 32'h4;
-                        zero = 1'b0;
+                        if($signed(rs1_data) >= $signed(rs2_data))begin
+                            alu_out = pc_data + imm_data;
+                            zero = 1'b1;
+                        end
+                        else begin
+                            alu_out = pc_data + 32'h4;
+                            zero = 1'b0;
+                        end
                     end
+                end
                 else begin
                     alu_out = (opdata1 >= opdata2) ? 1 : 0;
                     zero = 1'b0;
                 end
             4'b1101: 
                 if(branch)
-                    if(compare_rs1 != compare_rs2)begin
+                    if(rs1_data != rs2_data)begin
                         alu_out = pc_data + imm_data;
                         zero = 1'b1;
                     end
@@ -136,7 +145,7 @@ module alu(
                 end
             4'b1110: 
                 if(branch)
-                    if(compare_rs1 == compare_rs2)begin
+                    if(rs1_data == rs2_data)begin
                         alu_out = pc_data + imm_data;
                         zero = 1'b1;
                     end
