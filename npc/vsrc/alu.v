@@ -35,6 +35,7 @@ module alu(
     $display("Value of signal opdata2 is %08x", opdata2&32'h0000001f);
     $display("Value of signal alu_out is %08x", alu_out);
     $display("Value of signal zero is %08x", zero);
+    $display("Value of signal alu_crtl is %08x", alu_crtl);
     end
     
     always @(*) begin
