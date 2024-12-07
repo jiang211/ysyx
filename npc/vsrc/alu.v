@@ -78,8 +78,10 @@ module alu(
                         alu_out = pc_data + 32'h4;
                         zero = 1'b0;
                     end
-                else
+                else begin
                     alu_out = (opdata1 >= opdata2) ? 1 : 0;
+                    zero = 1'b0;
+                end
             4'b1101: 
                 if(branch)
                     if(rs1_data != rs2_data)begin
@@ -90,8 +92,10 @@ module alu(
                         alu_out = pc_data + 32'h4;
                         zero = 1'b0;
                     end
-                else
+                else begin
                     alu_out = (opdata1 != opdata2) ? 1 : 0;
+                    zero = 1'b0;
+                end
             4'b1110: 
                 if(branch)
                     if(rs1_data == rs2_data)begin
@@ -102,8 +106,10 @@ module alu(
                         alu_out = pc_data + 32'h4;
                         zero = 1'b0;
                     end
-                else
+                else begin
                     alu_out = (opdata1 == opdata2) ? 1 : 0;
+                    zero = 1'b0;
+                end
             4'b1111: alu_out = m_result[63:32];
             default: alu_out = m_result[31:0];
         endcase
