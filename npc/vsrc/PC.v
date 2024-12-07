@@ -4,6 +4,8 @@ module PC(
     input pcsrc,
     input [31:0] imm,
     input [31:0] rs1_data,
+    input [31:0] alu_out,
+    input zero,
     input jalr,
     input jal,
     output reg[31:0] dnpc,
@@ -12,7 +14,7 @@ module PC(
 reg [31:0] pc;
 wire [31:0] d_pc;
 
-assign d_pc = (jal) ? pc + imm : (jalr) ? rs1_data + imm : pc + 4;
+assign d_pc = (jal) ? pc + imm : (jalr) ? rs1_data + imm : (zero) ? alu_out : pc + 4;
 always @(pc) begin
     case(pcsrc)
         1'b0: dnpc <= pc + 32'h4;

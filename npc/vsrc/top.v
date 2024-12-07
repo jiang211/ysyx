@@ -64,6 +64,8 @@ PC my_pc(
     .pcsrc          (pcsrc      ),
     .imm            (imm        ),
     .rs1_data       (rs1_data   ),
+    .alu_out        (alu_out    ),
+    .zero           (zero       ),
     .jal            (jal        ),
     .jalr           (jalr       ),
     .dnpc           (dnpc       ),
