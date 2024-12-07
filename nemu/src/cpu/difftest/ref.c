@@ -37,6 +37,7 @@ __EXPORT void difftest_regcpy(CPU_state *dut, bool direction) {
     }
     else if(direction == DIFFTEST_TO_REF){
       cpu.gpr[i] = dut->gpr[i];
+      cpu.pc = dut->pc;
       
     }
   }
