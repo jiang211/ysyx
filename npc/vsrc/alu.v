@@ -40,9 +40,18 @@ module alu(
     
     always @(*) begin
         case (alu_crtl)
-            4'b0000: alu_out = opdata1 + opdata2;
-            4'b0001: alu_out = opdata1 - opdata2;
-            4'b0010: alu_out = opdata1 << opdata2;
+            4'b0000: begin
+                    alu_out = opdata1 + opdata2;
+                    zero = 1'b0;
+                end
+            4'b0001: begin
+                    alu_out = opdata1 - opdata2;
+                    zero = 1'b0;
+                end
+            4'b0010: begin
+                    alu_out = opdata1 << opdata2;
+                    zero = 1'b0;
+                end
             4'b0011: begin
                 if(branch)
                     if(rs1_data < rs2_data)begin
@@ -53,21 +62,46 @@ module alu(
                         alu_out = pc_data + 32'h4;
                         zero = 1'b0;
                     end
-                else
+                else begin
                     alu_out = (opdata1 < opdata2) ? 1 : 0;
+                    zero = 1'b0;
+                end
             end
-            4'b0100: alu_out = opdata1 ^ opdata2;
-            4'b0101: alu_out = opdata1 >> (opdata2 & 32'h0000001f);
-            4'b0110: alu_out = $signed(opdata1) >>> (opdata2 & 32'h0000001f);
-            4'b0111: alu_out = opdata1 | opdata2;
-            4'b1000: alu_out = opdata1 & opdata2;
-            4'b1001:
+            4'b0100: begin
+                    alu_out = opdata1 ^ opdata2;
+                    zero = 1'b0;
+                end 
+            4'b0101: begin
+                    alu_out = opdata1 >> (opdata2 & 32'h0000001f);
+                    zero = 1'b0;
+            end
+            4'b0110: begin 
+                    alu_out = $signed(opdata1) >>> (opdata2 & 32'h0000001f);
+                    zero = 1'b0;
+            end
+            4'b0111: begin 
+                    alu_out = opdata1 | opdata2;
+                    zero = 1'b0;
+            end
+            4'b1000: begin
+                    alu_out = opdata1 & opdata2;
+                    zero = 1'b0;
+            end
+            4'b1001: begin
+                zero = 1'b0;
                 if(mul_high)
                     alu_out = m_result[63:32];
                 else
                     alu_out = opdata1 * opdata2;
-            4'b1010: alu_out = opdata1 / opdata2;
-            4'b1011: alu_out = opdata1 % opdata2;
+            end
+            4'b1010: begin
+                    alu_out = opdata1 / opdata2;
+                    zero = 1'b0;
+                end
+            4'b1011: begin
+                    alu_out = opdata1 % opdata2;
+                    zero = 1'b0;
+                end
             4'b1100:
                 if(branch)
                     if(rs1_data >= rs2_data)begin
@@ -110,9 +144,15 @@ module alu(
                     alu_out = (opdata1 == opdata2) ? 1 : 0;
                     zero = 1'b0;
                 end
-            4'b1111: alu_out = m_result[63:32];
-            default: alu_out = m_result[31:0];
+            4'b1111: begin
+                    alu_out = m_result[63:32];
+                    zero = 1'b0;
+                end
+            default: begin
+                    alu_out = m_result[31:0];
+                    zero = 1'b0;
+                end
         endcase
-        zero = (alu_out == 0) ? 1 : 0;
+        
     end
 endmodule
