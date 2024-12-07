@@ -31,8 +31,8 @@ module alu(
     assign opdata2 = (u_alu_type)? unsigned_b : signed_b;
     wire unsigned[31:0] unsigned_rs1_data = rs1_data;
     wire unsigned[31:0] unsigned_rs2_data = rs2_data;
-    wire signed [31:0] signed_rs1_data = $signed(unsigned_rs1_data);
-    wire signed [31:0] signed_rs2_data = $signed(unsigned_rs2_data);
+    wire signed [31:0] signed_rs1_data = $signed(rs1_data);
+    wire signed [31:0] signed_rs2_data = $signed(rs2_data);
     wire [31:0] compare_rs1;
     wire [31:0] compare_rs2;
     assign compare_rs1 = (u_alu_type)? unsigned_rs1_data : signed_rs1_data;
@@ -41,8 +41,8 @@ module alu(
     $display("Value of signal opdata1 is %08x", opdata1);
     $display("Value of signal opdata2 is %08x", opdata2&32'h0000001f);
     $display("Value of signal alu_out is %08x", alu_out);
-    $display("Value of signal rs1_data is %032b", rs1_data);
-    $display("Value of signal rs2_data is %032b", rs2_data);
+    $display("Value of signal compare_rs1 is %032b", compare_rs1);
+    $display("Value of signal compare_rs2 is %032b", compare_rs2);
     end
     
     always @(*) begin
