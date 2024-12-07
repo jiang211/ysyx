@@ -29,7 +29,14 @@ module alu(
     wire [63:0] m_result = (u_alu_type) ? mulhu_result : mulh_result;
     assign opdata1 = (u_alu_type)? unsigned_a : signed_a;
     assign opdata2 = (u_alu_type)? unsigned_b : signed_b;
-    
+    wire unsigned[31:0] unsigned_rs1_data = rs1_data;
+    wire unsigned[31:0] unsigned_rs2_data = rs2_data;
+    wire signed [31:0] signed_rs1_data = $signed(unsigned_rs1_data);
+    wire signed [31:0] signed_rs2_data = $signed(unsigned_rs2_data);
+    wire [31:0] compare_rs1;
+    wire [31:0] compare_rs2;
+    assign compare_rs1 = (u_alu_type)? unsigned_rs1_data : signed_rs1_data;
+    assign compare_rs2 = (u_alu_type)? unsigned_rs2_data : signed_rs2_data;
     always @(*) begin
     $display("Value of signal opdata1 is %08x", opdata1);
     $display("Value of signal opdata2 is %08x", opdata2&32'h0000001f);
@@ -54,7 +61,7 @@ module alu(
                 end
             4'b0011: begin
                 if(branch)
-                    if(rs1_data < rs2_data)begin
+                    if(compare_rs1 < compare_rs2)begin
                         alu_out = pc_data + imm_data;
                         zero = 1'b1;
                     end
@@ -104,7 +111,7 @@ module alu(
                 end
             4'b1100:
                 if(branch)
-                    if(rs1_data >= rs2_data)begin
+                    if(compare_rs1 >= compare_rs2)begin
                         alu_out = pc_data + imm_data;
                         zero = 1'b1;
                     end
@@ -118,7 +125,7 @@ module alu(
                 end
             4'b1101: 
                 if(branch)
-                    if(rs1_data != rs2_data)begin
+                    if(compare_rs1 != compare_rs2)begin
                         alu_out = pc_data + imm_data;
                         zero = 1'b1;
                     end
@@ -132,7 +139,7 @@ module alu(
                 end
             4'b1110: 
                 if(branch)
-                    if(rs1_data == rs2_data)begin
+                    if(compare_rs1 == compare_rs2)begin
                         alu_out = pc_data + imm_data;
                         zero = 1'b1;
                     end
