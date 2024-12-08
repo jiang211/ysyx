@@ -34,11 +34,9 @@ module control(
 
 wire U_type;
 wire J_type;
-wire I_type;
 wire S_type;
 wire R_type;
 wire B_type;
-assign I_type = (opcode == 7'b0010011 || opcode == 7'b1100111 || opcode == 7'b0000011 || opcode == 7'b1010011);
 assign R_type = (opcode == 7'b0110011);
 assign S_type = (opcode == 7'b0100011);
 assign U_type = (opcode == 7'b0110111 || opcode == 7'b0010111);
@@ -48,7 +46,7 @@ assign J_type_1 = (opcode == 7'b1101111) || I_type_2;
 wire I_type_1 = (opcode == 7'b0010011);
 wire I_type_2 = (opcode == 7'b1100111);
 wire I_type_3 = (opcode == 7'b0000011);
-
+wire I_type_4 = (opcode == 7'b1010011);
 assign jalr = (opcode == 7'b1100111);
 assign jal  = (opcode == 7'b1101111);
 assign U_type_1 = (opcode == 7'b0110111);
@@ -81,7 +79,7 @@ assign mem_read = I_type_3;
 assign mem_write = S_type;
 assign  ebreak = ( opcode==7'b1110011 ) & ( funct7==7'b0 ) & ( shamt==5'b00001 ) ;
 assign reg_write = !B_type;
-assign alu_src1 = R_type | I_type | S_type;
+assign alu_src1 = R_type | I_type_1 | I_type_3 | I_type_4 | S_type;
 assign alu_src2 = R_type;
 assign mem_to_reg = (mem_read|mem_write);
 assign branch = B_type;
