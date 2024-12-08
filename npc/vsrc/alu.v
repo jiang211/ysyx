@@ -87,7 +87,7 @@ module alu(
                     zero = 1'b0;
             end
             4'b0110: begin 
-                    alu_out = $signed(opdata1) >> (opdata2 & 32'h0000001f);
+                    alu_out = $signed(opdata1) >>> (opdata2 & 32'h0000001f);
                     zero = 1'b0;
             end
             4'b0111: begin 
