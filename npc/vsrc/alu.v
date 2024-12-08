@@ -75,7 +75,7 @@ module alu(
                         end
                     end
                 else begin
-                    alu_out = (opdata1 < opdata2) ? 1 : 0;
+                    alu_out = ($signed(opdata1) < $signed(opdata2)) ? 1 : 0;
                     zero = 1'b0;
                 end
             end
