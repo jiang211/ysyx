@@ -33,6 +33,9 @@ module mmu(
     $display("Value of signal rdata_in is %032b", rdata_in);
     $display("Value of signal rdata_in is %032b", $signed(rdata_in));
     $display("Value of signal data is %032b", {{16{$signed(rdata_in[31])}}, $signed(rdata_in[15:0])});
+    $display("Value of signal lh is %d", lh);
+    $display("Value of signal rdata is %08x", rdata);
+    $display("Value of signal data2 is %08x", {{16{$signed(rdata_in[31])}}, $signed(rdata_in[15:0])});
     end
     
     assign addr = alu_result;
