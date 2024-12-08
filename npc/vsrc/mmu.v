@@ -20,7 +20,7 @@ module mmu(
                    ( {32{sw}} & rs2_data);
 
     assign rdata = ( {32{lb}} & {{24{rdata_in[7]}},rdata_in[7:0]}) |
-                   ( {32{lh}} & {{16{$signed(rdata_in[31])}}, $signed(rdata_in[15:0])}) |
+                   ( {32{lh}} & {{16{rdata_in[15]}}, (rdata_in[15:0])}) |
                    ( {32{lw}} & rdata_in) |
                    ( {32{lbu}} & {24'b0,rdata_in[7:0]}) |
                    ( {32{lhu}} & {16'b0,rdata_in[15:0]});
@@ -33,13 +33,6 @@ module mmu(
     $display("Value of signal rdata_in is %032b", rdata_in);
     $display("Value of signal rdata_in is %032b", $signed(rdata_in));
     $display("Value of signal data is %032b", {{16{$signed(rdata_in[31])}}, $signed(rdata_in[15:0])});
-    $display("Value of signal lh is %d", lh);
-    $display("Value of signal lb is %d", lb);
-    $display("Value of signal lw is %d", lw);
-    $display("Value of signal lbu is %d", lbu);
-    $display("Value of signal lhu is %d", lhu);
-    $display("Value of signal rdata is %08x", rdata);
-    $display("Value of signal data2 is %08x", {{16{$signed(rdata_in[31])}}, $signed(rdata_in[15:0])});
     end
     
     assign addr = alu_result;
