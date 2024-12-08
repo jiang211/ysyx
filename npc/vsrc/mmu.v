@@ -29,11 +29,7 @@ module mmu(
                    ( {4{sh}} & 4'd2 )  |
                    ( {4{sw}} & 4'd4 ) ;
     
-    always @(*) begin
-    $display("Value of signal rdata_in is %032b", rdata_in);
-    $display("Value of signal rdata_in is %032b", $signed(rdata_in));
-    $display("Value of signal data is %032b", {{16{$signed(rdata_in[31])}}, $signed(rdata_in[15:0])});
-    end
+    
     
     assign addr = alu_result;
 
