@@ -121,7 +121,7 @@ module alu_ctrl(
             `SLTI_FUNCT3: aluOp = `OP_SLT;
             `SLTIU_FUNCT3: aluOp = `OP_SLT;
             `XORI_FUNCT3: aluOp = `OP_XOR;
-            `SRLI_SRAI_FUNCT3: begin if(funct7[5]) aluOp = `OP_SRL;else aluOp = `OP_SRA; end
+            `SRLI_SRAI_FUNCT3: begin if(funct7[5]) aluOp = `OP_SRA;else aluOp = `OP_SRL; end
             `ORI_FUNCT3: aluOp = `OP_OR;
             `ANDI_FUNCT3: aluOp = `OP_AND;
             default: aluOp = funct7[4:1];
