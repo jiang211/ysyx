@@ -22,10 +22,10 @@ wire I_type;
 wire S_type;
 wire R_type;
 wire B_type;
-
+wire I_type_1 = (opcode == 7'b0010011);
 
 assign funct3 = (R_type || I_type || S_type || B_type) ? instr[14:12] : 3'b0;
-assign funct7 = (R_type) ? instr[31:25] : 7'b0;
+assign funct7 = (R_type || I_type_1) ? instr[31:25] : 7'b0;
 assign shamt = instr[24:20];
 assign opcode = instr[6:0];
 assign I_type = (opcode == 7'b0010011 || opcode == 7'b1100111 || opcode == 7'b0000011 || opcode == 7'b1010011);
