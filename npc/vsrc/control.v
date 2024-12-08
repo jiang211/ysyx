@@ -53,7 +53,7 @@ assign U_type_1 = (opcode == 7'b0110111);
 
 assign lh   = (I_type_3 && funct3 == 3'b001);
 assign lw   = (I_type_3 && funct3 == 3'b010);
-assign lb   = (I_type_3 && funct3 == 3'b001);
+assign lb   = (I_type_3 && funct3 == 3'b000);
 assign lbu  = (I_type_3 && funct3 == 3'b100);
 assign lhu  = (I_type_3 && funct3 == 3'b101);
 
