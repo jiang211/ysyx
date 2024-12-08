@@ -28,7 +28,12 @@ module mmu(
     assign  wlen = ( {4{sb}} & 4'd1 )  |
                    ( {4{sh}} & 4'd2 )  |
                    ( {4{sw}} & 4'd4 ) ;
-
+    
+    always @(*) begin
+    $display("Value of signal rdata_in is %032b", rdata_in);
+    $display("Value of signal rdata_in is %032b", $signed(rdata_in));
+    end
+    
     assign addr = alu_result;
 
 endmodule
