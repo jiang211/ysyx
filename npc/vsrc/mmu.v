@@ -15,15 +15,13 @@ module mmu(
     output   [31:0] wdata,
     output   [31:0] addr
 );
-    wire signed [31:0] signed_rdata_in;
-    assign signed_rdata_in = $signed(rdata_in);
     assign wdata = ( {32{sb}} & {24'b0,rs2_data[7:0]}) |
                    ( {32{sh}} & {16'b0,rs2_data[15:0]}) |
                    ( {32{sw}} & rs2_data);
 
     assign rdata = ( {32{lb}} & {{24{rdata_in[7]}},rdata_in[7:0]}) |
-                   ( {32{lh}} & {{16{signed_rdata_in[15]}},signed_rdata_in[15:0]}) |
-                   ( {32{lw}} & signed_rdata_in) |
+                   ( {32{lh}} & {{16{$signed(rdata_in[31])}}, $signed(rdata_in[15:0])}) |
+                   ( {32{lw}} & rdata_in) |
                    ( {32{lbu}} & {24'b0,rdata_in[7:0]}) |
                    ( {32{lhu}} & {16'b0,rdata_in[15:0]});
 
