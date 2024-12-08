@@ -54,13 +54,25 @@ module alu(
                 end
             4'b0011: begin
                 if(branch)
-                    if(rs1_data < rs2_data)begin
-                        alu_out = pc_data + imm_data;
-                        zero = 1'b1;
+                    if(u_alu_type) begin
+                        if(rs1_data < rs2_data)begin
+                            alu_out = pc_data + imm_data;
+                            zero = 1'b1;
+                        end
+                        else begin
+                            alu_out = pc_data + 32'h4;
+                            zero = 1'b0;
+                        end
                     end
                     else begin
-                        alu_out = pc_data + 32'h4;
-                        zero = 1'b0;
+                        if($signed(rs1_data) < $signed(rs2_data))begin
+                            alu_out = pc_data + imm_data;
+                            zero = 1'b1;
+                        end
+                        else begin
+                            alu_out = pc_data + 32'h4;
+                            zero = 1'b0;
+                        end
                     end
                 else begin
                     alu_out = (opdata1 < opdata2) ? 1 : 0;
