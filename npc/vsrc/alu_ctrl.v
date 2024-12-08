@@ -134,5 +134,6 @@ module alu_ctrl(
     $display("Value of signal alu_op is %02b", alu_op);
     $display("Value of signal funct3 is %03b", funct3);
     $display("Value of signal funct7 is %07b", funct7);
+    $display("Value of signal aluOp is %07b", aluOp);
     end
 endmodule
