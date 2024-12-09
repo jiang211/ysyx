@@ -83,7 +83,7 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
         paddr_write((paddr_t)(waddr), wlen, wdata);
       }
       
-        #ifdef MTRACE
+      #ifdef MTRACE
           printf("write at pc = %08x, data = %08x\n",waddr,wdata);
       #endif
       
