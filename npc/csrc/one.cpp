@@ -94,18 +94,11 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   if(ren && raddr>=0x80000000 && raddr <= 0x88000000){
     
       *rdata = paddr_read((paddr_t)(raddr),4);
-    if(!top->clk){
-      count = 0;
-    }
-    else{
-      count++;
-    }
-    if(count == 1){
+    
       #ifdef MTRACE
         printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
-        printf("count = %d\n",count);
     #endif
-    }
+    
    
   }
   else if(ren && raddr == RTC_ADDR1){
