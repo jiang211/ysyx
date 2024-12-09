@@ -82,17 +82,11 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
       else {
         paddr_write((paddr_t)(waddr), wlen, wdata);
       }
-      if(top->clk){
-        count = 0;
-      }
-      else{
-        count++;
-      }
-      if(count == 1){
+      
         #ifdef MTRACE
           printf("write at pc = %08x, data = %08x\n",waddr,wdata);
       #endif
-      }
+      
 }
 }
 extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
