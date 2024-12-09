@@ -96,13 +96,21 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
 }
 }
 extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
+  int count = 0;
   if(ren && raddr>=0x80000000 && raddr <= 0x88000000){
     
       *rdata = paddr_read((paddr_t)(raddr),4);
-    
+    if(!top->clk){
+      count = 0;
+    }
+    else{
+      count++;
+    }
+    if(count == 1){
     #ifdef MTRACE
-      printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
-    #endif
+      printf("write at pc = %08x, data = %08x\n",waddr,wdata);
+  #endif
+    }
    
   }
   else if(ren && raddr == RTC_ADDR1){
