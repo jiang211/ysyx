@@ -12,7 +12,7 @@
 #include <cpu.h>
 
 
-#define MTRACE
+//#define MTRACE
 #define RTC_ADDR1   0xa0000048
 #define RTC_ADDR2   0xa000004c
 #define SERIAL_ADDR 0xa00003f8
