@@ -12,7 +12,7 @@
 #include <cpu.h>
 
 
-//#define MTRACE
+#define MTRACE
 #define RTC_ADDR1   0xa0000048
 #define RTC_ADDR2   0xa000004c
 #define SERIAL_ADDR 0xa00003f8
@@ -108,7 +108,7 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
     }
     if(count == 1){
     #ifdef MTRACE
-      printf("write at pc = %08x, data = %08x\n",waddr,wdata);
+      printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
   #endif
     }
    
