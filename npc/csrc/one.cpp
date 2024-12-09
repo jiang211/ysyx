@@ -77,7 +77,8 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
   
   if(wen){
       if(waddr == SERIAL_ADDR){
-        putchar(wdata);
+        //putchar(wdata);
+        putc((char)(wdata), stderr);
       }
       else {
         paddr_write((paddr_t)(waddr), wlen, wdata);
