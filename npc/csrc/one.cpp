@@ -107,9 +107,9 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
       count++;
     }
     if(count == 1){
-    #ifdef MTRACE
-      printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
-  #endif
+      #ifdef MTRACE
+        printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
+    #endif
     }
    
   }
