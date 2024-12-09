@@ -82,7 +82,7 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
       else {
         paddr_write((paddr_t)(waddr), wlen, wdata);
       }
-      if(!top->clk){
+      if(top->clk){
         count = 0;
       }
       else{
