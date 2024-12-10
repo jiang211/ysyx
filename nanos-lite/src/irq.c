@@ -1,8 +1,8 @@
 #include <common.h>
-
+#define EVENT_YIELD 1
 static Context* do_event(Event e, Context* c) {
   switch (e.event) {
-    case 1 : printf("Received event 1\n"); break;
+    case EVENT_YIELD : printf("Received EVENT_YIELD.\n"); break;
     default: panic("Unhandled event ID = %d", e.event);
   }
 
