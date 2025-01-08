@@ -50,6 +50,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
     */
    Elf32_Ehdr ehdr;
    ramdisk_read(&ehdr, 0, sizeof(Elf32_Ehdr));
+   assert(*(uint32_t *)ehdr.e_ident == 0x464c457f); 
    Elf_Phdr phdr[ehdr.e_phnum];
    ramdisk_read(phdr, ehdr.e_ehsize, sizeof(Elf_Phdr)*ehdr.e_phnum);
    for (int i = 0; i < ehdr.e_phnum; i++) {
@@ -58,7 +59,6 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
            memset((void*)(phdr[i].p_vaddr+phdr[i].p_filesz), 0, phdr[i].p_memsz - phdr[i].p_filesz);
        }
    }
-   printf("jump to entry = %d\n", ehdr.e_entry);
    return ehdr.e_entry;
 
 }
