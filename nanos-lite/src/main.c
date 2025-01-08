@@ -24,9 +24,9 @@ int main() {
 #endif
 
   init_fs();
-
+printf("1\n");
   init_proc();
-  printf("1\n");
+  
   Log("Finish initialization");
   
 #ifdef HAS_CTE
