@@ -26,9 +26,9 @@ int main() {
   init_fs();
 
   init_proc();
-
-  Log("Finish initialization");
   printf("1\n");
+  Log("Finish initialization");
+  
 #ifdef HAS_CTE
   yield();
 #endif
