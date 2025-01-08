@@ -11,7 +11,7 @@ Context* __am_irq_handle(Context *c) {
     printf("EVENT_YIELD = %d\n",EVENT_YIELD);
     printf("EVENT_ERROR = %d\n",EVENT_ERROR);
     switch (c->mcause) {
-      case 11: ev.event = EVENT_YIELD;break;
+      case 0: ev.event = EVENT_YIELD;break;
       default: ev.event = EVENT_ERROR; break;
     }
     c = user_handler(ev, c);
