@@ -2,7 +2,7 @@
 #include <getopt.h>
 #include <common.h>
 #include <paddr.h>
-//#define CONFIG_DIFFTEST
+
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
@@ -93,7 +93,6 @@ void init_monitor(int argc, char** argv) {
 
   /* Parse arguments. */
   parse_args(argc, argv);
-  //sdb_set_batch_mode();
   //parse_elf(elf_file);
   /* Set random seen. */
   init_rand();

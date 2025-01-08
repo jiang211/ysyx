@@ -29,4 +29,3 @@ module RegisterFile #(
     assign rdata2 = rf[raddr2];
    
 endmodule
-

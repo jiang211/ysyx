@@ -11,13 +11,13 @@
 #include "Vtop__Dpi.h"
 #include <cpu.h>
 
-
-//#define MTRACE
 #define RTC_ADDR1   0xa0000048
 #define RTC_ADDR2   0xa000004c
 #define SERIAL_ADDR 0xa00003f8
 
 uint64_t get_time();
+
+
 
 VerilatedContext* contextp;
 Vtop* top;
@@ -40,14 +40,14 @@ void init_verilator(int argc, char** argv, char** env) {
    
 }
 static void single_cycle() {
-  top->clk  = !top->clk;
-  
-  top->eval(); 
-  tfp->dump(main_time);
-  top->clk  = !top->clk;
-  main_time ++;
-  top->eval(); 
-  //tfp->dump(main_time);
+top->clk  = !top->clk;
+
+top->eval(); 
+tfp->dump(main_time);
+top->clk  = !top->clk;
+main_time ++;
+top->eval(); 
+//tfp->dump(main_time);
 
 }
 
@@ -62,6 +62,7 @@ void reset(int n) {
 void init_module() {
 
   reset(10);
+  printf("pc = %x\n",top->pc);
   return ;
 
 }
@@ -74,72 +75,67 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
   // 总是往地址为`waddr & ~0x3u`的4字节按写掩码`wmask`写入`wdata`
   // `wmask`中每比特表示`wdata`中1个字节的掩码,
   // 如`wmask = 0x3`代表只写入最低2个字节, 内存中的其它字节保持不变
-  
-  if(wen){
-      if(waddr == SERIAL_ADDR){
-        //putchar(wdata);
-        putc((char)(wdata), stderr);
-      }
-      else {
-        paddr_write((paddr_t)(waddr), wlen, wdata);
-      }
+  if(wen ){
+     
+    if(waddr == SERIAL_ADDR){
       
-      #ifdef MTRACE
-          printf("write at pc = %08x, data = %08x\n",waddr,wdata);
-      #endif
-      
-}
-}
-extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
-  int count = 0;
-  if(ren && raddr>=0x80000000 && raddr <= 0x88000000){
-    
-      *rdata = paddr_read((paddr_t)(raddr),4);
-    
-      #ifdef MTRACE
-        printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
-    #endif
-    
+      putchar(wdata);
+    }
+    else {
+      paddr_write((paddr_t)(waddr), wlen, wdata);
+    }
    
+  #ifdef MTRACE
+      printf("write at pc = %08x \n",waddr);
+  #endif
   }
-  else if(ren && raddr == RTC_ADDR1){
+}
+
+extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
+  if(ren){
+    if(raddr == RTC_ADDR1){
       uint64_t us = get_time();
-      
+      printf("%ld\n",us);
       *rdata = (uint32_t)us;
-    #ifdef MTRACE
-      printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
-    #endif
       
-  }
-  else if(ren && raddr == RTC_ADDR2) {
+    }
+    else if(raddr == RTC_ADDR2) {
       uint64_t us = get_time()>>32;
       *rdata = (uint32_t)us;
+    }
+    else{
+      *rdata = paddr_read((paddr_t)(raddr),4);
+    }
     #ifdef MTRACE
-      printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
+      printf("addr = %08x , rdata = %08x\n",raddr,rdata);
     #endif
+   
   }
-
+  
+  //printf("addr = %08x , rdata = %08x\n",raddr,rdata);
+  // 总是读取地址为`raddr & ~0x3u`的4字节返回
 }
 /*
 extern "C" void call(word_t pc , word_t dnpc);
 
 extern "C" ret(word_t pc );
 */
-void run_step(Decode *s, CPU_state *cpu) {
+void run_step(Decode *s, CPU_state *cpu, bool *vpmem_read_called ) {
 
        
 
       
-      
-      
-       
-      top->clk  = !top->clk;
+      top->pc_ = s->pc;
       top->instr =inst_fetch(&s->snpc, 4);
+      
+      
+       
+      top->clk = 0;
       top->eval();
       
       tfp->dump(main_time);
       main_time ++;
-      top->clk  = !top->clk;
+      top->clk = 1;
 
       top->eval(); 
 
@@ -149,16 +145,25 @@ void run_step(Decode *s, CPU_state *cpu) {
         
        
         s->dnpc = top->dnpc;
-        s->pc = top->pc;
        
+        
         s->isa.inst.val = top->instr;
         for (int i=0; i<32; i++) {
           cpu->gpr[i] = cpu_gpr[i];
         }
+
+      
       if(top->ebreak)  { 
-        npc_trap(NPC_END , top->pc, cpu_gpr[10]);
+        npc_trap(NPC_END , top->dnpc, cpu_gpr[10]);
         return ;
       }
+        
+    
+       
+      
+      
+
+       
       
       
 }

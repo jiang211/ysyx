@@ -4,7 +4,7 @@
 #include <Vtop.h>
 #include "svdpi.h"
 #include "Vtop__Dpi.h"
-#define CONFIG_MTRACE
+
 #define PG_ALIGN __attribute((aligned(4096))) 
 
 #define likely(cond)   __builtin_expect(cond, 1)

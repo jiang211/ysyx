@@ -20,7 +20,7 @@
 #include "isa.h"
 #include <elf.h>
 #include "/home/jx/ysyx-workbench/nemu/src/monitor/sdb/watchpoint.h"
-
+void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 /////////////////解析elf///////////
 
 typedef struct {
@@ -162,7 +162,7 @@ uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
 
-void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+
 void device_update();
 
 
@@ -263,7 +263,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
         
 #ifndef CONFIG_ISA_loongarch32r
 
-  
+  void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
   disassemble(pp, s->logbuf + sizeof(s->logbuf) - pp,
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst.val, ilenp);
       
