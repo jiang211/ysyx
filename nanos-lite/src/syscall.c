@@ -1,6 +1,5 @@
 #include <common.h>
-#include <am.h>
-#include <klib.h>
+
 #include "syscall.h"
 void do_syscall(Context *c) {
   uintptr_t a[4];
