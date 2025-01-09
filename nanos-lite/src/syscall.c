@@ -4,7 +4,7 @@
 void do_syscall(Context *c) {
   uintptr_t a[4];
   a[0] = c->GPR1;
-  printf(" syscall_ID  =%p\n", a[0] );
+  printf(" syscall_ID  =%p\n", (void *)a[0] );
   #ifdef CONFIG_STRACE
   printf(" syscall_ID  =   0x%x \n", a[0] );
 #endif
