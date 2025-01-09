@@ -19,14 +19,15 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   /* TODO: Trigger an interrupt/exception with ``NO''.
    * Then return the address of the interrupt/exception vector.
    */
-#ifdef CONFIG_ETRACE
-  printf(" mcause  =   0x%x \n", c->mcause );
-  printf(" mstatus = 0x%x \n", c->mstatus);
-  printf(" mepc    = 0x%x \n", c->mepc   );
-#endif
+
   //cpu.csr[1] = 0x1800;
   cpu.csr[0] = epc; // mepc
   cpu.csr[2] = NO; // mcause
+  #ifdef CONFIG_ETRACE
+  printf(" mcause  =   0x%x \n", cpu.csr[2] );
+  printf(" mstatus = 0x%x \n", cpu.csr[1]);
+  printf(" mepc    = 0x%x \n", cpu.csr[0]   );
+#endif
   return cpu.csr[3]; // mtvec
 }
 
