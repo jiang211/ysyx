@@ -24,11 +24,12 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   printf(" mstatus = 0x%x \n", c->mstatus);
   printf(" mepc    = 0x%x \n", c->mepc   );
 #endif
-  cpu.csr[1] = 0x1800;
-  cpu.csr[0] = epc;
-  cpu.csr[2] = NO;
-  return cpu.csr[3];
+  //cpu.csr[1] = 0x1800;
+  cpu.csr[0] = epc; // mepc
+  cpu.csr[2] = NO; // mcause
+  return cpu.csr[3]; // mtvec
 }
+
 
 word_t isa_query_intr() {
   return INTR_EMPTY;
