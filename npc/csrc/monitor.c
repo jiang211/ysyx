@@ -110,7 +110,7 @@ void init_monitor(int argc, char** argv) {
   #ifdef CONFIG_DEVICE
     init_device();
   #endif
-   cpu.csr[1] = 0x1800;
+   
   /* Perform ISA dependent initialization. */
   init_isa();
 
