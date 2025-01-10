@@ -3,6 +3,7 @@
 #include "syscall.h"
 
 static void sys_write(Context *c) {
+  printf("1\n");
   int fd = (int)c->GPR2;
   void *buf = (void *)c->GPR3;
   size_t count = (size_t)c->GPR4;
@@ -27,7 +28,7 @@ void do_syscall(Context *c) {
     case SYS_exit:halt(c->GPR1);break;
     case SYS_yield:yield();c->GPRx = 0;break;
     case SYS_write:sys_write(c);break;
-    //case SYS_brk :c->GPRx = 0;break;
+    case SYS_brk :c->GPRx = 0;break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
 }
