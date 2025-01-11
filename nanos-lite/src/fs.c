@@ -69,6 +69,12 @@ size_t fs_write(int fd, const void *buf, size_t len){
   if (fd < 3) {
     return 0;
   }
+  if (fd == 1 || fd == 2) {
+    for (size_t i = 0; i < len; ++i){
+      putch(*((char *)buf + i));
+    }
+      return len;
+  }
   size_t size = file_table[fd].size;
   size_t offset = file_table[fd].open_offset;
   size_t write_len = len;
@@ -80,6 +86,8 @@ size_t fs_write(int fd, const void *buf, size_t len){
   file_table[fd].open_offset += ret;
   return ret;
 }
+
+
 size_t fs_lseek(int fd, size_t offset, int whence){
   if (fd < 3) {
     return 0;
