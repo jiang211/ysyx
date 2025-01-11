@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <NDL.h>
+#include "/home/jx/ysyx-workbench/navy-apps/libs/libndl/include/NDL.h"
+
 
 int main() {
   struct timeval tv;
-  // struct timezone tz;
   int ms = 500;
   while (1) {
     while (NDL_GetTicks() < ms) {
