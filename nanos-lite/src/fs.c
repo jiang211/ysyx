@@ -2,6 +2,9 @@
 
 typedef size_t (*ReadFn) (void *buf, size_t offset, size_t len);
 typedef size_t (*WriteFn) (const void *buf, size_t offset, size_t len);
+size_t ramdisk_write(const void *buf, size_t offset, size_t len);
+size_t get_ramdisk_size();
+size_t ramdisk_read(void *buf, size_t offset, size_t len);
 
 typedef struct {
   char *name;
@@ -9,6 +12,7 @@ typedef struct {
   size_t disk_offset;
   ReadFn read;
   WriteFn write;
+  size_t open_offset;
 } Finfo;
 
 enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_FB};
@@ -33,4 +37,71 @@ static Finfo file_table[] __attribute__((used)) = {
 
 void init_fs() {
   // TODO: initialize the size of /dev/fb
+}
+int fs_open(const char *pathname, int flags, int mode){
+  int len = sizeof(file_table)/sizeof(Finfo);
+  for(int i=0; i<len; i++){
+    if(strcmp(file_table[i].name, pathname) == 0){
+      file_table[i].open_offset = 0;
+      return i;
+    }
+  }
+  printf("file %s not found\n", pathname);
+  assert(0);
+  return -1;
+}
+size_t fs_read(int fd, void *buf, size_t len){
+  if (fd < 3) {
+    return 0;
+  }
+  size_t size = file_table[fd].size;
+  size_t offset = file_table[fd].open_offset;
+  size_t read_len = len;
+  if(offset + len > size)
+    read_len = size - offset;
+  if(read_len == 0)
+    return 0;
+  int ret = ramdisk_read(buf, file_table[fd].disk_offset + offset,read_len);
+  file_table[fd].open_offset += ret;
+  return ret;
+}
+size_t fs_write(int fd, const void *buf, size_t len){
+  if (fd < 3) {
+    return 0;
+  }
+  size_t size = file_table[fd].size;
+  size_t offset = file_table[fd].open_offset;
+  size_t write_len = len;
+  if(offset + len > size)
+    write_len = size - offset;
+  if(write_len == 0)
+    return 0;
+  int ret = ramdisk_write(buf, file_table[fd].disk_offset + offset,write_len);
+  file_table[fd].open_offset += ret;
+  return ret;
+}
+size_t fs_lseek(int fd, size_t offset, int whence){
+  if (fd < 3) {
+    return 0;
+  }
+  size_t size = file_table[fd].size;
+  switch(whence){
+    case SEEK_SET:
+      file_table[fd].open_offset = offset;
+      break;
+    case SEEK_CUR:
+      file_table[fd].open_offset += offset;
+      break;
+    case SEEK_END:
+      file_table[fd].open_offset = size + offset;
+      break;
+    default:
+      printf("invalid whence\n");
+      assert(0);
+  }
+  return file_table[fd].open_offset;
+
+}
+int fs_close(int fd){
+  return 0;
 }

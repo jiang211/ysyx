@@ -28,7 +28,29 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
    return ehdr.e_entry;
 
 }
+/*
+static uintptr_t loader(PCB *pcb, const char *filename) {
+    
+  int fd = fs_open(filename, 0, 0);
+  assert(fd);
+   Elf32_Ehdr ehdr;
+   fs_read(fd, &ehdr, sizeof(Elf32_Ehdr));
+   assert(*(uint32_t *)ehdr.e_ident == 0x464c457f); 
+   Elf_Phdr phdr;
+   for (int i = 0; i < ehdr.e_phnum; i++) {
+       fs_lseek(fd, ehdr.e_phoff + ehdr.e_phentsize*i, SEEK_SET);
+       fs_read (fd, &phdr, sizeof(Elf_Phdr));
+       if (phdr[i].p_type == PT_LOAD) {
+           fs_lseek(fd, ehdr.phdr.p_offset, SEEK_SET);
+           fs_read (fd, (char *)elf_phdr.p_vaddr, elf_phdr.p_memsz);
+           ramdisk_read((void*)phdr[i].p_vaddr, phdr[i].p_offset, phdr[i].p_memsz);
+           memset((void*)(phdr[i].p_vaddr+phdr[i].p_filesz), 0, phdr[i].p_memsz - phdr[i].p_filesz);
+       }
+   }
+   return ehdr.e_entry;
 
+}
+*/
 void naive_uload(PCB *pcb, const char *filename) {
   uintptr_t entry = loader(pcb, filename);
   Log("Jump to entry = %p", (void*)entry);
