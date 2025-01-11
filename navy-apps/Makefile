@@ -32,7 +32,7 @@ endif
 
 ### Checks end here
 endif
-LIBS += -L/home/jx/ysyx-workbench/navy-apps/libs/libndl/build -lndl
+
 ## 2. General Compilation Targets
 
 ### Create the destination directory (`build/$ISA`)
