@@ -253,81 +253,123 @@ int sprintf(char *str, const char *fmt, ...)
 }
 
 
-int snprintf(char *out, size_t n, const char *fmt, ...) {
-
-  size_t len = 0;
-  va_list valist;
-  va_start(valist, fmt);
-
-  char *out_offset = out;
-  char *char_buf ;
-  while( *fmt ) {
-    if( ( *fmt == '%' && *(fmt+1) == 'x' )  ||
-        ( *fmt == '%' && *(fmt+1) == 'p' ) ) {
-      uint64_t x_number = va_arg(valist, uint64_t);
-      change_format_x(x_number);
-      char_buf = number_buf + 1 ;
-      while( *char_buf ) {
-        *out_offset = *char_buf;
-        len++;
-        char_buf++;
-        out_offset ++;
-      }
-      fmt++;
+int snprintf(char *str, size_t size, const char *fmt, ...) {
+    if (size == 0) {
+        return 0;
     }
 
-    else if( (*fmt == '%' && *(fmt+1) == 'd') || 
-        (*fmt == '%' && *(fmt+1) == '0'  && *(fmt+2) == '2' && *(fmt+3) == 'd' ) ) {
-      int64_t d_number = va_arg(valist, int64_t);
-      printf("2\n");
-      change_format_d(d_number);
-      char_buf = number_buf ;
-      while( *char_buf ) {
-        *out_offset = *char_buf ;
-        len++;
-        char_buf++;
-        out_offset ++ ;
-      }
-      if (*fmt == '%' && *(fmt+1) == '0'  && *(fmt+2) == '2' && *(fmt+3) == 'd' ) {
-          fmt = fmt  + 2 ;
-      }
-      fmt++;
-    }
+    memset(str, 0, size);
+    const char *s;
+    char buf[17];
+    int d, x;
+    va_list ap;
+    int i = 0;
+    va_start(ap, fmt);
 
-    else if( *fmt == '%' && *(fmt+1) == 's' ) {
-      char* string = va_arg(valist, char*);
-        while( *string ){
-          *out_offset = *string ;
-          len++;
-        char_buf++;
-          string++;
-          out_offset++;
+    while (*fmt && i < size - 1) {
+        if (*fmt == '%') {
+            fmt++;
+            if (*fmt == '\0') {
+                break;  // 防止格式字符串以 '%' 结尾
+            }
+            switch (*fmt) {
+            case 's':
+                s = va_arg(ap, const char *);
+                while (*s && i < size - 1) {
+                    *str++ = *s++;
+                    i++;
+                }
+                fmt++;
+                break;
+            case 'd':
+                d = va_arg(ap, int);
+                sky_itoa(d, buf, 10);
+                s = buf;
+                while (*s && i < size - 1) {
+                    *str++ = *s++;
+                    i++;
+                }
+                fmt++;
+                break;
+            case 'x':
+                x = va_arg(ap, int);
+                sky_itoa(x, buf, 16);
+                s = buf;
+                while (*s && i < size - 1) {
+                    *str++ = *s++;
+                    i++;
+                }
+                fmt++;
+                break;
+            default:
+                if (i < size - 1) {
+                    *str++ = *fmt;
+                    i++;
+                }
+                fmt++;
+                break;
+            }
+        } else {
+            if (i < size - 1) {
+                *str++ = *fmt;
+                i++;
+            }
+            fmt++;
         }
-      fmt++;
     }
 
-    else if( *fmt == '%' && *(fmt+1) == 'c' ) {
-      char character = va_arg(valist, int);
-      *out_offset = character ;
-      len++;
-        char_buf++;
-        char_buf++;
-      fmt++;
-      out_offset ++;
+    *str = '\0';  // 确保字符串以 null 字符结尾
+
+    // 计算实际应写入的字符数
+    int total = i;
+    while (*fmt) {
+        if (*fmt == '%') {
+            fmt++;
+            if (*fmt == '\0') {
+                break;
+            }
+            switch (*fmt) {
+            case 's':
+                s = va_arg(ap, const char *);
+                while (*s) {
+                    total++;
+                    s++;
+                }
+                fmt++;
+                break;
+            case 'd':
+                d = va_arg(ap, int);
+                sky_itoa(d, buf, 10);
+                s = buf;
+                while (*s) {
+                    total++;
+                    s++;
+                }
+                fmt++;
+                break;
+            case 'x':
+                x = va_arg(ap, int);
+                sky_itoa(x, buf, 16);
+                s = buf;
+                while (*s) {
+                    total++;
+                    s++;
+                }
+                fmt++;
+                break;
+            default:
+                total++;
+                fmt++;
+                break;
+            }
+        } else {
+            total++;
+            fmt++;
+        }
     }
 
-    else {
-      *out_offset = *fmt ;
-      len++;
-      out_offset ++ ;
-    }
-
-      fmt++;
-
-  }
-  *out_offset = '\0';
-  va_end(valist);
-  return len;
+    va_end(ap);
+    return total;
 }
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
   panic("Not implemented");
