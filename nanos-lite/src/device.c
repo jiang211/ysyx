@@ -37,6 +37,7 @@ size_t events_read(void *buf, size_t offset, size_t len) {
 size_t dispinfo_read(void *buf, size_t offset, size_t len) {
   AM_GPU_CONFIG_T config = io_read(AM_GPU_CONFIG);
   snprintf(buf, len, "width=%d, height=%d\n", config.width, config.height);
+  printf("1\n");
   return 0;
 }
 
