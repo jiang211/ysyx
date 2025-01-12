@@ -86,8 +86,9 @@ int NDL_Init(uint32_t flags) {
   char HEIGHT[5];
   char *width_p  = WIDTH ;
   char *height_p = HEIGHT;
-  read(fd1, buf, sizeof(buf));
+  size_t bytes_read = read(fd1, buf, sizeof(buf));
   int i;
+  buf[bytes_read + 1] = '\0';
   printf("Buffer content: %s\n", buf);
   for( i = 0; (i < sizeof(buf)) && (*(buf+i)!='\n') ; i++) {
     if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
