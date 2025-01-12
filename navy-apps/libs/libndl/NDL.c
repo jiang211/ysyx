@@ -88,6 +88,7 @@ int NDL_Init(uint32_t flags) {
   char *height_p = HEIGHT;
   read(fd1, buf, sizeof(buf));
   int i;
+  printf("Buffer content: %s\n", buf);
   for( i = 0; (i < sizeof(buf)) && (*(buf+i)!='\n') ; i++) {
     if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
       *width_p = *(buf+i);
