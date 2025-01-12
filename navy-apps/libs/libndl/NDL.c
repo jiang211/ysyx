@@ -34,7 +34,7 @@ int NDL_PollEvent(char *buf, int len) {
 }
 
 void NDL_OpenCanvas(int *w, int *h) {
-  if(*w == 0 && *h == 0){
+  if((*w == 0) && (*h == 0)){
     *w = screen_w;
     *h = screen_h;
   }
@@ -94,7 +94,7 @@ int NDL_Init(uint32_t flags) {
     }
   }
   *width_p = '\0';
-  //screen_w = atoi(WIDTH);
+  screen_w = atoi(WIDTH);
   printf("init : screen_w = %d\n", screen_w);
   for( ; (i < sizeof(buf)) && (*(buf+i)!='\0') ; i++) {
     if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
@@ -103,7 +103,7 @@ int NDL_Init(uint32_t flags) {
     }
   }
   *height_p = '\0';
-  //screen_h = atoi(HEIGHT);
+  screen_h = atoi(HEIGHT);
   printf("init : screen_h = %d\n", screen_h);
 
   if (getenv("NWM_APP")) {
