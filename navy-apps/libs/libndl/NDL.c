@@ -34,6 +34,7 @@ int NDL_PollEvent(char *buf, int len) {
 }
 
 void NDL_OpenCanvas(int *w, int *h) {
+  assert(screen_h >= *h && screen_w >= *w);
   if((*w == 0) && (*h == 0)){
     *w = screen_w;
     *h = screen_h;
@@ -75,6 +76,7 @@ int NDL_PlayAudio(void *buf, int len) {
 int NDL_QueryAudio() {
   return 0;
 }
+
 
 int NDL_Init(uint32_t flags) {
   int fd1 = open("/proc/dispinfo", 0,0);
