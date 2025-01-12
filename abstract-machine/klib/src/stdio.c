@@ -211,62 +211,54 @@ int snprintf(char *str, size_t size, const char *fmt, ...) {
     va_start(ap, fmt);
 
     while (*fmt && i < size - 1) {
-        if (*fmt == '%') {
-            fmt++;
-            if (*fmt == '\0') {
-                break;  // 防止格式字符串以 '%' 结尾
-            }
-            switch (*fmt) {
-            case 's':
-                s = va_arg(ap, const char *);
-                while (*s && i < size - 1) {
-                    *str++ = *s++;
-                    i++;
-                }
-                fmt++;
-                break;
-            case 'd':
-                d = va_arg(ap, int);
-                sky_itoa(d, buf, 10);
-                s = buf;
-                while (*s && i < size - 1) {
-                    *str++ = *s++;
-                    i++;
-                }
-                fmt++;
-                break;
-            case 'x':
-                x = va_arg(ap, int);
-                sky_itoa(x, buf, 16);
-                s = buf;
-                while (*s && i < size - 1) {
-                    *str++ = *s++;
-                    i++;
-                }
-                fmt++;
-                break;
-            default:
-                if (i < size - 1) {
-                    *str++ = *fmt;
-                    i++;
-                }
-                fmt++;
-                break;
-            }
-        } else {
-            if (i < size - 1) {
-                *str++ = *fmt;
-                i++;
-            }
-            fmt++;
+        if (*fmt == '%')
+    {
+      switch (*++fmt)
+      {
+      case 'x':
+        x = va_arg(ap, int);
+        sky_itoa(x, buf, 16);
+        for (s = buf; *s; s++)
+        {
+          putch(*s);
         }
+        fmt++;
+        break;
+      case 's':
+        s = va_arg(ap, const char *); 
+        for (; *s; s++)
+        {
+          putch(*s);
+        }
+        fmt++;
+        break;
+      case 'c':
+        char q = va_arg(ap, int); 
+        putch(q);
+        fmt++;
+        break;
+      case 'd':
+        d = va_arg(ap, int);
+        sky_itoa(d, buf, 10);
+        for (s = buf; *s; s++)
+        {
+          putch(*s);
+        }
+        fmt++;
+        break;
+      }
     }
-
-    *str = '\0';  // 确保字符串以 null 字符结尾
-
-    va_end(ap);
-    return i;
+    else
+    {
+      putch(*fmt);
+      fmt++;
+    }
+    i++;
+  }
+  
+  return i;
 }
+
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
   panic("Not implemented");
 }
