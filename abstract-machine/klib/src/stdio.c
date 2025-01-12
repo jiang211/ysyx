@@ -279,6 +279,7 @@ int snprintf(char *out, size_t n, const char *fmt, ...) {
     else if( (*fmt == '%' && *(fmt+1) == 'd') || 
         (*fmt == '%' && *(fmt+1) == '0'  && *(fmt+2) == '2' && *(fmt+3) == 'd' ) ) {
       int64_t d_number = va_arg(valist, int64_t);
+      printf("2\n");
       change_format_d(d_number);
       char_buf = number_buf ;
       while( *char_buf ) {
