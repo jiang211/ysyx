@@ -81,7 +81,7 @@ int NDL_QueryAudio() {
 
 int NDL_Init(uint32_t flags) {
   // 打开vga的dispinfo文件并解析出屏幕大小
-  int vga_fd = open("proc/dispinfo", 0,0);
+  int vga_fd = open("/proc/dispinfo", 0,0);
   char buf[64];
   read(vga_fd, buf, sizeof(buf));
   sscanf(buf, "WIDTH:%d\nHEIGHT:%d\n", &screen_w, &screen_h);
