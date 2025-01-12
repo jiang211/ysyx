@@ -12,7 +12,8 @@
 static int evtdev = -1;
 static int fbdev = -1;
 static int screen_w = 0, screen_h = 0;
-
+static int canvas_w = 0, canvas_h = 0;
+static int canvas_x = 0, canvas_y = 0;
 uint32_t init_time = 0 ;
 
 uint32_t NDL_GetTicks() {
@@ -33,6 +34,14 @@ int NDL_PollEvent(char *buf, int len) {
 }
 
 void NDL_OpenCanvas(int *w, int *h) {
+  if(*w == 0 && *h == 0){
+    *w = screen_w;
+    *h = screen_h;
+  }
+  canvas_w = *w ; 
+  canvas_h = *h ; 
+  canvas_x = (screen_w -canvas_w) / 2 ;
+  canvas_y = (screen_h -canvas_h) / 2 ;
   if (getenv("NWM_APP")) {
     int fbctl = 4;
     fbdev = 5;
@@ -70,6 +79,33 @@ int NDL_QueryAudio() {
 }
 
 int NDL_Init(uint32_t flags) {
+  int fd1 = open("/proc/dispinfo", 0,0);
+  char buf[128];
+  char WIDTH[5];
+  char HEIGHT[5];
+  char *width_p  = WIDTH ;
+  char *height_p = HEIGHT;
+  read(fd1, buf, sizeof(buf));
+  int i;
+  for( i = 0; (i < sizeof(buf)) && (*(buf+i)!='\n') ; i++) {
+    if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
+      *width_p = *(buf+i);
+      width_p ++ ;
+    }
+  }
+  *width_p = '\0';
+  screen_w = atoi(WIDTH);
+  printf("init : screen_w = %d\n", screen_w);
+  for( ; (i < sizeof(buf)) && (*(buf+i)!='\0') ; i++) {
+    if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
+      *height_p = *(buf+i);
+      height_p ++;
+    }
+  }
+  *height_p = '\0';
+  screen_h = atoi(HEIGHT);
+  printf("init : screen_h = %d\n", screen_h);
+
   if (getenv("NWM_APP")) {
     evtdev = 3;
   }
