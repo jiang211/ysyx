@@ -80,34 +80,12 @@ int NDL_QueryAudio() {
 
 
 int NDL_Init(uint32_t flags) {
-  int fd1 = open("/proc/dispinfo", 0,0);
-  char buf[128];
-  char WIDTH[5];
-  char HEIGHT[5];
-  char *width_p  = WIDTH ;
-  char *height_p = HEIGHT;
-  size_t bytes_read = read(fd1, buf, sizeof(buf));
-  int i;
-  buf[bytes_read + 1] = '\0';
-  printf("Buffer content: %s\n", buf);
-  for( i = 0; (i < sizeof(buf)) && (*(buf+i)!='\n') ; i++) {
-    if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
-      *width_p = *(buf+i);
-      width_p ++ ;
-    }
-  }
-  *width_p = '\0';
-  screen_w = atoi(WIDTH);
-  printf("init : screen_w = %d\n", screen_w);
-  for( ; (i < sizeof(buf)) && (*(buf+i)!='\0') ; i++) {
-    if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
-      *height_p = *(buf+i);
-      height_p ++;
-    }
-  }
-  *height_p = '\0';
-  screen_h = atoi(HEIGHT);
-  printf("init : screen_h = %d\n", screen_h);
+  // 打开vga的dispinfo文件并解析出屏幕大小
+  int vga_fd = open("proc/dispinfo", 0,0);
+  char buf[64];
+  read(vga_fd, buf, sizeof(buf));
+  sscanf(buf, "WIDTH:%d\nHEIGHT:%d\n", &screen_w, &screen_h);
+  printf("screen_w:%d, screen_h:%d\n", screen_w, screen_h);
 
   if (getenv("NWM_APP")) {
     evtdev = 3;
