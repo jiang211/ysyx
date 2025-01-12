@@ -5,7 +5,7 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
-static char number_buf[128];
+
 void reverse(char *str, int length)
 {
   int start = 0;
@@ -59,78 +59,7 @@ static char *sky_itoa(uint32_t num, char *str, int base)
   return str;
 }
 
-void change_format_x(uint64_t x_number) {
-  int i;
-  if( x_number == 0 ) {
-    number_buf[0] = '0' ;
-    number_buf[1] = '0' ;
-    number_buf[2] = '\0';
-    return ;
-  }
-  else if ( x_number == 0xffffffffffffffff ) {
-    number_buf[0] = '0' ;
-    for( i=1; i<17; i++ )  number_buf[i] = 'f';
-    number_buf[i] = '\0';
-  
-  }
-  else {
-    uint64_t system = 1ull;
-    uint64_t bits   = 1ull;
-    while( x_number / system != 0ull ) {
-      bits ++ ;
-      system = system * 16ull ;
-      if(bits == 17 )  { system = 0xffffffffffffffff; break; }
-    }
-    bool modefied = false ;
-    for( i=0; i<bits; i++ ) {
-      uint64_t bit_number = x_number / system ;
-      if(bit_number < 10ull )  number_buf[i] = bit_number + '0' ;
-      else                 number_buf[i] = bit_number + 'a' - 10 ;
-      x_number = x_number % system ;
-      if(bits == 17 && modefied == false ) {
-        system = 0x1000000000000000;
-        modefied = true;
-      }
-      else { system = system / 16ull; }
-    }
-    number_buf[i] = '\0';
-  }
-}
 
-void change_format_d(int64_t input_number) {
-  int64_t d_number = input_number;
-  int i;
-  if( input_number == 0 ) {
-    number_buf[0] = ' ' ;
-    number_buf[1] = '0' ;
-    number_buf[2] = '\0';
-    return ;
-  
-  }
-  if( d_number < 0 )  {
-    d_number = - d_number ;
-    number_buf[0] = '-' ;
-  
-  }
-  else {
-    number_buf[0] = ' ';
-  
-  }
-  int64_t system = 1;
-  int64_t bits   = 1;
-  while( d_number / system != 0 ) {
-    bits ++ ;
-    system = system * 10 ;
-  }
-  system = system / 10;
-  for( i=1; i<bits; i++ ) {
-    int64_t bit_number = d_number / system ;
-    number_buf[i] = bit_number + '0' ;
-    d_number = d_number % system ;
-    system = system / 10;
-  }
-  number_buf[i] = '\0';
-}
 
 int printf(const char *fmt, ...) {
   int i=0;
