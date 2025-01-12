@@ -197,62 +197,6 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 
 
 
-int sprintf(char *str, const char *fmt, ...)
-{
-  memset(str, 0, strlen(str));
-  const char *s;
-  char buf[17];
-  int d,x;
-  va_list ap;
-  int i = 0;
-  va_start(ap, fmt);
-
-  while (*fmt)
-  {
-    if (*fmt == '%')
-    {
-      switch (*++fmt)
-      {
-      case 's':
-        s = va_arg(ap, const char *); 
-        for (; *s; s++)
-        {
-          *str++ = *s;
-        }
-        fmt++;
-        break;
-      case 'd':
-        d = va_arg(ap, int);
-        sky_itoa(d, buf, 10);
-        for (s = buf; *s; s++)
-        {
-          *str++ = *s;
-        }
-        fmt++;
-        break;
-      case 'x':
-        x = va_arg(ap, int);
-        sky_itoa(x, buf, 16);
-        for (s = buf; *s; s++)
-        {
-          *str++ = *s;
-        }
-        fmt++;
-        break;
-      }
-    }
-    else
-    {
-      *str++ = *fmt++;
-    }
-    i++;
-  }
-  str[i] = '\0';
- 
-  return i;
-}
-
-
 int snprintf(char *str, size_t size, const char *fmt, ...) {
     if (size == 0) {
         return 0;
@@ -320,56 +264,8 @@ int snprintf(char *str, size_t size, const char *fmt, ...) {
 
     *str = '\0';  // 确保字符串以 null 字符结尾
 
-    // 计算实际应写入的字符数
-    int total = i;
-    while (*fmt) {
-        if (*fmt == '%') {
-            fmt++;
-            if (*fmt == '\0') {
-                break;
-            }
-            switch (*fmt) {
-            case 's':
-                s = va_arg(ap, const char *);
-                while (*s) {
-                    total++;
-                    s++;
-                }
-                fmt++;
-                break;
-            case 'd':
-                d = va_arg(ap, int);
-                sky_itoa(d, buf, 10);
-                s = buf;
-                while (*s) {
-                    total++;
-                    s++;
-                }
-                fmt++;
-                break;
-            case 'x':
-                x = va_arg(ap, int);
-                sky_itoa(x, buf, 16);
-                s = buf;
-                while (*s) {
-                    total++;
-                    s++;
-                }
-                fmt++;
-                break;
-            default:
-                total++;
-                fmt++;
-                break;
-            }
-        } else {
-            total++;
-            fmt++;
-        }
-    }
-
     va_end(ap);
-    return total;
+    return i;
 }
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
   panic("Not implemented");
