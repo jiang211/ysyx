@@ -41,10 +41,10 @@ void init_fs() {
   // TODO: initialize the size of /dev/fb
 }
 int fs_open(const char *pathname, int flags, int mode){
-  printf("file %s \n", pathname);
   int len = sizeof(file_table)/sizeof(Finfo);
   for(int i=0; i<len; i++){
     if(strcmp(file_table[i].name, pathname) == 0){
+      printf("file %s found\n", pathname);
       file_table[i].open_offset = 0;
       return i;
     }
