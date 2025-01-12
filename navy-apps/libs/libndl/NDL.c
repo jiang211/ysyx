@@ -35,7 +35,7 @@ int NDL_PollEvent(char *buf, int len) {
 }
 
 void NDL_OpenCanvas(int *w, int *h) {
-  assert(screen_h >= *h && screen_w >= *w);
+  assert( screen_w != 0 && screen_h != 0 );
   if((*w == 0) && (*h == 0)){
     *w = screen_w;
     *h = screen_h;

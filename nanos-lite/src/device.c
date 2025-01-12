@@ -13,6 +13,8 @@ static const char *keyname[256] __attribute__((used)) = {
   [AM_KEY_NONE] = "NONE",
   AM_KEYS(NAME)
 };
+static size_t screen_w = 0;
+static size_t screen_h = 0;
 
 size_t serial_write(const void *buf, size_t offset, size_t len) {
   for (size_t i = 0; i < len; ++i){
@@ -45,10 +47,29 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
 }
 
 size_t fb_write(const void *buf, size_t offset, size_t len) {
-  return 0;
+  uint32_t *pixels = (uint32_t *)buf;
+
+  size_t screen_offset = offset / 4u;
+  size_t times = len / 4u;
+  
+  size_t start_x = screen_offset % screen_w;
+  size_t start_y = screen_offset / screen_w;
+
+  for(int i = 0; i < times; i++ ) {
+    io_write(AM_GPU_FBDRAW, start_x, start_y, pixels, 1, 1, false);
+    pixels ++ ;
+    screen_offset ++ ;
+    start_x = screen_offset % screen_w ;
+    start_y = screen_offset / screen_w ;
+  }
+
+  io_write(AM_GPU_FBDRAW, 0, 0, NULL, 0, 0, true );
+  return len;
 }
 
 void init_device() {
   Log("Initializing devices...");
   ioe_init();
+  screen_w = io_read(AM_GPU_CONFIG).width;
+  screen_h = io_read(AM_GPU_CONFIG).height;
 }
