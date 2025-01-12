@@ -44,7 +44,6 @@ int fs_open(const char *pathname, int flags, int mode){
   int len = sizeof(file_table)/sizeof(Finfo);
   for(int i=0; i<len; i++){
     if(strcmp(file_table[i].name, pathname) == 0){
-      printf("file %s found\n", pathname);
       file_table[i].open_offset = 0;
       return i;
     }
@@ -56,6 +55,9 @@ int fs_open(const char *pathname, int flags, int mode){
 size_t fs_read(int fd, void *buf, size_t len){
   if (fd < 3) {
     return 0;
+  }
+  if(file_table[fd].read != NULL) {
+    return file_table[fd].read(buf, 0, len);
   }
   size_t size = file_table[fd].size;
   size_t offset = file_table[fd].open_offset;
