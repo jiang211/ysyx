@@ -95,6 +95,7 @@ int NDL_Init(uint32_t flags) {
     }
   }
   *width_p = '\0';
+  printf("init : screen_w = %s\n", WIDTH);
   screen_w = atoi(WIDTH);
   printf("init : screen_w = %d\n", screen_w);
   for( ; (i < sizeof(buf)) && (*(buf+i)!='\0') ; i++) {
