@@ -12,7 +12,6 @@ typedef struct {
 typedef struct {
   word_t gpr[32];
   vaddr_t pc;
-  word_t csr[4];
 } CPU_state;
 
 // decode
