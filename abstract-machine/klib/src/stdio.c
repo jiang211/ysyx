@@ -122,10 +122,6 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 }
 
 
-
-
-
-
 int snprintf(char *str, size_t size, const char *fmt, ...) {
     if (size == 0) {
         return 0;
@@ -140,52 +136,43 @@ int snprintf(char *str, size_t size, const char *fmt, ...) {
     va_start(ap, fmt);
 
     while (*fmt && i < size - 1) {
-        if (*fmt == '%')
-    {
-      switch (*++fmt)
-      {
-      case 'x':
-        x = va_arg(ap, int);
-        sky_itoa(x, buf, 16);
-        for (s = buf; *s; s++)
-        {
-          putch(*s);
+        if (*fmt == '%') {
+            fmt++;
+            switch (*fmt) {
+            case 'x':
+                x = va_arg(ap, int);
+                sky_itoa(x, buf, 16);
+                for (s = buf; *s && i < size - 1; s++) {
+                    str[i++] = *s;
+                }
+                break;
+            case 's':
+                s = va_arg(ap, const char *);
+                for (; *s && i < size - 1; s++) {
+                    str[i++] = *s;
+                }
+                break;
+            case 'c':
+                str[i++] = va_arg(ap, int);
+                break;
+            case 'd':
+                d = va_arg(ap, int);
+                sky_itoa(d, buf, 10);
+                for (s = buf; *s && i < size - 1; s++) {
+                    str[i++] = *s;
+                }
+                break;
+            }
+        } else {
+            str[i++] = *fmt;
         }
         fmt++;
-        break;
-      case 's':
-        s = va_arg(ap, const char *); 
-        for (; *s; s++)
-        {
-          putch(*s);
-        }
-        fmt++;
-        break;
-      case 'c':
-        char q = va_arg(ap, int); 
-        putch(q);
-        fmt++;
-        break;
-      case 'd':
-        d = va_arg(ap, int);
-        sky_itoa(d, buf, 10);
-        for (s = buf; *s; s++)
-        {
-          putch(*s);
-        }
-        fmt++;
-        break;
-      }
     }
-    else
-    {
-      putch(*fmt);
-      fmt++;
-    }
-    i++;
-  }
-  
-  return i;
+
+    str[i] = '\0';  // Ensure null-termination
+    va_end(ap);
+
+    return i;  // Return the number of characters written
 }
 
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
