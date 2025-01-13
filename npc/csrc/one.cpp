@@ -162,14 +162,7 @@ void run_step(Decode *s, CPU_state *cpu, bool *vpmem_read_called ) {
         npc_trap(NPC_END , top->dnpc, cpu_gpr[10]);
         return ;
       }
-        
-    
-       
-      
-      
 
-       
-      
       
 }
 
