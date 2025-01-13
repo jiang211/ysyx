@@ -121,6 +121,56 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
   panic("Not implemented");
 }
 
+int sprintf(char *str,const char *fmt, ...) {
+    
+    memset(str, 0, sizeof(str));
+    const char *s;
+    char buf[17];
+    int d, x;
+    va_list ap;
+    int i = 0;
+    va_start(ap, fmt);
+
+    while (*fmt) {
+        if (*fmt == '%') {
+            fmt++;
+            switch (*fmt) {
+            case 'x':
+                x = va_arg(ap, int);
+                sky_itoa(x, buf, 16);
+                for (s = buf; *s ; s++) {
+                    str[i++] = *s;
+                }
+                break;
+            case 's':
+                s = va_arg(ap, const char *);
+                for (; *s ; s++) {
+                    str[i++] = *s;
+                }
+                break;
+            case 'c':
+                str[i++] = va_arg(ap, int);
+                break;
+            case 'd':
+                d = va_arg(ap, int);
+                sky_itoa(d, buf, 10);
+                for (s = buf; *s ; s++) {
+                    str[i++] = *s;
+                }
+                break;
+            }
+        } else {
+            str[i++] = *fmt;
+        }
+        fmt++;
+    }
+
+    str[i] = '\0';  // Ensure null-termination
+    va_end(ap);
+
+    return i;  // Return the number of characters written
+}
+
 
 int snprintf(char *str, size_t size, const char *fmt, ...) {
     if (size == 0) {
