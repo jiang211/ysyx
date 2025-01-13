@@ -30,7 +30,7 @@ uint32_t NDL_GetTicks() {
 
 int NDL_PollEvent(char *buf, int len) {
   int fd = open("/dev/events",0,0);
-  
+  close(fd);
   return read(fd,buf,len);
 }
 
@@ -64,6 +64,7 @@ void NDL_OpenCanvas(int *w, int *h) {
     }
     close(fbctl);
   }
+  close(vga_fd);
 }
 
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
@@ -102,11 +103,12 @@ void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
   int i  ;
   uint8_t *ret = (uint8_t *)pixels;
 
-    for( int i = 0; i < h; i++ ) {
-        lseek(fbfd, (((i+draw_y+canvas_y)*screen_w + draw_x+canvas_x)*4), SEEK_SET);
-        write(fbfd, ret , draw_w*4);
-        ret = ret + draw_w*4 ;
-    }
+  for( int i = 0; i < h; i++ ) {
+    lseek(fbfd, (((i+draw_y+canvas_y)*screen_w + draw_x+canvas_x)*4), SEEK_SET);
+    write(fbfd, ret , draw_w*4);
+    ret = ret + draw_w*4 ;
+  }
+  close(fbfd);
 
 }
 
