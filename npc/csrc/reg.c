@@ -7,7 +7,9 @@ const char *regs[] = {
   "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
   "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
-
+const char *csrs[] = {
+  "mepc", "mstatus", "mcause", "mtvec"
+};
 #define gpr(idx) (cpu.gpr[check_reg_idx(idx)])
 #define csr(idx) (cpu.csr[idx])
 word_t isa_reg_str2val(const char *s, bool *success) {
@@ -56,7 +58,9 @@ void isa_reg_display() {
   for (int i = 0; i < length; i++) {
     printf("%d:%s\t%x\n", i+1, regs[i], gpr(i));
   }
-
+  for (int i = 0; i < 4; i++) {
+    printf("%d:%s\t%x\n", i+1, csrs[i], csr(i));
+  }
   printf("%d:%s\t%x\n", 33, "pc", cpu.pc);
 }
 
