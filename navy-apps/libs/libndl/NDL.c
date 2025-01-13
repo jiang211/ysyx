@@ -38,14 +38,13 @@ void NDL_OpenCanvas(int *w, int *h) {
   int vga_fd = open("/proc/dispinfo", 0,0);
   char buf[64];
   read(vga_fd, buf, sizeof(buf));
-  
-    char WIDTH[5];
+  char WIDTH[5];
     char HEIGHT[5];
     char *width_p  = WIDTH ;
     char *height_p = HEIGHT;
     read(vga_fd, buf, sizeof(buf));
     int i;
-    for( i = 0; (i < sizeof(buf)) && (*(buf+i)!='\n') ; i++) {
+    for( i = 0; (i < sizeof(buf)) && (*(buf+i)!='\0') ; i++) {
       if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
         *width_p = *(buf+i);
         width_p ++ ;
@@ -54,7 +53,7 @@ void NDL_OpenCanvas(int *w, int *h) {
     *width_p = '\0';
     screen_w = atoi(WIDTH);
     printf("init : screen_w = %d\n", screen_w);
-    for( ; (i < sizeof(buf)) && (*(buf+i)!='\0') ; i++) {
+    for( ; (i < sizeof(buf)) && (*(buf+i)!='\n') ; i++) {
       if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
         *height_p = *(buf+i);
         height_p ++;
