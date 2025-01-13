@@ -38,6 +38,7 @@ void NDL_OpenCanvas(int *w, int *h) {
   int vga_fd = open("/proc/dispinfo", 0,0);
   char buf[64];
   read(vga_fd, buf, sizeof(buf));
+  printf("buf = %s\n",buf);
   sscanf(buf, "WIDTH:%d\nHEIGHT:%d\n", &screen_w, &screen_h);
   printf("screen_w:%d, screen_h:%d\n", screen_w, screen_h);
   assert( screen_w != 0 && screen_h != 0 );
