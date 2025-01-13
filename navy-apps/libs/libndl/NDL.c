@@ -44,24 +44,10 @@ void NDL_OpenCanvas(int *w, int *h) {
     char *height_p = HEIGHT;
     read(vga_fd, buf, sizeof(buf));
     printf("buf = %s",buf);
-    int i;
-    for( i = 0; (i < sizeof(buf)) && (*(buf+i)!='\0') ; i++) {
-      if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
-        *width_p = *(buf+i);
-        width_p ++ ;
-      }
-    }
-    *width_p = '\0';
-    screen_w = atoi(WIDTH);
+    sscanf(buf, "width=%d, height=%d", &screen_w, &screen_h);
+
     printf("init : screen_w = %d\n", screen_w);
-    for( ; (i < sizeof(buf)) && (*(buf+i)!='\n') ; i++) {
-      if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
-        *height_p = *(buf+i);
-        height_p ++;
-      }
-    }
-    *height_p = '\0';
-    screen_h = atoi(HEIGHT);
+    
     printf("init : screen_h = %d\n", screen_h);
 
   assert( screen_w != 0 && screen_h != 0 );
