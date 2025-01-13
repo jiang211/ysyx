@@ -43,6 +43,7 @@ void NDL_OpenCanvas(int *w, int *h) {
     char *width_p  = WIDTH ;
     char *height_p = HEIGHT;
     read(vga_fd, buf, sizeof(buf));
+    printf("buf = %s",buf);
     int i;
     for( i = 0; (i < sizeof(buf)) && (*(buf+i)!='\0') ; i++) {
       if( *(buf+i) >= '0' && *(buf+i) <= '9' ){
