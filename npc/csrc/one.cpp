@@ -106,7 +106,6 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   }
   else if(ren && raddr == RTC_ADDR1){
       uint64_t us = get_time();
-      printf("%ld\n",us);
       *rdata = (uint32_t)us;
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
