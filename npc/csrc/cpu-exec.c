@@ -143,12 +143,14 @@ void difftest_step(vaddr_t pc, vaddr_t npc);
 uint64_t get_time();
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc){
-   printf("1\n");
+   
    log_write("%s\n", _this->logbuf);
   if( g_print_step ) { puts(_this->logbuf); }
-    printf("1\n");
+
 #ifdef CONFIG_DIFFTEST
+printf("1\n");
     difftest_step(_this->pc, dnpc);
+    printf("1\n");
 #endif
 }
 
