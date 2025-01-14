@@ -86,7 +86,7 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
       paddr_write((paddr_t)(waddr), wlen, wdata);
   
   }
-  else if(waddr == SERIAL_ADDR){
+  else if( wen && waddr == SERIAL_ADDR){
       #ifdef MTRACE
       printf("write at pc = %08x, data = %08x\n",waddr,wdata);
   #endif
