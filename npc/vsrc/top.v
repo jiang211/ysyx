@@ -15,6 +15,8 @@ wire [6:0] funct7;
 wire [4:0] rd;
 wire [4:0] rs1;
 wire [4:0] rs2;
+wire [1:0] csr_rst;
+wire [1:0] csr_addr;
 wire [31:0] imm;
 wire [4:0] shamt;
 wire [31:0] rs1_data;
@@ -23,6 +25,8 @@ wire [31:0] alu_out;
 wire [31:0] wdata_in;
 wire [31:0] rdata;
 reg  [31:0] rdata_in;
+reg  [31:0] csr_data;
+wire  [31:0] csr_in;
 wire [31:0] wdata;
 wire [31:0] addr;
 wire [3:0] wlen;
@@ -43,7 +47,11 @@ wire lhu;
 wire sw;
 wire sb;
 wire sh;
-
+wire csw;
+wire csc;
+wire css;
+wire ecall;
+wire mret;
 wire [1:0] alu_op;
 wire [3:0] aluop;
 wire     u_alu_type;
@@ -53,6 +61,7 @@ wire     alu_src2;
 wire     zero;
 wire jal;
 wire jalr;
+wire     C_type;
 wire     U_type_1;
 wire     J_type_1;
 assign pc = inst_addr_o;
@@ -68,6 +77,9 @@ PC my_pc(
     .zero           (zero       ),
     .jal            (jal        ),
     .jalr           (jalr       ),
+    .ecall          (ecall      ),
+    .mret           (mret       ),
+    .csr_data       (csr_data   ),
     .dnpc           (dnpc       ),
     .inst_addr_o    (inst_addr_o)
 );
@@ -81,6 +93,7 @@ idu my_idu(
     .rd             (rd         ),
     .rs1            (rs1        ),
     .rs2            (rs2        ),
+    .csr_rst        (csr_rst    ),
     .imm            (imm        ),
     .shamt          (shamt      )
 );
@@ -111,14 +124,20 @@ control my_crtl(
     .sw             (sw         ), 
     .sb             (sb         ), 
     .sh             (sh         ),
+    .csw            (csw        ),
+    .csc            (csc        ),
+    .css            (css        ),
     .ebreak         (ebreak     ),
+    .ecall          (ecall      ),
+    .mret           (mret       ),
     .shamt          (shamt      ),
     .U_type_1       (U_type_1   ),
     .J_type_1       (J_type_1   ),
-    .pcsrc          (pcsrc      )
+    .pcsrc          (pcsrc      ),
+    .C_type         (C_type     )
 );
 
-assign wdata_in = (mem_to_reg)? rdata : alu_out;
+assign wdata_in = (C_type) ? csr_data : (mem_to_reg)? rdata : alu_out;
 wire ren;
 wire wen;
 
@@ -134,7 +153,23 @@ RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
         .rdata2(rs2_data),
         .raddr2(rs2)
     );
-    
+
+assign csr_in = ( {32{csw}} & (rs1_data)) |
+                ( {32{csc}} & (rs1_data &csr_data)) |
+                ( {32{css}} & (csr_data | rs1_data)) ;
+
+assign csr_addr = (ecall) ? 'd3 : (mret) ? 'd0 :csr_rst;
+csr_reg #(.ADDR_WIDTH(2), .DATA_WIDTH(32)) csr1(
+        .clk(clk),
+        .wdata(csr_in),
+        .ecall(ecall),
+        .pc(inst_addr_o),
+        .waddr(csr_rst),
+        .wen(C_type),
+        .rdata1(csr_data),
+        .raddr1(csr_addr)
+    );
+
 alu_ctrl my_alu_crtl(
     .funct3         (funct3),
     .funct7         (funct7[5:0]),

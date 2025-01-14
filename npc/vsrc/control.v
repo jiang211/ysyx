@@ -24,11 +24,17 @@ module control(
     output        sw,
     output        sb,
     output        sh,
+    output        csw,
+    output        csc,
+    output        css,
     output        ebreak,
+    output        ecall,
+    output        mret,
     input  [4:0]  shamt,
     output        U_type_1,
     output        J_type_1,
-    output        pcsrc
+    output        pcsrc,
+    output        C_type
 );
 
 
@@ -43,6 +49,7 @@ assign U_type = (opcode == 7'b0110111 || opcode == 7'b0010111);
 assign B_type = (opcode == 7'b1100011);
 assign J_type = (opcode == 7'b1101111 || opcode == 7'b1011111);
 assign J_type_1 = (opcode == 7'b1101111) || I_type_2; 
+assign C_type = (opcode == 7'b1110011);
 wire I_type_1 = (opcode == 7'b0010011);
 wire I_type_2 = (opcode == 7'b1100111);
 wire I_type_3 = (opcode == 7'b0000011);
@@ -50,6 +57,10 @@ wire I_type_4 = (opcode == 7'b1010011);
 assign jalr = (opcode == 7'b1100111);
 assign jal  = (opcode == 7'b1101111);
 assign U_type_1 = (opcode == 7'b0110111);
+
+assign csw = ( C_type && funct3 == 3'b001 );
+assign csc = ( C_type && funct3 == 3'b011 );
+assign css = ( C_type && funct3 == 3'b010 );
 
 assign lh   = (I_type_3 && funct3 == 3'b001);
 assign lw   = (I_type_3 && funct3 == 3'b010);
@@ -78,6 +89,8 @@ wire jump = J_type | I_type_2;
 assign mem_read = I_type_3;
 assign mem_write = S_type;
 assign  ebreak = ( opcode==7'b1110011 ) & ( funct7==7'b0 ) & ( shamt==5'b00001 ) ;
+assign ecall  = ( opcode==7'b1110011 ) & ( funct7==7'b0 ) & ( shamt==5'b00000 ) ;
+assign mret   = ( opcode==7'b1110011 ) & ( funct7==7'b0 ) & ( shamt==5'b00110 ) ;
 assign reg_write = !B_type;
 assign alu_src1 = R_type | I_type_1 | I_type_3 | I_type_4 | S_type;
 assign alu_src2 = R_type;
@@ -87,7 +100,7 @@ assign alu_op = (R_type) ? 2'b10 :
                 (B_type) ? 2'b01 :
                 (S_type | U_type | I_type_3 | J_type) ? 2'b00 :
                 2'b11;
-assign pcsrc = (branch & zero) | jump;
+assign pcsrc = (branch & zero) | jump | ecall | mret;
 endmodule
 
 

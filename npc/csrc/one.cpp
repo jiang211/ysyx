@@ -63,7 +63,6 @@ void reset(int n) {
 void init_module() {
 
   reset(10);
-  printf("pc = %x\n",top->pc);
   return ;
 
 }
@@ -71,7 +70,10 @@ uint32_t *cpu_gpr = NULL;
   extern "C" void set_gpr_ptr(const svOpenArrayHandle r) {
     cpu_gpr = (uint32_t *)(((VerilatedDpiOpenVar*)r)->datap());
   }
-
+uint32_t *cpu_csr = NULL;
+extern "C" void set_csr_ptr(const svOpenArrayHandle r) {
+  cpu_csr = (uint32_t *)(((VerilatedDpiOpenVar*)r)->datap());
+}
 extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
   // 总是往地址为`waddr & ~0x3u`的4字节按写掩码`wmask`写入`wdata`
   // `wmask`中每比特表示`wdata`中1个字节的掩码,
@@ -155,6 +157,10 @@ void run_step(Decode *s, CPU_state *cpu) {
         for (int i=0; i<32; i++) {
           cpu->gpr[i] = cpu_gpr[i];
         }
+        for (int i=0; i<4; i++) {
+          cpu->csr[i] = cpu_csr[i];
+        }
+      
       if(top->ebreak)  { 
         npc_trap(NPC_END , top->pc, cpu_gpr[10]);
         return ;

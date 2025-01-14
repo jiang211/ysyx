@@ -1,0 +1,38 @@
+module csr_reg #(
+    parameter ADDR_WIDTH = 5,  
+    parameter DATA_WIDTH = 32
+) (
+    input clk,
+    input [DATA_WIDTH-1:0] wdata,
+    input ecall,
+    input [31:0] pc,
+    input [ADDR_WIDTH-1:0] waddr,
+    input wen,
+    
+    output reg[DATA_WIDTH-1:0] rdata1,
+    
+    input [ADDR_WIDTH-1:0] raddr1
+);
+
+    reg [DATA_WIDTH-1:0] csr[3:0];
+    reg clk_reg;
+    wire clk_neg;
+    always@(posedge clk)
+    begin 
+        clk_reg <= clk;
+    end
+    assign clk_neg = ~clk & clk_reg;
+    import "DPI-C" function void set_csr_ptr(input logic [31:0] a []);
+    initial set_csr_ptr(csr); // set the pointer to the CSR array
+    
+    always @(posedge clk_neg) begin
+        if (ecall) begin csr[2] <= 'd11; csr[0] <= pc; end // ECALL: set PC and cause to 11 (Environment Call)
+        if (wen) csr[waddr] <= wdata; // write to CSR
+    end
+    always @(posedge clk_neg) begin
+        rdata1 <= csr[raddr1];
+    end
+    
+
+endmodule
+

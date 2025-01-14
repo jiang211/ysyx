@@ -6,6 +6,7 @@ module idu(
     output [4:0] rd,
     output [4:0] rs1,
     output [4:0] rs2,
+    output [1:0] csr_rst,
     output [31:0] imm,
     output [4:0] shamt
 );
@@ -16,12 +17,14 @@ wire    [31:0]    immS_num ;
 wire    [31:0]    immB_num ;
 wire    [31:0]    immU_num ;
 wire    [31:0]    immJ_num ;
+wire    [1:0]     immC_num ;
 wire U_type;
 wire J_type;
 wire I_type;
 wire S_type;
 wire R_type;
 wire B_type;
+wire C_type;
 wire I_type_1 = (opcode == 7'b0010011);
 
 assign funct3 = (R_type || I_type || S_type || B_type) ? instr[14:12] : 3'b0;
@@ -34,15 +37,19 @@ assign S_type = (opcode == 7'b0100011);
 assign U_type = (opcode == 7'b0110111 || opcode == 7'B0010111);
 assign B_type = (opcode == 7'b1100011);
 assign J_type = (opcode == 7'b1101111 || opcode == 7'b1011111);
+assign C_type = (opcode == 7'b1110011);
 
 assign  immI_num = { {21{instr[31]}}, instr[30:20] };
 assign  immS_num = { {21{instr[31]}}, instr[30:25], instr[11:7] };
 assign  immB_num = { {20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0 };
 assign  immU_num = { instr[31], instr[30:12], 12'b0 };
 assign  immJ_num = { {12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0 };
-
+assign  immC_num =   (instr[31:20] == 'h341) ? 2'd0 :
+                    (instr[31:20] == 'h300) ? 2'd1 :
+                    (instr[31:20] == 'h342) ? 2'd2 :
+                    (instr[31:20] == 'h305) ? 2'd3 : 2'd0;
 assign rs2 = (R_type || S_type || B_type) ? instr[24:20] :5'b0;
-
+assign csr_rst = (C_type) ? immC_num : 2'd0;
 assign rs1 = (R_type || S_type || B_type || I_type) ? instr[19:15] : 5'b0;
 
 assign rd = (R_type || I_type || U_type || J_type) ? instr[11:7] : 5'b0;
