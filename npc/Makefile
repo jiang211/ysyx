@@ -61,7 +61,7 @@ NPC_FLAGS += $(ARGS)
 
 LOG_FLAGS +=  --log=$(BUILD_DIR)/npc-log.txt
 
-DIFF_FLAGS += --diff=$(NEMU_HOME)/build/riscv32-nemu-interpreter-so
+DIFF_FLAGS += --diff #=$(NEMU_HOME)/build/riscv32-nemu-interpreter-so
 
 # image file from abstract_machine
 #make run IMG=~/ysyx-workbench/am-kernels/tests/cpu-tests/build/add-riscv32e-npc.bin
