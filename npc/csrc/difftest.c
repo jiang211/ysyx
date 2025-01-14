@@ -110,8 +110,9 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
     is_skip_ref = false;
     return;
   }
+  printf("1\n");
   ref_difftest_exec(1);
-  
+  printf("2\n");
   ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
   checkregs(&ref_r, pc);
 }
