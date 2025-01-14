@@ -148,9 +148,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc){
   if( g_print_step ) { puts(_this->logbuf); }
 
 #ifdef CONFIG_DIFFTEST
-printf("1\n");
     difftest_step(_this->pc, dnpc);
-    printf("1\n");
 #endif
 }
 
@@ -203,7 +201,7 @@ static void execute(uint64_t n) {
   Decode s;
   for(; n>0; n--) {
     exec_once(&s,cpu.pc);
-    printf("1\n");
+    
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
     
