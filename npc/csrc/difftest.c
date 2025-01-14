@@ -93,6 +93,7 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
   printf("1\n");
   CPU_state ref_r;
   if (skip_dut_nr_inst > 0) {
+    printf("1\n");
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
     if (ref_r.pc == npc) {
       skip_dut_nr_inst = 0;
