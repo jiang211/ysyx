@@ -204,6 +204,7 @@ static void execute(uint64_t n) {
     printf("1\n");
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
+     printf("1\n");
     if(npc_state.state != NPC_RUNNING) {
       break;
     }
