@@ -2,7 +2,7 @@
 #define __CPU_H__
 
 enum { NPC_RUNNING, NPC_STOP, NPC_END, NPC_ABORT, NPC_QUIT };
-
+extern bool pass_diff;
 typedef struct {
   int state;
   vaddr_t halt_pc;

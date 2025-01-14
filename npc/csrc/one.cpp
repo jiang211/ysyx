@@ -91,6 +91,7 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
       printf("write at pc = %08x, data = %08x\n",waddr,wdata);
   #endif
       putchar(wdata);
+      pass_diff = true;
     }
 }
 
@@ -107,6 +108,7 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   else if(ren && raddr == RTC_ADDR1){
       uint64_t us = get_time();
       *rdata = (uint32_t)us;
+      pass_diff = true;
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
     #endif
@@ -115,6 +117,7 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   else if(ren && raddr == RTC_ADDR2) {
       uint64_t us = get_time()>>32;
       *rdata = (uint32_t)us;
+      pass_diff = true;
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
     #endif
@@ -126,7 +129,7 @@ extern "C" void call(word_t pc , word_t dnpc);
 
 extern "C" ret(word_t pc );
 */
-void run_step(Decode *s, CPU_state *cpu) {
+void run_step(Decode *s, CPU_state *cpu,bool *pass_diff_out) {
 
        
 
@@ -159,7 +162,7 @@ void run_step(Decode *s, CPU_state *cpu) {
         for (int i=0; i<4; i++) {
           cpu->csr[i] = cpu_csr[i];
         }
-      
+      *pass_diff_out = pass_diff;
       if(top->ebreak)  { 
         npc_trap(NPC_END , top->pc, cpu_gpr[10]);
         return ;

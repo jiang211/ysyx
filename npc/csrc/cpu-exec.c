@@ -152,8 +152,8 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc){
 #endif
 }
 
-void run_step(Decode *s, CPU_state *cpu);
-
+void run_step(Decode *s, CPU_state *cpu,bool *pass_diff_out);
+bool pass_diff;
 static void exec_once(Decode *s, vaddr_t pc){
 
   s->pc = pc;
@@ -162,7 +162,7 @@ static void exec_once(Decode *s, vaddr_t pc){
     //printf("s->snpc = %x\n",s->snpc);
     
         
-  run_step(s, &cpu);
+  run_step(s, &cpu,&pass_diff);
  
   cpu.pc = s->dnpc;
   char *p = s->logbuf;
@@ -203,8 +203,9 @@ static void execute(uint64_t n) {
     exec_once(&s,cpu.pc);
     
     g_nr_guest_inst ++;
+    if(!pass_diff){
     trace_and_difftest(&s, cpu.pc);
-    
+    }
     if(npc_state.state != NPC_RUNNING) {
       break;
     }
