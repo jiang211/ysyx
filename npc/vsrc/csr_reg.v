@@ -29,7 +29,7 @@ module csr_reg #(
         if (ecall) begin csr[2] <= 'd11; csr[0] <= pc; end // ECALL: set PC and cause to 11 (Environment Call)
         if (wen) csr[waddr] <= wdata; // write to CSR
     end
-    always @(posedge clk_neg) begin
+    always @(posedge clk) begin
         rdata1 <= csr[raddr1];
     end
     
