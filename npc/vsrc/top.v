@@ -18,7 +18,6 @@ wire [4:0] rs2;
 wire [1:0] csr_rst;
 wire [1:0] csr_addr;
 wire [31:0] imm;
-wire [4:0] shamt;
 wire [31:0] rs1_data;
 wire [31:0] rs2_data;
 wire [31:0] alu_out;
@@ -94,8 +93,7 @@ idu my_idu(
     .rs1            (rs1        ),
     .rs2            (rs2        ),
     .csr_rst        (csr_rst    ),
-    .imm            (imm        ),
-    .shamt          (shamt      )
+    .imm            (imm        )
 );
 
 control my_crtl(
@@ -131,7 +129,6 @@ control my_crtl(
     .ebreak         (ebreak     ),
     .ecall          (ecall      ),
     .mret           (mret       ),
-    .shamt          (shamt      ),
     .U_type_1       (U_type_1   ),
     .J_type_1       (J_type_1   ),
     .pcsrc          (pcsrc      ),

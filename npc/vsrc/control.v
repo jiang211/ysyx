@@ -31,7 +31,6 @@ module control(
     output        ebreak,
     output        ecall,
     output        mret,
-    input  [4:0]  shamt,
     output        U_type_1,
     output        J_type_1,
     output        pcsrc,
@@ -89,7 +88,7 @@ assign mul_high = mulh | mulhu;
 wire jump = J_type | I_type_2;
 assign mem_read = I_type_3;
 assign mem_write = S_type;
-assign  ebreak = ( opcode==7'b1110011 ) & ( funct7==7'b0 ) & ( shamt==5'b00001 ) ;
+assign  ebreak = ( instr == 32'b00000000000100000000000001110011 ) ;
 assign ecall  = ( instr == 32'b00000000000000000000000001110011)  ;
 assign mret   = ( instr == 32'b00110000001000000000000001110011 ) ;
 assign reg_write = !B_type;
