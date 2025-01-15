@@ -1,4 +1,5 @@
 module control(
+    input [31:0] instr,
     input [6:0] opcode,
     input [6:0] funct7,
     input [2:0] funct3,
@@ -89,8 +90,8 @@ wire jump = J_type | I_type_2;
 assign mem_read = I_type_3;
 assign mem_write = S_type;
 assign  ebreak = ( opcode==7'b1110011 ) & ( funct7==7'b0 ) & ( shamt==5'b00001 ) ;
-assign ecall  = ( opcode==7'b1110011 ) & ( funct7==7'b0 ) & ( shamt==5'b00000 ) ;
-assign mret   = ( opcode==7'b1110011 ) & ( funct7==7'b0 ) & ( shamt==5'b00110 ) ;
+assign ecall  = ( instr == 32'b00000000000000000000000001110011)  ;
+assign mret   = ( instr == 32'b00110000001000000000000001110011 ) ;
 assign reg_write = !B_type;
 assign alu_src1 = R_type | I_type_1 | I_type_3 | I_type_4 | S_type;
 assign alu_src2 = R_type;

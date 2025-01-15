@@ -99,6 +99,7 @@ idu my_idu(
 );
 
 control my_crtl(
+    .instr          (instr      ),
     .opcode         (opcode     ),
     .funct7         (funct7     ),
     .funct3         (funct3     ),
