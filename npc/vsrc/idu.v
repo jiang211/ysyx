@@ -52,7 +52,7 @@ assign rs2 = (R_type || S_type || B_type) ? instr[24:20] :5'b0;
 assign csr_rst = (C_type) ? immC_num : 2'd0;
 assign rs1 = (R_type || S_type || B_type || I_type || C_type) ? instr[19:15] : 5'b0;
 
-assign rd = (R_type || I_type || U_type || J_type) ? instr[11:7] : 5'b0;
+assign rd = (R_type || I_type || U_type || J_type || C_type) ? instr[11:7] : 5'b0;
 
 
 
