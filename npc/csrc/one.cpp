@@ -166,7 +166,6 @@ void run_step(Decode *s, CPU_state *cpu,bool *pass_diff_out) {
         npc_trap(NPC_END , top->pc, cpu_gpr[10]);
         return ;
       }
-      printf("pass_diff = %d\n",pass_diff);
       
 }
 
