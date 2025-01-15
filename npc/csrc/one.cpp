@@ -113,7 +113,6 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   else if(ren && raddr == RTC_ADDR1){
       uint64_t us = get_time();
       *rdata = (uint32_t)us;
-      pass_diff = true;
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
     #endif
@@ -122,7 +121,6 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   else if(ren && raddr == RTC_ADDR2) {
       uint64_t us = get_time()>>32;
       *rdata = (uint32_t)us;
-      pass_diff = true;
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
     #endif
@@ -178,7 +176,7 @@ void run_step(Decode *s, CPU_state *cpu,bool *pass_diff_out) {
         npc_trap(NPC_END , top->pc, cpu_gpr[10]);
         return ;
       }
-      
+      printf("pass_diff = %d\n",pass_diff);
       
 }
 
