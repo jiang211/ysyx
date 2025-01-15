@@ -165,7 +165,7 @@ csr_reg #(.ADDR_WIDTH(2), .DATA_WIDTH(32)) csr1(
         .ecall(ecall),
         .pc(inst_addr_o),
         .waddr(csr_rst),
-        .wen(C_type),
+        .wen(C_type&(~mret)&(~ecall)),
         .rdata1(csr_data),
         .raddr1(csr_addr)
     );
