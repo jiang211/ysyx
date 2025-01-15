@@ -24,7 +24,7 @@ module csr_reg #(
     assign clk_neg = ~clk & clk_reg;
     import "DPI-C" function void set_csr_ptr(input logic [31:0] a []);
     initial set_csr_ptr(csr); // set the pointer to the CSR array
-    
+    initial csr[1] = 'h1800;
     always @(posedge clk_neg) begin
         if (ecall) begin 
             csr[2] <= 'd11; 
