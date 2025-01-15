@@ -148,9 +148,9 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc){
   if( g_print_step ) { puts(_this->logbuf); }
 
 #ifdef CONFIG_DIFFTEST
-   if(!pass_diff){
+   
     difftest_step(_this->pc, dnpc);
-    }
+    
 #endif
 }
 
