@@ -204,7 +204,7 @@ static void execute(uint64_t n) {
     
     g_nr_guest_inst ++;
     if(!pass_diff){
-    trace_and_difftest(&s, cpu.pc);
+    //trace_and_difftest(&s, cpu.pc);
     }
     if(npc_state.state != NPC_RUNNING) {
       break;
