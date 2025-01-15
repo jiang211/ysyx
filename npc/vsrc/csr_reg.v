@@ -26,7 +26,10 @@ module csr_reg #(
     initial set_csr_ptr(csr); // set the pointer to the CSR array
     
     always @(posedge clk_neg) begin
-        if (ecall) begin csr[2] <= 'd11; csr[0] <= pc; end // ECALL: set PC and cause to 11 (Environment Call)
+        if (ecall) begin 
+            csr[2] <= 'd11; 
+            csr[0] <= pc; 
+        end // ECALL: set PC and cause to 11 (Environment Call)
         if (wen) csr[waddr] <= wdata; // write to CSR
     end
     always @(posedge clk) begin
