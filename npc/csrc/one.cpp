@@ -91,7 +91,12 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
       printf("write at pc = %08x, data = %08x\n",waddr,wdata);
   #endif
       putchar(wdata);
+    }
+    if(wen && waddr == SERIAL_ADDR){
       pass_diff = true;
+    }
+    else{
+      pass_diff = false;
     }
 }
 
@@ -121,6 +126,12 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
     #endif
+  }
+  if(ren && (raddr == RTC_ADDR1 || raddr == RTC_ADDR2)){
+      pass_diff = true;
+  }
+  else{
+      pass_diff = false;
   }
 
 }
