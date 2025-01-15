@@ -9,7 +9,7 @@ module csr_reg #(
     input [ADDR_WIDTH-1:0] waddr,
     input wen,
     
-    output reg[DATA_WIDTH-1:0] rdata1,
+    output [DATA_WIDTH-1:0] rdata1,
     
     input [ADDR_WIDTH-1:0] raddr1
 );
@@ -32,9 +32,9 @@ module csr_reg #(
         end // ECALL: set PC and cause to 11 (Environment Call)
         if (wen) csr[waddr] <= wdata; // write to CSR
     end
-    always @(posedge clk) begin
-        rdata1 <= csr[raddr1];
-    end
+    
+    assign rdata1 = csr[raddr1];
+
     
 
 endmodule
