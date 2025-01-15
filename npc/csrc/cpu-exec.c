@@ -148,7 +148,9 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc){
   if( g_print_step ) { puts(_this->logbuf); }
 
 #ifdef CONFIG_DIFFTEST
+   if(!pass_diff){
     difftest_step(_this->pc, dnpc);
+    }
 #endif
 }
 
@@ -203,9 +205,9 @@ static void execute(uint64_t n) {
     exec_once(&s,cpu.pc);
     
     g_nr_guest_inst ++;
-    if(!pass_diff){
-    //trace_and_difftest(&s, cpu.pc);
-    }
+ 
+    trace_and_difftest(&s, cpu.pc);
+    
     if(npc_state.state != NPC_RUNNING) {
       break;
     }
