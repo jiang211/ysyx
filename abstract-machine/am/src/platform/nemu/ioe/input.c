@@ -10,7 +10,7 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
   if(kbd->keydown == 0)
     kbd->keycode = code;
   else
-    kbd->keycode = code | KEYDOWN_MASK;
+    kbd->keycode = code & ~KEYDOWN_MASK; //delete the state
   
   
 }
