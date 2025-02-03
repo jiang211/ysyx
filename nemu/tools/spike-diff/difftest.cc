@@ -58,9 +58,6 @@ void sim_t::diff_get_regs(void* diff_context) {
   struct diff_context_t* ctx = (struct diff_context_t*)diff_context;
   for (int i = 0; i < NR_GPR; i++) {
     ctx->gpr[i] = state->XPR[i];
-    if(i == 2){
-      printf("sp = %08x\n",state->XPR[i]);
-    }
   }
   ctx->pc = state->pc;
 }
