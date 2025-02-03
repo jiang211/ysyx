@@ -89,6 +89,7 @@ __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction)
 
 __EXPORT void difftest_regcpy(void* dut, bool direction) {
   if (direction == DIFFTEST_TO_REF) {
+    printf("1\n");
     s->diff_set_regs(dut);
   } else {
     s->diff_get_regs(dut);
