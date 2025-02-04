@@ -17,7 +17,7 @@ module PC(
 reg [31:0] pc;
 wire [31:0] d_pc;
 
-assign d_pc = (ecall)? csr_data : (mret) ? csr_data + 32'h4 : (jal) ? pc + imm : (jalr) ? rs1_data + imm : (zero) ? alu_out : pc + 4;
+assign d_pc = (ecall)? csr_data : (mret) ? csr_data : (jal) ? pc + imm : (jalr) ? rs1_data + imm : (zero) ? alu_out : pc + 4;
 always @(pc) begin
     case(pcsrc)
         1'b0: dnpc <= pc + 32'h4;
