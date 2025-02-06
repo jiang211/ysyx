@@ -150,7 +150,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc){
 #ifdef CONFIG_DIFFTEST
    
     difftest_step(_this->pc, dnpc);
-    
+   
 #endif
 }
 
@@ -160,8 +160,7 @@ static void exec_once(Decode *s, vaddr_t pc){
 
   s->pc = pc;
   s->snpc = pc;
-   //printf("s->pc = %x\n",pc);
-    //printf("s->snpc = %x\n",s->snpc);
+  
     
         
   run_step(s, &cpu,&pass_diff);

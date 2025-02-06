@@ -12,9 +12,7 @@
 //#endif
 //_______________________________end of the CONFIG_TRACE parameters--------------------------
 
-//#define CONFIG_DIFFTEST
-//#define CONFIG_DEVICE
-//#define CONFIG_ELF
+#define CONFIG_DIFFTEST
 
 #define CONFIG_PC_RESET_OFFSET 0x0
 
