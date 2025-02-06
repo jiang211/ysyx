@@ -42,6 +42,7 @@ static void out_of_bound(paddr_t addr) {
 }
 
 void init_mem() {
+  printf("----- %d-------\n",CONFIG_DEVICE);
 #if   defined(CONFIG_PMEM_MALLOC)
   pmem = malloc(CONFIG_MSIZE);
   assert(pmem);
