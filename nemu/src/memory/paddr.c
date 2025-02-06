@@ -42,7 +42,6 @@ static void out_of_bound(paddr_t addr) {
 }
 
 void init_mem() {
-  printf("----- %d-------\n",CONFIG_DEVICE);
 #if   defined(CONFIG_PMEM_MALLOC)
   pmem = malloc(CONFIG_MSIZE);
   assert(pmem);
@@ -66,6 +65,7 @@ void paddr_write(paddr_t addr, int len, word_t data) {
    printf("write at " FMT_PADDR " len=%d, data=" FMT_WORD "\n", addr, len, data);
 #endif
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
+  printf("----- %d-------\n",CONFIG_DEVICE);
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
   out_of_bound(addr);
 }
