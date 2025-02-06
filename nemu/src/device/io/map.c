@@ -33,6 +33,7 @@ uint8_t* new_space(int size) {
 }
 
 static void check_bound(IOMap *map, paddr_t addr) {
+  printf("map = %s\n",map->name);
   if (map == NULL) {
     Assert(map != NULL, "address (" FMT_PADDR ") is out of bound at pc = " FMT_WORD, addr, cpu.pc);
   } else {
@@ -66,9 +67,7 @@ word_t map_read(paddr_t addr, int len, IOMap *map) {
 
 void map_write(paddr_t addr, int len, word_t data, IOMap *map) {
   assert(len >= 1 && len <= 8);
-  printf("map = %08x\n",addr);
   check_bound(map, addr);
-  printf("map = %08x\n",addr);
   #ifdef CONFIG_IDTRACE
   printf("device %s write at " FMT_PADDR " len=%d, data=" FMT_WORD "\n",map->name, addr, len, data);
   #endif
