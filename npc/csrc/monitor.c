@@ -76,11 +76,7 @@ static long load_img() {
 
 
 static void welcome() {
-  ///#ifdef CONFIG_TRACE
-    Log("Trace: %s", ANSI_FMT("ON", ANSI_FG_GREEN));
-  //#else
-  //  Log("Trace: %s", ANSI_FMT("OFF", ANSI_FG_RED));
-  //#endif
+  Log("Trace: %s", ANSI_FMT("ON", ANSI_FG_GREEN));
   Log("Build time: %s, %s", __TIME__, __DATE__);
   printf(ANSI_FMT_GREEN "Welcome to riscv32 " ANSI_BG_RED ANSI_FMT_YELLOW "NPC" ANSI_FMT_NONE " !\n");
   printf("For help, type \"help\"\n");

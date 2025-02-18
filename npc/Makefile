@@ -59,16 +59,16 @@ $(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 
 NPC_FLAGS += $(ARGS)
 
-LOG_FLAGS +=  --log=$(BUILD_DIR)/npc-log.txt
+NPC_FLAGS +=  --log=$(BUILD_DIR)/npc-log.txt
 
-DIFF_FLAGS += --diff=$(NEMU_HOME)/build/riscv32-nemu-interpreter-so
+NPC_FLAGS += --diff=$(NEMU_HOME)/build/riscv32-nemu-interpreter-so
 
 # image file from abstract_machine
 #make run IMG=~/ysyx-workbench/am-kernels/tests/cpu-tests/build/add-riscv32e-npc.bin
 
 IMG ?=
 NPC_FLAGS += $(IMG)
-#NPC_FLAGS += CONFIG_DIFFTEST
+
 
 WAVEFLAGS = gtkwave $(BUILD_DIR)/logs/$(TOPNAME).vcd
 
@@ -81,11 +81,11 @@ wave :  ./build/top
 
 
 gdb : $(BIN)
-	@gdb --args $(BIN) $(DIFF_FLAGS) $(LOG_FLAGS) $(NPC_FLAGS) 
+	@gdb --args $(BIN) $(NPC_FLAGS) 
 
 run: $(BIN)
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	@$(BIN) $(DIFF_FLAGS) $(LOG_FLAGS) $(NPC_FLAGS)
+	@$(BIN) $(NPC_FLAGS)
 	
 
 clean :

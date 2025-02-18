@@ -103,16 +103,16 @@ static struct {
   const char *description;
   int (*handler) (char *);
 } cmd_table [] = {
-  { "help", "Display informations about all supported commands", cmd_help },
-  { "c", "Continue the execution of the program", cmd_c },
-  { "q", "Exit NEMU", cmd_q },
-  { "si", "The program suspends execution after stepping N instructions. When N is not given, it defaults to 1", cmd_si},
-  { "info", "r : Print register status\n\
-       w : Print watch point information", cmd_info},
-  { "x" , "Solve the expression EXPR, take the result as the first memory address, and output N consecutive 4 bytes in hex form", cmd_x},
-  { "p" , "Solve the expression EXPR", cmd_p},
-  { "w" , "Pauses the execution of program when the value of expression EXPR changes", cmd_w},
-  { "d" , "Delete the watchpoint with sequence number N", cmd_d},
+  { "help", "Display information about all supported commands", cmd_help },
+    { "c", "Continue the execution of the program", cmd_c },
+    { "q", "Exit NEMU", cmd_q },
+    { "si", "run si program", cmd_si },
+    { "info", "Get info", cmd_info },
+    { "x", "Scan the virtual memory", cmd_x },
+    {"p","caculate expr",cmd_p},
+    {"d", "delete watchpoint by num", cmd_d},
+    {"w", "create watchpoint with expr", cmd_w},
+    /* TODO: Add more commands */
 };
 
 #define NR_CMD ARRLEN(cmd_table)
