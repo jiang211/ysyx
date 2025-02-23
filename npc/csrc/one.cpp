@@ -25,7 +25,7 @@ Vtop* top;
  
 VerilatedVcdC* tfp;
 vluint64_t main_time = 0;
-
+void difftest_skip_ref();
 void npc_trap(int state, vaddr_t pc, int halt_ret);
 
    
@@ -92,6 +92,7 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
   #endif
       putchar(wdata);
       pass_diff = true;
+      difftest_skip_ref();
     }
 }
 
@@ -108,6 +109,7 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   else if(ren && raddr == RTC_ADDR1){
       uint64_t us = get_time();
       *rdata = (uint32_t)us;
+      difftest_skip_ref();
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
     #endif
@@ -117,6 +119,7 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
       uint64_t us = get_time()>>32;
       *rdata = (uint32_t)us;
       pass_diff = true;
+      difftest_skip_ref();
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
     #endif

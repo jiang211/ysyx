@@ -28,7 +28,6 @@ void difftest_skip_dut(int nr_ref, int nr_dut) {
 void init_difftest(char *ref_so_file, long img_size, int port) {
   assert(ref_so_file != NULL);
 
-  //open the dynamic library file ref_so_file
   void *handle;
   handle = dlopen(ref_so_file, RTLD_LAZY);
   assert(handle); 
@@ -51,13 +50,10 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
   Log("Differential testing: %s", ANSI_FMT("ON", ANSI_FMT_GREEN));
   Log("The result of every instruction will be compared with %s. ", ref_so_file);
 
-  //Initial the Difftest of REF
   ref_difftest_init(port);
 
-  //Copy guest memory of DUT to REF
   ref_difftest_memcpy(RESET_VECTOR, guest_to_host(RESET_VECTOR), img_size, DIFFTEST_TO_REF);
 
-  //Copy register states of DUT to REF
   ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
 }
 
