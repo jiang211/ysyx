@@ -76,7 +76,9 @@ word_t paddr_read(paddr_t addr, int len) {
   #ifdef CONFIG_DEVICE
     return mmio_read(addr, len);
   #endif
+  
   out_of_bound(addr);
+  printf("1\n");
   return 0;
 }
 

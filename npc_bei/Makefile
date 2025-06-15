@@ -10,7 +10,7 @@ VERILATOR_FLAGS += --MMD
 VERILATOR_FLAGS += --coverage
 VERILATOR_FLAGS += --assert
 VERILATOR_FLAGS += --build
-VERILATOR_FLAGS += --trace
+VERILATOR_FLAGS += --trace-fst
 
 WORK_DIR = $(shell pwd)
 BUILD_DIR = $(WORK_DIR)/build
@@ -70,13 +70,13 @@ IMG ?=
 NPC_FLAGS += $(IMG)
 
 
-WAVEFLAGS = gtkwave $(BUILD_DIR)/logs/$(TOPNAME).vcd
+WAVEFLAGS = gtkwave $(BUILD_DIR)/logs/$(TOPNAME).fst
 
 
 all : default
 
 wave :  ./build/top
-	gtkwave *.vcd
+	gtkwave *.fst
 
 
 

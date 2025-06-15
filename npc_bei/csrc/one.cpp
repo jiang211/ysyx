@@ -4,7 +4,7 @@
 // Include common routines
 #include <verilated.h>
 #include <verilated_dpi.h>
-#include "verilated_vcd_c.h"
+#include "verilated_fst_c.h"
 // Inculde model header, generated from Verilating "top.v"
 #include <Vtop.h>
 #include "svdpi.h"
@@ -23,7 +23,7 @@ uint64_t get_time();
 VerilatedContext* contextp;
 Vtop* top;
  
-VerilatedVcdC* tfp;
+VerilatedFstC* tfp;
 vluint64_t main_time = 0;
 void difftest_skip_ref();
 void npc_trap(int state, vaddr_t pc, int halt_ret);
@@ -35,9 +35,9 @@ void init_verilator(int argc, char** argv, char** env) {
   top = new Vtop{contextp};
   //VCD波形设置  start
   Verilated::traceEverOn(true);
-  tfp = new VerilatedVcdC;
+  tfp = new VerilatedFstC;
   top->trace(tfp, 0);
-  tfp->open("wave.vcd");
+  tfp->open("wave.fst");
    
 }
 static void single_cycle() {

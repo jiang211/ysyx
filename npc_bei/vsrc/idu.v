@@ -1,13 +1,19 @@
 module idu(
     input wire [31:0] instr,
-    output [6:0] opcode,
-    output [2:0] funct3,
-    output [6:0] funct7,
-    output [4:0] rd,
-    output [4:0] rs1,
-    output [4:0] rs2,
-    output [1:0] csr_rst,
-    output [31:0] imm
+    input clk,
+    input rst_n,
+    input               IFU_IDU_valid,          // 从IFU到IDU的有效信号
+    output reg          IDU_IFU_ready,          // IDU到IFU的就绪信号
+    input               EXU_IDU_ready,          // 从执行单元(EXU)到IDU的就绪信号
+    output reg          IDU_EXU_valid,          // IDU到EXU的有效信号
+    output [6:0] IDU_EXU_opcode,
+    output [2:0] IDU_EXU_funct3,
+    output [6:0] IDU_EXU_funct7,
+    output [4:0] IDU_EXU_rd,
+    output [4:0] IDU_EXU_rs1,
+    output [4:0] IDU_EXU_rs2,
+    output [1:0] IDU_EXU_csr_rst,
+    output [31:0]IDU_EXU_imm
 );
 
 
@@ -17,6 +23,14 @@ wire    [31:0]    immB_num ;
 wire    [31:0]    immU_num ;
 wire    [31:0]    immJ_num ;
 wire    [1:0]     immC_num ;
+wire    [6:0]     opcode   ;
+wire    [2:0]     funct3   ; 
+wire    [6:0]     funct7   ; 
+wire    [4:0]     rd       ;     
+wire    [4:0]     rs1      ; 
+wire    [4:0]     rs2      ; 
+wire    [1:0]     csr_rst  ; 
+wire    [31:0]    imm      ; 
 wire U_type;
 wire J_type;
 wire I_type;
@@ -60,6 +74,34 @@ assign imm = ( {32{I_type}} & immI_num ) |
                      ( {32{U_type}} & immU_num ) |
                      ( {32{J_type}} & immJ_num ) ;
 
+always @(*) begin IDU_IFU_ready = (EXU_IDU_ready );  end  // 设置IDU到IFU的就绪信号
+
+always @(*) begin IDU_EXU_valid = (IFU_IDU_valid & IDU_IFU_ready);  end
+
+always@(posedge clk)
+begin 
+   if(!rst_n)begin
+    IDU_EXU_opcode        <=        7'b0;     
+    IDU_EXU_funct3        <=        3'b0;   
+    IDU_EXU_funct7        <=        7'b0;
+    IDU_EXU_rd            <=        5'b0;
+    IDU_EXU_rs1           <=        5'b0;  
+    IDU_EXU_rs2           <=        5'b0;
+    IDU_EXU_csr_rst       <=        2'b0;    
+    IDU_EXU_imm           <=        32'b0;
+    end
+    else if(IFU_IDU_valid & IDU_IFU_ready)begin
+    IDU_EXU_opcode        <=        opcode   ;     
+    IDU_EXU_funct3        <=        funct3   ;   
+    IDU_EXU_funct7        <=        funct7   ;
+    IDU_EXU_rd            <=        rd       ;
+    IDU_EXU_rs1           <=        rs1      ;  
+    IDU_EXU_rs2           <=        rs2      ;
+    IDU_EXU_csr_rst       <=        csr_rst  ;    
+    IDU_EXU_imm           <=        imm      ;
+
+    end
+end
 //wire I_type_1 = (opcode == 7'b0010011);
 //wire I_type_2 = (opcode == 7'b1100111);
 //wire I_type_3 = (opcode == 7'b0000011);

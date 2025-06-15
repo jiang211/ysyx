@@ -2,6 +2,7 @@
 #include <isa.h>
 #include <common.h>
 
+
 static const uint32_t img [] = {
   0x00000413,  // auipc t0,0
   0x00051137,  // sb  zero,16(t0)
@@ -152,7 +153,6 @@ static const uint32_t img [] = {
   0x000080e7,
 
 };
-
 static void restart() {  
   /* Set the initial program counter. */
   cpu.pc = RESET_VECTOR;
