@@ -52,7 +52,7 @@ wire css;
 wire ecall;
 wire mret;
 wire [1:0] alu_op;
-
+wire [3:0] aluop;
 wire     u_alu_type;
 wire     mul_high;
 wire     alu_src1;
@@ -66,13 +66,7 @@ wire     J_type_1;
 assign pc = inst_addr_o;
 wire clk_neg;
 reg clk_reg;
-wire IDU_EXU_valid;
-wire IDU_IFU_ready;
-wire IFU_IDU_valid;
-wire EXU_IDU_ready;
-ifu my_ifu(
-    .IDU_IFU_ready      (IDU_IFU_ready), //IDU
-    .IFU_IDU_valid  (IFU_IDU_valid), 
+PC my_pc(
     .clk            (clk        ),
     .rstn           (rstn       ),
     .pcsrc          (pcsrc      ),
@@ -91,21 +85,15 @@ ifu my_ifu(
 
 
 idu my_idu(
-    .clk                    (clk        ),
-    .rst_n                   (rstn       ),
-    .IFU_IDU_valid          (IFU_IDU_valid),
-    .IDU_IFU_ready          (IDU_IFU_ready),
-    .EXU_IDU_ready             (EXU_IDU_ready), 
-    .IDU_EXU_valid          (IDU_EXU_valid),
     .instr          (instr      ),
-    .IDU_EXU_opcode         (opcode     ),
-    .IDU_EXU_funct3         (funct3     ),
-    .IDU_EXU_funct7         (funct7     ),
-    .IDU_EXU_rd             (rd         ),
-    .IDU_EXU_rs1            (rs1        ),
-    .IDU_EXU_rs2            (rs2        ),
-    .IDU_EXU_csr_rst        (csr_rst    ),
-    .IDU_EXU_imm            (imm        )
+    .opcode         (opcode     ),
+    .funct3         (funct3     ),
+    .funct7         (funct7     ),
+    .rd             (rd         ),
+    .rs1            (rs1        ),
+    .rs2            (rs2        ),
+    .csr_rst        (csr_rst    ),
+    .imm            (imm        )
 );
 
 control my_crtl(
@@ -180,9 +168,14 @@ csr_reg #(.ADDR_WIDTH(2), .DATA_WIDTH(32)) csr1(
         .raddr1(csr_addr)
     );
 
+alu_ctrl my_alu_crtl(
+    .funct3         (funct3),
+    .funct7         (funct7[5:0]),
+    .alu_op         (alu_op),
+    .aluOp          (aluop)
+);
 
-
-exu my_exu(
+alu my_alu(
     .rs1_data       (rs1_data   ),
     .rs2_data       (rs2_data   ),
     .imm_data       (imm        ),
@@ -194,12 +187,9 @@ exu my_exu(
     .u_alu_type     (u_alu_type ),
     .mul_high       (mul_high   ),
     .U_type_1       (U_type_1   ),
-    
+    .alu_crtl       (aluop      ),
     .alu_out        (alu_out    ),
-    .zero           (zero       ),
-    .funct3         (funct3),
-    .funct7         (funct7[5:0]),
-    .alu_op         (alu_op)
+    .zero           (zero       )
 );
 
 mmu my_mmu(
