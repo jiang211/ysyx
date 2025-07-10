@@ -10,7 +10,7 @@ VERILATOR_FLAGS += --MMD
 VERILATOR_FLAGS += --coverage
 VERILATOR_FLAGS += --assert
 VERILATOR_FLAGS += --build
-VERILATOR_FLAGS += --trace
+VERILATOR_FLAGS += --trace-fst
 
 WORK_DIR = $(shell pwd)
 BUILD_DIR = $(WORK_DIR)/build
@@ -59,38 +59,37 @@ $(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 
 NPC_FLAGS += $(ARGS)
 
-LOG_FLAGS +=  --log=$(BUILD_DIR)/npc-log.txt
+NPC_FLAGS +=  --log=$(BUILD_DIR)/npc-log.txt
 
-DIFF_FLAGS += --diff=$(NEMU_HOME)/build/riscv32-nemu-interpreter-so
+NPC_FLAGS += --diff=$(NEMU_HOME)/build/riscv32-nemu-interpreter-so
 
 # image file from abstract_machine
 #make run IMG=~/ysyx-workbench/am-kernels/tests/cpu-tests/build/add-riscv32e-npc.bin
 
 IMG ?=
 NPC_FLAGS += $(IMG)
-#NPC_FLAGS += CONFIG_DIFFTEST
 
-WAVEFLAGS = gtkwave $(BUILD_DIR)/logs/$(TOPNAME).vcd
+
+WAVEFLAGS = gtkwave $(BUILD_DIR)/logs/$(TOPNAME).fst
 
 
 all : default
 
 wave :  ./build/top
-	gtkwave *.vcd
+	gtkwave *.fst
 
 
 
 gdb : $(BIN)
-	@gdb --args $(BIN) $(DIFF_FLAGS) $(LOG_FLAGS) $(NPC_FLAGS) 
+	@gdb --args $(BIN) $(NPC_FLAGS) 
 
 run: $(BIN)
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	@$(BIN) $(DIFF_FLAGS) $(LOG_FLAGS) $(NPC_FLAGS)
+	@$(BIN) $(NPC_FLAGS)
 	
 
 clean :
 	@rm -rf $(BUILD_DIR)
  
 	
-include ../Makefile
 
