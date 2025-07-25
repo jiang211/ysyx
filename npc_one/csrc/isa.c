@@ -10,7 +10,6 @@ static const uint32_t img [] = {
   0x00100073,  // ebreak (used as nemu_trap)
   0xdeadbeef,  // some data
 };
-
 static void restart() {  
   /* Set the initial program counter. */
   cpu.pc = RESET_VECTOR;

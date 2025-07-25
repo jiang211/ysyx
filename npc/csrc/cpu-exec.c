@@ -2,6 +2,7 @@
 #include <cpu.h>
 #include <locale.h>
 #include <paddr.h>
+#include <config.h>
 #include <elf.h>
 #define MAX_INST_TO_PRINT 30
 
@@ -161,7 +162,8 @@ static void exec_once(Decode *s, vaddr_t pc){
   s->pc = pc;
   s->snpc = pc;
   
-    
+  
+  
         
   run_step(s, &cpu,&pass_diff);
  

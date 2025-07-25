@@ -1,22 +1,71 @@
 module idu(
-    input wire [31:0] instr,
-    output [6:0] opcode,
-    output [2:0] funct3,
-    output [6:0] funct7,
-    output [4:0] rd,
-    output [4:0] rs1,
-    output [4:0] rs2,
-    output [1:0] csr_rst,
-    output [31:0] imm
+    input wire [31:0] INSTR,
+    input wire [31:0] IFU_IDU_PC,
+    //input wire EXU_IFU_flush,
+    input clk,
+    input rst_n,
+    //input               IFU_IDU_STALL,
+    input               IFU_IDU_valid,          // 从IFU到IDU的有效信号
+    output           IDU_IFU_ready,          // IDU到IFU的就绪信号
+    input               EXU_IDU_ready,          // 从执行单元(EXU)到IDU的就绪信号
+    output reg          IDU_EXU_valid,          // IDU到EXU的有效信号
+    //output reg[6:0] IDU_EXU_opcode,
+    output reg[2:0] IDU_EXU_funct3,
+    output reg[5:0] IDU_EXU_funct7,
+    output reg[4:0] IDU_EXU_rd,
+    output reg[4:0] IDU_EXU_rs1,
+    output reg[4:0] IDU_EXU_rs2,
+    output reg[1:0] IDU_EXU_csr_rst,
+    output reg[31:0]IDU_EXU_imm,
+    output reg [1:0]IDU_EXU_alu_op ,       
+    output reg IDU_EXU_u_alu_type    ,
+    output reg IDU_EXU_mul_high      ,
+    output reg IDU_EXU_alu_src1      ,
+    output reg IDU_EXU_alu_src2      ,
+    output reg IDU_EXU_branch        ,
+   // output reg IDU_EXU_mem_to_reg    ,
+    output reg IDU_EXU_mem_read      ,
+    output reg IDU_EXU_mem_write     ,
+    output reg IDU_EXU_reg_write     ,
+    output reg IDU_EXU_jal           ,
+    output reg IDU_EXU_jalr          ,
+    output reg IDU_EXU_lw            ,
+    output reg IDU_EXU_lh            ,
+    output reg IDU_EXU_lb            ,
+    output reg IDU_EXU_lbu           ,
+    output reg IDU_EXU_lhu           ,
+    output reg IDU_EXU_sw            ,
+    output reg IDU_EXU_sb            ,
+    output reg IDU_EXU_sh            ,
+    output reg IDU_EXU_csw           ,
+    output reg IDU_EXU_csc           ,
+    output reg IDU_EXU_css           ,
+    output reg IDU_EXU_ebreak        ,
+    output reg IDU_EXU_ecall         ,
+    output reg IDU_EXU_mret          ,
+    output reg IDU_EXU_U_type_1      ,
+    output reg IDU_EXU_J_type_1      ,
+    //output reg IDU_EXU_pcsrc         ,
+    output reg IDU_EXU_C_type        ,
+    //output reg IDU_EXU_STALL         ,
+    output reg [31:0] IDU_EXU_PC
 );
 
-
+reg [31:0]instr;
 wire    [31:0]    immI_num ;
 wire    [31:0]    immS_num ;
 wire    [31:0]    immB_num ;
 wire    [31:0]    immU_num ;
 wire    [31:0]    immJ_num ;
 wire    [1:0]     immC_num ;
+wire    [6:0]     opcode   ;
+wire    [2:0]     funct3   ; 
+wire    [6:0]     funct7   ; 
+wire    [4:0]     rd       ;     
+wire    [4:0]     rs1      ; 
+wire    [4:0]     rs2      ; 
+wire    [1:0]     csr_rst  ; 
+wire    [31:0]    imm      ; 
 wire U_type;
 wire J_type;
 wire I_type;
@@ -60,6 +109,212 @@ assign imm = ( {32{I_type}} & immI_num ) |
                      ( {32{U_type}} & immU_num ) |
                      ( {32{J_type}} & immJ_num ) ;
 
+wire J_type_1;
+wire [1:0] alu_op;
+assign J_type_1 = (opcode == 7'b1101111) || I_type_2; 
+assign C_type = (opcode == 7'b1110011);
+wire I_type_2 = (opcode == 7'b1100111);
+wire I_type_3 = (opcode == 7'b0000011);
+wire I_type_4 = (opcode == 7'b1010011);
+wire jalr = (opcode == 7'b1100111);
+wire jal  = (opcode == 7'b1101111);
+wire U_type_1 = (opcode == 7'b0110111);
+
+wire csw = ( C_type && funct3 == 3'b001 );
+wire csc = ( C_type && funct3 == 3'b011 );
+wire css = ( C_type && funct3 == 3'b010 );
+
+wire lh   = (I_type_3 && funct3 == 3'b001);
+wire lw   = (I_type_3 && funct3 == 3'b010);
+wire lb   = (I_type_3 && funct3 == 3'b000);
+wire lbu  = (I_type_3 && funct3 == 3'b100);
+wire lhu  = (I_type_3 && funct3 == 3'b101);
+
+wire sw   = (S_type && funct3 == 3'b010);
+wire sb   = (S_type && funct3 == 3'b000);
+wire sh   = (S_type && funct3 == 3'b001);
+
+
+wire remu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b111);
+wire mulh = (R_type && funct7 == 7'b0000001 && funct3 == 3'b001);
+wire mulhu= (R_type && funct7 == 7'b0000001 && funct3 == 3'b011);
+wire divu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b101);
+wire sltu = (R_type && funct7 == 7'b0000000 && funct3 == 3'b011);
+wire mul  = (R_type && funct7 == 7'b0000001 && funct3 == 3'b000);
+wire sltiu= (I_type_1 && funct3 == 3'b011);
+wire bltu = (B_type && funct3 == 3'b110);
+wire bgeu = (B_type && funct3 == 3'b111);
+
+wire u_alu_type = (mulhu | divu | sltu | mul | sltiu | bltu | bgeu | remu | lbu | lhu ) ? 1'b1 : 1'b0;
+wire mul_high = mulh | mulhu;
+//wire jump = J_type | I_type_2;
+wire mem_read = I_type_3;
+wire mem_write = S_type;
+wire  ebreak = ( instr == 32'b00000000000100000000000001110011 ) ;
+wire ecall  = ( instr == 32'b00000000000000000000000001110011)  ;
+wire mret   = ( instr == 32'b00110000001000000000000001110011 ) ;
+wire reg_write = !(B_type || S_type);
+wire alu_src1 = R_type | I_type_1 | I_type_3 | I_type_4 | S_type;
+wire alu_src2 = R_type;
+//wire mem_to_reg = (mem_read|mem_write);
+wire branch = B_type;
+assign alu_op = (R_type) ? 2'b10 :
+                (B_type) ? 2'b01 :
+                (S_type | U_type | I_type_3 | J_type) ? 2'b00 :
+                2'b11;
+//wire pcsrc = (branch /*& zero*/) | jump | ecall | mret;
+
+always@(posedge clk) begin
+    if(!rst_n) instr <= 32'b0;
+    else if(IFU_IDU_valid)instr <= INSTR;
+    else instr <= instr;
+end
+
+//always @(*) begin IDU_IFU_ready = (EXU_IDU_ready | ~IDU_EXU_valid);  end  // 设置IDU到IFU的就绪信号
+
+//always @(posedge clk) begin IDU_EXU_valid <= (IFU_IDU_valid);  end
+assign IDU_IFU_ready =  ~IDU_EXU_valid;  // 设置IDU到IFU的就绪信号
+always @(posedge clk) begin
+    if(!rst_n) begin
+        IDU_EXU_valid <= 1'b0;
+    end else if(IFU_IDU_valid && IDU_IFU_ready) begin
+        IDU_EXU_valid <= 1'b1;
+    end else if(EXU_IDU_ready && IDU_EXU_valid) begin
+        IDU_EXU_valid <= 1'b0;
+    end
+end
+always@(posedge clk)
+begin 
+   if((!rst_n ))begin
+   // IDU_EXU_opcode        <=        7'b0;     
+    IDU_EXU_funct3        <=        3'b0;   
+    IDU_EXU_funct7        <=        6'b0;
+    IDU_EXU_rd            <=        5'b0;
+    IDU_EXU_rs1           <=        5'b0;  
+    IDU_EXU_rs2           <=        5'b0;
+    IDU_EXU_csr_rst       <=        2'b0;    
+    IDU_EXU_imm           <=        32'b0;
+
+    IDU_EXU_alu_op              <=        2'b0;     
+    IDU_EXU_u_alu_type          <=        1'b0;   
+    IDU_EXU_mul_high            <=        1'b0;
+    IDU_EXU_alu_src1            <=        1'b0;
+    IDU_EXU_alu_src2            <=        1'b0;  
+    IDU_EXU_branch              <=        1'b0;
+ //   IDU_EXU_mem_to_reg          <=        1'b0;    
+    IDU_EXU_mem_read            <=        1'b0;
+    IDU_EXU_mem_write           <=        1'b0;     
+    IDU_EXU_reg_write           <=        1'b0;   
+    IDU_EXU_jal                 <=        1'b0;
+    IDU_EXU_jalr                <=        1'b0;
+    IDU_EXU_lw                  <=        1'b0;  
+    IDU_EXU_lh                  <=        1'b0;
+    IDU_EXU_lb                  <=        1'b0;    
+    IDU_EXU_lbu                 <=        1'b0;
+    IDU_EXU_lhu                 <=        1'b0;     
+    IDU_EXU_sw                  <=        1'b0;   
+    IDU_EXU_sb                  <=        1'b0;
+    IDU_EXU_sh                  <=        1'b0;
+    IDU_EXU_csw                 <=        1'b0;  
+    IDU_EXU_csc                 <=        1'b0;
+    IDU_EXU_css                 <=        1'b0;    
+    IDU_EXU_ebreak              <=        1'b0;
+    IDU_EXU_ecall               <=        1'b0;     
+    IDU_EXU_mret                <=        1'b0;   
+    IDU_EXU_U_type_1            <=        1'b0;
+    IDU_EXU_J_type_1            <=        1'b0;
+    //IDU_EXU_pcsrc               <=        1'b0;  
+    IDU_EXU_C_type              <=        1'b0;
+    //IDU_EXU_STALL               <=        1'b0;
+    IDU_EXU_PC                  <=        32'b0;
+    end
+    else if(IDU_EXU_valid && EXU_IDU_ready)begin
+   // IDU_EXU_opcode        <=        opcode   ;     
+    IDU_EXU_funct3        <=        funct3   ;   
+    IDU_EXU_funct7        <=        funct7[5:0]   ;
+    IDU_EXU_rd            <=        rd       ;
+    IDU_EXU_rs1           <=        rs1      ;  
+    IDU_EXU_rs2           <=        rs2      ;
+    IDU_EXU_csr_rst       <=        csr_rst  ;    
+    IDU_EXU_imm           <=        imm      ;
+    IDU_EXU_alu_op              <=        alu_op;     
+    IDU_EXU_u_alu_type          <=        u_alu_type;   
+    IDU_EXU_mul_high            <=        mul_high     ;
+    IDU_EXU_alu_src1            <=        alu_src1     ;
+    IDU_EXU_alu_src2            <=        alu_src2     ;  
+    IDU_EXU_branch              <=        branch       ;
+   // IDU_EXU_mem_to_reg          <=        mem_to_reg   ;    
+    IDU_EXU_mem_read            <=        mem_read     ;
+    IDU_EXU_mem_write           <=        mem_write    ;     
+    IDU_EXU_reg_write           <=        reg_write    ;   
+    IDU_EXU_jal                 <=        jal          ;
+    IDU_EXU_jalr                <=        jalr   ;
+    IDU_EXU_lw                  <=        lw     ;  
+    IDU_EXU_lh                  <=        lh     ;
+    IDU_EXU_lb                  <=        lb     ;    
+    IDU_EXU_lbu                 <=        lbu    ;
+    IDU_EXU_lhu                 <=        lhu    ;     
+    IDU_EXU_sw                  <=        sw     ;   
+    IDU_EXU_sb                  <=        sb     ;
+    IDU_EXU_sh                  <=        sh     ;
+    IDU_EXU_csw                 <=        csw       ;  
+    IDU_EXU_csc                 <=        csc       ;
+    IDU_EXU_css                 <=        css       ;    
+    IDU_EXU_ebreak              <=        ebreak    ;
+    IDU_EXU_ecall               <=        ecall     ;     
+    IDU_EXU_mret                <=        mret      ;   
+    IDU_EXU_U_type_1            <=        U_type_1  ;
+    IDU_EXU_J_type_1            <=        J_type_1  ;
+    //IDU_EXU_pcsrc               <=        pcsrc     ;  
+    IDU_EXU_C_type              <=        C_type    ;
+    //IDU_EXU_STALL               <=        IFU_IDU_STALL;
+    IDU_EXU_PC                  <=        IFU_IDU_PC;
+
+    end
+    else begin
+        IDU_EXU_funct3        <=        3'b0;   
+    IDU_EXU_funct7        <=        6'b0;
+    IDU_EXU_rd            <=        5'b0;
+    IDU_EXU_rs1           <=        5'b0;  
+    IDU_EXU_rs2           <=        5'b0;
+    IDU_EXU_csr_rst       <=        2'b0;    
+    IDU_EXU_imm           <=        32'b0;
+
+    IDU_EXU_alu_op              <=        2'b0;     
+    IDU_EXU_u_alu_type          <=        1'b0;   
+    IDU_EXU_mul_high            <=        1'b0;
+    IDU_EXU_alu_src1            <=        1'b0;
+    IDU_EXU_alu_src2            <=        1'b0;  
+    IDU_EXU_branch              <=        1'b0;
+ //   IDU_EXU_mem_to_reg          <=        1'b0;    
+    IDU_EXU_mem_read            <=        1'b0;
+    IDU_EXU_mem_write           <=        1'b0;     
+    IDU_EXU_reg_write           <=        1'b0;   
+    IDU_EXU_jal                 <=        1'b0;
+    IDU_EXU_jalr                <=        1'b0;
+    IDU_EXU_lw                  <=        1'b0;  
+    IDU_EXU_lh                  <=        1'b0;
+    IDU_EXU_lb                  <=        1'b0;    
+    IDU_EXU_lbu                 <=        1'b0;
+    IDU_EXU_lhu                 <=        1'b0;     
+    IDU_EXU_sw                  <=        1'b0;   
+    IDU_EXU_sb                  <=        1'b0;
+    IDU_EXU_sh                  <=        1'b0;
+    IDU_EXU_csw                 <=        1'b0;  
+    IDU_EXU_csc                 <=        1'b0;
+    IDU_EXU_css                 <=        1'b0;    
+    IDU_EXU_ebreak              <=        1'b0;
+    IDU_EXU_ecall               <=        1'b0;     
+    IDU_EXU_mret                <=        1'b0;   
+    IDU_EXU_U_type_1            <=        1'b0;
+    IDU_EXU_J_type_1            <=        1'b0;
+    //IDU_EXU_pcsrc               <=        1'b0;  
+    IDU_EXU_C_type              <=        1'b0;
+    //IDU_EXU_STALL               <=        1'b0;
+    IDU_EXU_PC                  <=        32'b0;
+
+    end
+end
 //wire I_type_1 = (opcode == 7'b0010011);
 //wire I_type_2 = (opcode == 7'b1100111);
 //wire I_type_3 = (opcode == 7'b0000011);
