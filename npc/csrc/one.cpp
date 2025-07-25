@@ -156,13 +156,15 @@ void run_step(Decode *s, CPU_state *cpu,bool *pass_diff_out) {
        
         s->dnpc = top->dnpc;
         s->pc = top->pc;
-        printf("pc = %08x, dnpc = %08x\n",s->pc,s->dnpc);
+        //printf("pc = %08x, dnpc = %08x\n",s->pc,s->dnpc);
         s->isa.inst.val = top->instr;
+        if(top->IFU_IDU_valid){
         for (int i=0; i<32; i++) {
           cpu->gpr[i] = cpu_gpr[i];
         }
         for (int i=0; i<4; i++) {
           cpu->csr[i] = cpu_csr[i];
+        }
         }
       *pass_diff_out = pass_diff;
       if(top->ebreak)  { 

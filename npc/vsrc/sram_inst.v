@@ -23,7 +23,7 @@ module sram_inst #(
             //Q <= mem[addr];
             vpmem_read(addr,{7'b0, 1'b1},Q);
         end
-        $display("Time=%0t addr=%h instr=%h", $time, addr, Q);
+       // $display("Time=%0t addr=%h instr=%h", $time, addr, Q);
     end
 
 endmodule

@@ -6,7 +6,8 @@ module top(
     //output reg[31:0] pc,
     output [31:0] dnpc,
     output [31:0] pc,
-    output ebreak
+    output ebreak,
+    output IFU_IDU_valid
 );
 
 
@@ -44,7 +45,7 @@ wire     J_type_1;
 assign pc = IFU_IDU_PC ;
 
 wire IDU_EXU_valid;
-wire IFU_IDU_valid;
+//wire IFU_IDU_valid;
 wire EXU_IDU_ready;
 wire IDU_IFU_ready;
 wire WBU_IFU_ready;
@@ -222,7 +223,7 @@ exu my_exu(
     //.EXU_IFU_STALL_done  (EXU_IFU_STALL_done),
     .EXU_IFU_JUMP       (EXU_IFU_JUMP)
 );
-wire [31:0] LSU_WBU_result;
+wire [31:0] LSU_WBU_DATA;
 wire [31:0] LSU_WBU_csr_data,LSU_WBU_csr_in,WBU_CSR_DATA;
 wire [1:0] WBU_CSR_ADDR;
 wire [1:0]LSU_WBU_csr_rst;
@@ -268,7 +269,7 @@ lsu my_lsu(
     .LSU_WBU_ecall  (LSU_WBU_ecall),
     .LSU_WBU_mret   (LSU_WBU_mret),
     .LSU_WBU_C_type (LSU_WBU_C_type),
-    .LSU_WBU_result (LSU_WBU_result),
+    .LSU_WBU_DATA (LSU_WBU_DATA),
     .LSU_WBU_reg    (LSU_WBU_reg),
     .LSU_WBU_rd     (     LSU_WBU_rd       ),
     .LSU_WBU_ebreak(ebreak),
@@ -286,7 +287,7 @@ wbu my_wbu(
     .LSU_WBU_reg        (LSU_WBU_reg),
     .WBU_IFU_ready      (WBU_IFU_ready),
     .WBU_IFU_valid      (WBU_IFU_valid),
-    .LSU_WBU_result     (LSU_WBU_result),
+    .LSU_WBU_result     (LSU_WBU_DATA),
     .LSU_WBU_csr_data   (LSU_WBU_csr_data),
     .LSU_WBU_csr_in     (LSU_WBU_csr_in),
     .LSU_WBU_ecall      (LSU_WBU_ecall),

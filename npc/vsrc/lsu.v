@@ -30,7 +30,7 @@ module lsu(
     input           EXU_LSU_reg,
     input           EXU_LSU_ebreak,
     input      [31:0] EXU_LSU_result,
-    output     reg [31:0] LSU_WBU_result,
+    output      [31:0] LSU_WBU_DATA,
 
     input    [4:0]  EXU_LSU_rd,
     input    [31:0] alu_result,
@@ -46,7 +46,7 @@ module lsu(
     output   reg    LSU_WBU_C_type,
     output   reg [1:0] LSU_WBU_csr_rst
 );
-
+    reg LSU_REN;
     wire [3:0]  wlen;
     wire [31:0] addr;
     wire [31:0] wdata;
@@ -66,8 +66,9 @@ module lsu(
                    ( {4{EXU_LSU_sw}} & 4'd4 ) ;
     
     
-    wire [31:0] LSU_WBU_DATA;
-    assign LSU_WBU_DATA = (EXU_LSU_ren) ? rdata : EXU_LSU_result;
+    //wire [31:0] LSU_WBU_DATA;
+    reg [31:0] LSU_WBU_result;
+    assign LSU_WBU_DATA = (LSU_REN) ? rdata : LSU_WBU_result;
 
 
     assign addr = alu_result;
@@ -91,10 +92,12 @@ always @(posedge clk) begin
         LSU_WBU_csr_in <= 32'b0;
         LSU_WBU_JUMP <= 1'b0;
         LSU_WBU_pc <= 32'b0;
+        LSU_REN      <= 1'b0;
     end else if(LSU_WBU_ready && LSU_WBU_valid) begin
         //RDATAIN <= rdata_in;
         //WDATA   <= wdata;
-        LSU_WBU_result <= LSU_WBU_DATA;
+        LSU_WBU_result <= EXU_LSU_result;
+        LSU_REN      <= EXU_LSU_ren;
         LSU_WBU_rd <= EXU_LSU_rd;
         LSU_WBU_reg<= EXU_LSU_reg;
         LSU_WBU_ebreak<= EXU_LSU_ebreak;
@@ -121,6 +124,7 @@ always @(posedge clk) begin
         LSU_WBU_csr_in <= 32'b0;
         LSU_WBU_JUMP <= 1'b0;
         LSU_WBU_pc <= 32'b0;
+        LSU_REN      <= 1'b0;
     end
 end
 

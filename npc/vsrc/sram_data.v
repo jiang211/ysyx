@@ -16,16 +16,16 @@ module sram_data #(
 import "DPI-C" function void vpmem_read(input int raddr,input byte ren,output int rdata);
 import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
     always @(posedge CLK) begin
-        if (wen) begin
+        
             vpmem_write(addr, {4'b0, wlen},data,{7'b0, wen});
-        end
+        
     end
 
     always @(posedge CLK) begin
-        if (~wen) begin
+        
             //Q <= mem[addr];
             vpmem_read(addr,{7'b0, ren},Q);
-        end
+        
     end
 
 endmodule

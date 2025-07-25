@@ -47,7 +47,7 @@ always @(posedge clk) begin
         WBU_ECALL <= 1'b0;
         WBU_IFU_JUMP <= 1'b0;
         WBU_IFU_pc <= 32'b0;
-    end else if(LSU_WBU_C_type && LSU_WBU_valid && LSU_WBU_ready) begin
+    end else if(LSU_WBU_C_type && WBU_IFU_ready && WBU_IFU_valid) begin
         WBU_REG_DATA <= LSU_WBU_csr_data;
         WBU_REG_ADDR   <= addr;
         WBU_CSR_ADDR   <= LSU_WBU_csr_rst;
@@ -57,7 +57,7 @@ always @(posedge clk) begin
         WBU_ECALL      <= LSU_WBU_ecall;
         WBU_IFU_JUMP   <= LSU_WBU_JUMP;
         WBU_IFU_pc     <= LSU_WBU_pc;
-    end else if(LSU_WBU_valid && LSU_WBU_ready) begin
+    end else if(WBU_IFU_ready && WBU_IFU_valid) begin
         WBU_REG_DATA <= LSU_WBU_result;
         WBU_REG_ADDR   <= addr;
         WBU_CSR_ADDR   <= LSU_WBU_csr_rst;
