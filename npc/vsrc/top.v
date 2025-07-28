@@ -96,7 +96,99 @@ ifu my_ifu(
     .IFU_AXI4_rready(IFU_AXI4_rready)
 );
 
+wire AXI4_SRAM_ARVALID,AXI4_SRAM_ARREADY,AXI4_SRAM_RVALID,AXI4_SRAM_RREADY;
+wire AXI4_SRAM_AWVALID,AXI4_SRAM_AWREADY,AXI4_SRAM_WVALID,AXI4_SRAM_WREADY,AXI4_SRAM_BVALID,AXI4_SRAM_BREADY;
+wire [31:0] AXI4_SRAM_ARADDR,AXI4_SRAM_RDATA,AXI4_SRAM_AWADDR,AXI4_SRAM_WDATA;
+wire [3:0] AXI4_SRAM_WSTRB;
+axi_arbiter my_axi_arbiter(
+    .clk                    (clk),
+    .rstn                   (rstn),   
+    
+    // IFU 接口 (指令获取)
+    .ifu_araddr             (IFU_AXI4_araddr),
+    .ifu_arvalid            (IFU_AXI4_arvalid),
+    .ifu_arready             (IFU_AXI4_arready),
+    
+    .ifu_rdata              (IFU_AXI4_rdata),            
+    .ifu_rvalid               (IFU_AXI4_rvalid)  ,
+    .ifu_rready             (IFU_AXI4_rready),
+    
+    // LSU 接口 (加载/存储)
+    .lsu_araddr              (LSU_AXI4_ARADDR)   ,
+    .lsu_arvalid            (LSU_AXI4_ARVALID),
+    .lsu_arready            (LSU_AXI4_ARREADY),
+    
+    .lsu_rdata              (LSU_AXI4_RDATA),
+    .lsu_rvalid             (LSU_AXI4_RVALID),
+    .lsu_rready             (LSU_AXI4_RREADY),
+    
+    .lsu_awaddr             (LSU_AXI4_AWADDR),
+    .lsu_awvalid            (LSU_AXI4_AWVALID),
+    .lsu_awready            (LSU_AXI4_AWREADY),
+    
+    .lsu_wdata               (LSU_AXI4_WDATA),
+    .lsu_wstrb               (LSU_AXI4_WSTRB),
+    .lsu_wvalid              (LSU_AXI4_WVALID),
+    .lsu_wready              (LSU_AXI4_WREADY),    
+    
+   // .lsu_bresp               (),
+    .lsu_bvalid             (LSU_AXI4_BVALID),
+    .lsu_bready             (LSU_AXI4_BREADY),
+    
+    .sram_araddr             (AXI4_SRAM_ARADDR),
+    .sram_arvalid           (AXI4_SRAM_ARVALID),
+    .sram_arready           (AXI4_SRAM_ARREADY),
+    
+    .sram_rdata              (AXI4_SRAM_RDATA),
+    .sram_rvalid            (AXI4_SRAM_RVALID),
+    .sram_rready            (AXI4_SRAM_RREADY),
+    
+    .sram_awaddr             (AXI4_SRAM_AWADDR),
+    .sram_awvalid           (AXI4_SRAM_AWVALID),
+    .sram_awready           (AXI4_SRAM_AWREADY),
+    
+    .sram_wdata              (AXI4_SRAM_WDATA),
+    .sram_wstrb              (AXI4_SRAM_WSTRB),
+    .sram_wvalid            (AXI4_SRAM_WVALID),       
+    .sram_wready            (AXI4_SRAM_WREADY),
+    
+    //.sram_bresp              (),
+    .sram_bvalid             (AXI4_SRAM_BVALID),
+    .sram_bready             (AXI4_SRAM_BREADY)
+);
 
+sram my_sram(
+    .CLK                          (clk),
+    .rstn                               (rstn),
+
+    // AXI-Lite4 Read Address Channel
+    .AXI4_SRAM_ARADDR           (AXI4_SRAM_ARADDR),
+    .AXI4_SRAM_ARVALID          (AXI4_SRAM_ARVALID),
+    .AXI4_SRAM_ARREADY          (AXI4_SRAM_ARREADY),
+    
+    // AXI-Lite4 Read Data Channel
+    .AXI4_SRAM_RDATA           (AXI4_SRAM_RDATA),
+    .AXI4_SRAM_RVALID                   (AXI4_SRAM_RVALID),
+    .AXI4_SRAM_RREADY           (AXI4_SRAM_RREADY),
+
+    // AXI-Lite4 Write Address Channel
+    .AXI4_SRAM_AWADDR              (AXI4_SRAM_AWADDR) ,
+    .AXI4_SRAM_AWVALID             (AXI4_SRAM_AWVALID),
+    .AXI4_SRAM_AWREADY              (AXI4_SRAM_AWREADY),
+   
+    // AXI-Lite4 Write Data Channel
+    .AXI4_SRAM_WDATA            (AXI4_SRAM_WDATA),
+    .AXI4_SRAM_WSTRB            (AXI4_SRAM_WSTRB),  
+    .AXI4_SRAM_WVALID           (AXI4_SRAM_WVALID),
+    .AXI4_SRAM_WREADY           (AXI4_SRAM_WREADY),
+   
+    // AXI-Lite4 Write Response Channel
+    .AXI4_SRAM_BVALID           (AXI4_SRAM_BVALID),
+    .AXI4_SRAM_BREADY                (AXI4_SRAM_BREADY)
+    //output reg [1:0]       AXI4_SRAM_BRESP 
+);
+
+/*
 sram_inst inst_sram(
     .CLK(clk),
     .rstn(rstn),
@@ -108,7 +200,7 @@ sram_inst inst_sram(
     .IFU_AXI4_RREADY(IFU_AXI4_rready)
 );
 
-
+*/
 wire [31:0] IDU_EXU_PC;
 wire IDU_EXU_lw, IDU_EXU_lh, IDU_EXU_lb, IDU_EXU_lbu, IDU_EXU_lhu, IDU_EXU_sw, IDU_EXU_sb, IDU_EXU_sh;
 wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr,IDU_EXU_C_type;
@@ -341,7 +433,7 @@ lsu my_lsu(
 );
 
 
-
+/*
 sram_data data_sram(
     .CLK(clk),
     .rstn(rstn),
@@ -377,7 +469,7 @@ sram_data data_sram(
     .LSU_AXI4_BREADY            (LSU_AXI4_BREADY)
     //output reg [1:0]       LSU_AXI4_BRESP 
 );
-
+*/
 wire WBU_ECALL;
 //wire WBU_IFU_JUMP;
 wbu my_wbu(
