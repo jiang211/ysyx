@@ -21,9 +21,20 @@ module ifu(
     //input [31:0] csr_data,
     //output reg stall,
     output  reg[31:0] IFU_dnpc,
-    output [31:0] inst_addr_o,
+    //output [31:0] inst_addr_o,
     output [31:0]instr,
-    output reg [31:0] IFU_IDU_PC
+    //input  [31:0] instr_in,
+    output reg [31:0] IFU_IDU_PC,
+    input  EXU_LSU_valid,
+
+
+    // AXI-Lite4 Interface
+    output reg [31:0] IFU_AXI4_araddr,
+    output reg        IFU_AXI4_arvalid,
+    input             IFU_AXI4_arready,
+    input  [31:0]     IFU_AXI4_rdata,
+    input             IFU_AXI4_rvalid,
+    output reg        IFU_AXI4_rready
 );
 reg [31:0] pc;
 //wire [31:0] d_pc;
@@ -44,11 +55,93 @@ always @(pc) begin
     endcase
 end
 */
+
+localparam IDLE        = 2'b00;
+localparam READ  = 2'b01;
+reg [1:0] state;
+
+
 wire [31:0] dnpc;
 assign dnpc = (WBU_IFU_JUMP)? WBU_IFU_pc :pc + 4;
-assign inst_addr_o = pc ;
+//assign inst_addr_o = pc ;
 wire [31:0] inst_addr;
 assign inst_addr   = pc;
+
+reg start,start_r;
+
+always @(posedge clk) begin
+    if (!rstn) begin
+        start <= 1'b1;
+        start_r <= 1'b0;
+    end
+    else begin
+        start <= 1'b0;
+        start_r <= start;
+    end
+end
+always @(posedge clk) begin
+    if (!rstn) begin
+        state <= IDLE;
+        IFU_IDU_valid <= 1'b0;
+        IFU_AXI4_arvalid <= 1'b0;
+        IFU_AXI4_rready <= 1'b0;
+        instr <= 32'h0;
+        
+    end
+    else begin
+        // State Machine
+        
+        if(IFU_IDU_valid && IDU_IFU_ready)
+        begin
+            IFU_IDU_valid <= 1'b0;
+        end
+        case (state)
+            IDLE: begin
+                instr <= 32'h1;
+                IFU_AXI4_rready <= 1'b0;
+                IFU_AXI4_araddr <= inst_addr;
+                if((WBU_IFU_valid && WBU_IFU_ready) | start_r) begin
+                    IFU_AXI4_arvalid <= 1'b1;
+                end
+                if(IFU_AXI4_arvalid && IFU_AXI4_arready) begin
+                    
+                    IFU_AXI4_arvalid <= 1'b0;
+                    state <= READ;
+                    
+                end
+                else begin
+                    state <= IDLE;
+                    
+                    
+                end
+            end
+
+            READ: begin
+                IFU_AXI4_rready <= 1'b1;
+                if (IFU_AXI4_rready && IFU_AXI4_rvalid) begin
+                    IFU_IDU_valid <= 1'b1;
+                    instr <= IFU_AXI4_rdata;
+                    IFU_AXI4_rready <= 1'b0;
+                    state <= IDLE;
+                end
+                else begin
+                    IFU_IDU_valid <= 1'b0;
+                    instr <= 32'h0;
+                    state <= READ;
+                end
+            end
+        default: begin
+            state <= IDLE;
+            IFU_IDU_valid <= 1'b0;
+            IFU_AXI4_arvalid <= 1'b0;
+            IFU_AXI4_rready <= 1'b0;
+            instr <= 32'h0;
+        end   
+        endcase
+    end
+end
+
+
 always@(posedge clk)
 begin 
    if(!rstn)begin
@@ -57,31 +150,19 @@ begin
     else if(WBU_IFU_JUMP)begin 
     pc <= WBU_IFU_pc;
     end
-    else if(WBU_IFU_valid)begin
+    else if(EXU_LSU_valid)begin
     pc <= pc + 32'h4;
     end
 end
 assign WBU_IFU_ready = ~IFU_IDU_valid;
-always@(posedge clk)
-begin 
-   if(!rstn)begin
-    IFU_IDU_valid <= 1'b1;
-    end
-    else if(IFU_IDU_valid && IDU_IFU_ready)
-    begin
-    IFU_IDU_valid <= 1'b0;
-    end
-    else if(WBU_IFU_valid && WBU_IFU_ready)begin 
-    IFU_IDU_valid <= 1'b1;
-    end
-end
 
+/*
 sram_inst inst_sram(
     .CLK(clk),
     .wen(1'b0),
     .addr(inst_addr),
     .Q(instr)
-);
+);*/
 always@(posedge clk)
 begin
     if(!rstn)begin

@@ -12,7 +12,7 @@
 #include <cpu.h>
 
 
-#define MTRACE
+//#define MTRACE
 #define RTC_ADDR1   0xa0000048
 #define RTC_ADDR2   0xa000004c
 #define SERIAL_ADDR 0xa00003f8
@@ -91,7 +91,6 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
       printf("write at pc = %08x, data = %08x\n",waddr,wdata);
   #endif
       putchar(wdata);
-      pass_diff = true;
       difftest_skip_ref();
     }
 }
@@ -118,7 +117,6 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   else if(ren && raddr == RTC_ADDR2) {
       uint64_t us = get_time()>>32;
       *rdata = (uint32_t)us;
-      pass_diff = true;
       difftest_skip_ref();
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
@@ -131,12 +129,12 @@ extern "C" void call(word_t pc , word_t dnpc);
 
 extern "C" ret(word_t pc );
 */
-void run_step(Decode *s, CPU_state *cpu,bool *pass_diff_out) {
+void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
 
        
 
       
-      pass_diff = false;
+      
       
        
       top->clk  = !top->clk;
@@ -153,12 +151,14 @@ void run_step(Decode *s, CPU_state *cpu,bool *pass_diff_out) {
       main_time ++;
 
         
-       
+       *difftest = top->difftest_valid;
         s->dnpc = top->dnpc;
         s->pc = top->pc;
-        //printf("pc = %08x, dnpc = %08x\n",s->pc,s->dnpc);
+        s->snpc = top->pc + 4;
+      
         s->isa.inst.val = top->instr;
-        if(top->IFU_IDU_valid){
+        
+        if(top->difftest_valid){
         for (int i=0; i<32; i++) {
           cpu->gpr[i] = cpu_gpr[i];
         }
@@ -166,7 +166,7 @@ void run_step(Decode *s, CPU_state *cpu,bool *pass_diff_out) {
           cpu->csr[i] = cpu_csr[i];
         }
         }
-      *pass_diff_out = pass_diff;
+      
       if(top->ebreak)  { 
         npc_trap(NPC_END , top->pc, cpu_gpr[10]);
         return ;

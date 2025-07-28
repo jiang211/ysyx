@@ -70,7 +70,9 @@ module exu(
     output reg EXU_LSU_C_type,
     output reg [1:0] EXU_LSU_csr_rst,
    // output reg EXU_IFU_STALL_done,
-    output reg EXU_IFU_JUMP
+    output reg EXU_IFU_JUMP,
+    output reg [31:0] EXU_LSU_RS2DATA,
+    output reg [31:0] EXU_LSU_PC
     
 );
 wire [3:0]aluop;
@@ -135,7 +137,7 @@ begin
     EXU_LSU_rd                <=        5'b0;
     EXU_LSU_ren               <=        1'b0;
     EXU_LSU_wen               <=        1'b0;
-    EXU_LSU_reg               <=        1'b0;
+    //EXU_LSU_reg               <=        1'b0;
     EXU_LSU_ebreak               <=        1'b0;
     //EXU_IFU_jal               <=        1'b0;
     //EXU_IFU_jalr               <=        1'b0;
@@ -154,7 +156,8 @@ begin
     EXU_LSU_csr_rst               <=        2'b0;
     EXU_LSU_csr_in               <=        32'b0;
     EXU_IFU_pc               <=        32'b0;
-    
+    EXU_LSU_RS2DATA           <=        32'b0;
+    EXU_LSU_PC               <=        32'b0;
     end
     else if(LSU_EXU_ready & EXU_LSU_valid)begin
     EXU_LSU_alu_out           <=        alu_out;
@@ -181,6 +184,8 @@ begin
     EXU_LSU_csr_rst               <=        IDU_EXU_csr_rst;
     EXU_LSU_csr_in               <=        csr_in;
     EXU_IFU_pc               <=        pc_jump;
+    EXU_LSU_RS2DATA           <=        rs2_data;
+    EXU_LSU_PC               <=        pc_data;
     
     end
     else begin
@@ -207,6 +212,8 @@ begin
     EXU_LSU_csr_rst               <=        2'b0;
     EXU_LSU_csr_in               <=        32'b0;
     EXU_IFU_pc               <=        32'b0;
+    EXU_LSU_RS2DATA           <=        32'b0;
+    EXU_LSU_PC               <=        32'b0;
     
     end
 end

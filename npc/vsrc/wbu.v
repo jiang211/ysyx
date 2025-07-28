@@ -1,10 +1,11 @@
 module wbu(
     input clk,
     input rst_n,
-    input LSU_WBU_JUMP,
-    output reg WBU_IFU_JUMP,
-    input [31:0] LSU_WBU_pc,
-    output reg [31:0] WBU_IFU_pc,
+    //input LSU_WBU_JUMP,
+    //output reg WBU_IFU_JUMP,
+    input [31:0] LSU_WBU_PC,
+   // output reg [31:0] WBU_IFU_pc,
+
     output reg WBU_IFU_valid,
     input LSU_WBU_valid,
     output LSU_WBU_ready,
@@ -27,7 +28,8 @@ module wbu(
     output reg [1:0]WBU_CSR_ADDR,
     output reg WBU_wen,
     output reg WBU_CSR_WEN,
-    output reg WBU_ECALL
+    output reg WBU_ECALL,
+    output reg [31:0] PC_DATA
 );
 
 //wire [4:0] csr_addr;
@@ -45,8 +47,9 @@ always @(posedge clk) begin
         WBU_CSR_WEN <= 1'b0;
         WBU_wen <= 1'b0;
         WBU_ECALL <= 1'b0;
-        WBU_IFU_JUMP <= 1'b0;
-        WBU_IFU_pc <= 32'b0;
+        //WBU_IFU_JUMP <= 1'b0;
+        //WBU_IFU_pc <= 32'b0;
+        PC_DATA <= 32'b0;
     end else if(LSU_WBU_C_type && WBU_IFU_ready && WBU_IFU_valid) begin
         WBU_REG_DATA <= LSU_WBU_csr_data;
         WBU_REG_ADDR   <= addr;
@@ -55,8 +58,9 @@ always @(posedge clk) begin
         WBU_wen <= LSU_WBU_reg;
         WBU_CSR_WEN    <= csr_en;
         WBU_ECALL      <= LSU_WBU_ecall;
-        WBU_IFU_JUMP   <= LSU_WBU_JUMP;
-        WBU_IFU_pc     <= LSU_WBU_pc;
+        PC_DATA        <= LSU_WBU_PC;
+        //WBU_IFU_JUMP   <= LSU_WBU_JUMP;
+        //WBU_IFU_pc     <= LSU_WBU_pc;
     end else if(WBU_IFU_ready && WBU_IFU_valid) begin
         WBU_REG_DATA <= LSU_WBU_result;
         WBU_REG_ADDR   <= addr;
@@ -65,8 +69,9 @@ always @(posedge clk) begin
         WBU_wen <= LSU_WBU_reg;
         WBU_CSR_WEN    <= csr_en;
         WBU_ECALL      <= LSU_WBU_ecall;
-        WBU_IFU_JUMP   <= LSU_WBU_JUMP;
-        WBU_IFU_pc     <= LSU_WBU_pc;
+        PC_DATA        <= LSU_WBU_PC;
+        //WBU_IFU_JUMP   <= LSU_WBU_JUMP;
+        //WBU_IFU_pc     <= LSU_WBU_pc;
     end else begin
         
         WBU_REG_DATA <= 32'b0;
@@ -76,8 +81,9 @@ always @(posedge clk) begin
         WBU_CSR_WEN <= 1'b0;
         WBU_wen <= 1'b0;
         WBU_ECALL <= 1'b0;
-        WBU_IFU_JUMP <= 1'b0;
-        WBU_IFU_pc <= 32'b0;
+        //WBU_IFU_JUMP <= 1'b0;
+        //WBU_IFU_pc <= 32'b0;
+        PC_DATA <= 32'b0;
     end
 end
 assign LSU_WBU_ready = ~WBU_IFU_valid;

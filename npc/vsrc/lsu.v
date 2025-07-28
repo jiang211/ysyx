@@ -1,10 +1,10 @@
 module lsu(
     input           clk,
     input           rst_n,
-    input           EXU_LSU_JUMP,
-    output        reg  LSU_WBU_JUMP,
-    input  [31:0]   EXU_IFU_pc,
-    output reg [31:0]   LSU_WBU_pc,
+   // input           EXU_LSU_JUMP,
+    //output        reg  LSU_WBU_JUMP,
+    //input  [31:0]   EXU_IFU_pc,
+    //output reg [31:0]   LSU_WBU_pc,
 
     input           EXU_LSU_valid,
     output           LSU_EXU_ready,
@@ -18,6 +18,7 @@ module lsu(
     input           EXU_LSU_sw,
     input           EXU_LSU_sb,
     input           EXU_LSU_sh,
+    input      [31:0] EXU_LSU_PC,
     input      [31:0] EXU_LSU_csr_data,
     input      [31:0] EXU_LSU_csr_in,
     input           EXU_LSU_ecall,
@@ -27,13 +28,16 @@ module lsu(
 
     input           EXU_LSU_ren,
     input           EXU_LSU_wen,
+//input           IDU_EXU_ren,
+    //input           IDU_EXU_wen,
+    
     input           EXU_LSU_reg,
     input           EXU_LSU_ebreak,
     input      [31:0] EXU_LSU_result,
     output      [31:0] LSU_WBU_DATA,
-
+    output      [31:0] LSU_WBU_PC,
     input    [4:0]  EXU_LSU_rd,
-    input    [31:0] alu_result,
+    //input    [31:0] alu_result,
     input    [31:0] rs2_data,
     output   reg    LSU_WBU_reg,
     output   reg    LSU_WBU_ebreak,
@@ -44,24 +48,66 @@ module lsu(
     output   reg    LSU_WBU_ecall,
     output   reg    LSU_WBU_mret,
     output   reg    LSU_WBU_C_type,
-    output   reg [1:0] LSU_WBU_csr_rst
+    output   reg [1:0] LSU_WBU_csr_rst,
+    //output   [3:0]  LSU_WLEN,
+   // output    [31:0] LSU_WDATA,
+    //input    [31:0] LSU_RDATA,
+
+    output reg [32-1:0] LSU_AXI4_ARADDR,
+    output reg                  LSU_AXI4_ARVALID,
+    input                       LSU_AXI4_ARREADY,
+    
+    // 读数据通道
+    input  [32-1:0]     LSU_AXI4_RDATA,
+    input                       LSU_AXI4_RVALID,
+    output reg                  LSU_AXI4_RREADY,
+    
+    // 写地址通道
+    output reg [32-1:0] LSU_AXI4_AWADDR,
+    output reg                  LSU_AXI4_AWVALID,
+    input                       LSU_AXI4_AWREADY,
+    
+    // 写数据通道
+    output reg [32-1:0] LSU_AXI4_WDATA,
+    output reg [3:0]            LSU_AXI4_WSTRB,
+    output reg                  LSU_AXI4_WVALID,
+    input                       LSU_AXI4_WREADY,
+    
+    // 写响应通道
+    input                       LSU_AXI4_BVALID,
+    output reg                  LSU_AXI4_BREADY
+    //input  [1:0]                LSU_AXI4_BRESP
 );
+
+parameter  IDLE = 0,
+            CACHE_DATA = 1,
+            START = 2,
+            READ_START = 3,
+            WRITE_WIRE_1 = 4,
+            WRITE_WIRE_2 = 5,
+            WRITE_DATA = 6;
+reg [2:0] state;
+
+
     reg LSU_REN;
-    wire [3:0]  wlen;
-    wire [31:0] addr;
-    wire [31:0] wdata;
-    reg  [31:0]rdata_in,rdata;
-    assign wdata = ( {32{EXU_LSU_sb}} & {24'b0,rs2_data[7:0]}) |
+    //wire [3:0]  wlen;
+    //wire [31:0] addr;
+    //wire [31:0] wdata;
+    //reg  [31:0]rdata_in,rdata;
+    wire [3:0] LSU_WLEN;
+    wire [31:0] rdata;
+    reg [31:0] LSU_RDATA,LSU_WDATA;
+    assign LSU_WDATA = ( {32{EXU_LSU_sb}} & {24'b0,rs2_data[7:0]}) |
                    ( {32{EXU_LSU_sh}} & {16'b0,rs2_data[15:0]}) |
                    ( {32{EXU_LSU_sw}} & rs2_data);
 
-    assign rdata = ( {32{EXU_LSU_lb}} & {{24{rdata_in[7]}},rdata_in[7:0]}) |
-                   ( {32{EXU_LSU_lh}} & {{16{rdata_in[15]}}, (rdata_in[15:0])}) |
-                   ( {32{EXU_LSU_lw}} & rdata_in) |
-                   ( {32{EXU_LSU_lbu}} & {24'b0,rdata_in[7:0]}) |
-                   ( {32{EXU_LSU_lhu}} & {16'b0,rdata_in[15:0]});
+    assign rdata = ( {32{LSU_WBU_lb}} & {{24{LSU_RDATA[7]}},LSU_RDATA[7:0]}) |
+                   ( {32{LSU_WBU_lh}} & {{16{LSU_RDATA[15]}}, (LSU_RDATA[15:0])}) |
+                   ( {32{LSU_WBU_lw}} & LSU_RDATA) |
+                   ( {32{LSU_WBU_lbu}} & {24'b0,LSU_RDATA[7:0]}) |
+                   ( {32{LSU_WBU_lhu}} & {16'b0,LSU_RDATA[15:0]});
 
-    assign  wlen = ( {4{EXU_LSU_sb}} & 4'd1 )  |
+    assign  LSU_WLEN = ( {4{EXU_LSU_sb}} & 4'd1 )  |
                    ( {4{EXU_LSU_sh}} & 4'd2 )  |
                    ( {4{EXU_LSU_sw}} & 4'd4 ) ;
     
@@ -71,11 +117,180 @@ module lsu(
     assign LSU_WBU_DATA = (LSU_REN) ? rdata : LSU_WBU_result;
 
 
-    assign addr = alu_result;
+    //assign addr = alu_result;
+reg [4:0] rd;
+reg [31:0] result;
+reg reg_en;
+reg ebreak;
+reg [31:0] csr_data;
+reg ecall;
+reg mret;
+reg C_type;
+reg [1:0] csr_rst;
+reg [31:0] csr_in,pc;
+reg lw,lh,lb,lbu,lhu,ren;
+always @(posedge clk) begin
+    if (!rst_n) begin
+        state <= IDLE;
+        
+        // AXI 信号复位
+        LSU_AXI4_ARVALID <= 1'b0;
+        LSU_AXI4_RREADY <= 1'b0;
+        LSU_AXI4_AWVALID <= 1'b0;
+        LSU_AXI4_WVALID <= 1'b0;
+        LSU_AXI4_BREADY <= 1'b0;
+
+        LSU_WBU_valid <= 1'b0;
+
+
+        rd <=  5'd0;
+        result <=  32'd0;
+        reg_en <=  1'b0;
+        ebreak <=  1'b0;
+        csr_data <=  32'd0;
+        ecall <=  1'b0;
+        mret <=  1'b0;
+        C_type <=  1'b0;
+        csr_rst <=  2'b0;
+        csr_in <=  32'd0;
+        lw <=  1'b0;
+        lh <=  1'b0;
+        lb <=  1'b0;
+        lbu <=  1'b0;
+        lhu <=  1'b0;
+        ren <=  1'b0;
+        pc <=  32'd0;
+    end
+    else begin
+        case (state)
+            IDLE: begin
+                if(LSU_WBU_ready && LSU_WBU_valid) begin
+                    LSU_WBU_valid <= 1'b0;
+                end
+                
+                else if(EXU_LSU_valid && LSU_EXU_ready ) begin
+                    state <= CACHE_DATA;
+                end else begin
+                    state <= IDLE;
+                end
+            end
+                    
+            CACHE_DATA: begin
+                rd <=  EXU_LSU_rd;
+                result <=  EXU_LSU_result;
+                reg_en <=  EXU_LSU_reg;
+                ebreak <=  EXU_LSU_ebreak;
+                csr_data <=  EXU_LSU_csr_data;
+                ecall <=  EXU_LSU_ecall;
+                mret <=  EXU_LSU_mret;
+                C_type <=  EXU_LSU_C_type;
+                csr_rst <=  EXU_LSU_csr_rst;
+                csr_in <=  EXU_LSU_csr_in;
+                lw <=  EXU_LSU_lw;
+                lh <=  EXU_LSU_lh;
+                lb <=  EXU_LSU_lb;
+                lbu <=  EXU_LSU_lbu;
+                lhu <=  EXU_LSU_lhu;
+                ren <=  EXU_LSU_ren;
+                pc <=  EXU_LSU_PC;
+                if((!(EXU_LSU_ren || EXU_LSU_wen))) begin
+                    LSU_WBU_valid <= 1'b1;
+                    state <= IDLE;
+                end else if (EXU_LSU_wen  ) begin
+                    LSU_AXI4_AWADDR <= EXU_LSU_result;
+                    LSU_AXI4_WDATA <= LSU_WDATA;
+                    LSU_AXI4_WSTRB <= LSU_WLEN;
+                    LSU_AXI4_AWVALID <= 1'b1;
+                    LSU_AXI4_WVALID <= 1'b1;
+                    state <= START;
+                end else if ((EXU_LSU_ren )) begin
+                    LSU_AXI4_ARADDR <= EXU_LSU_result;
+                    LSU_AXI4_ARVALID <= 1'b1;
+                    state <= START;
+                end
+            end
+            START: begin
+                if(LSU_AXI4_AWVALID && LSU_AXI4_AWREADY && LSU_AXI4_WVALID && LSU_AXI4_WREADY) begin
+                            state <= WRITE_DATA;
+                            LSU_AXI4_AWVALID <= 1'b0;
+                            LSU_AXI4_WVALID <= 1'b0;
+                end else if(LSU_AXI4_AWVALID && LSU_AXI4_AWREADY ) begin
+                            state <= WRITE_WIRE_1;
+                            LSU_AXI4_AWVALID <= 1'b0;
+                end else if(LSU_AXI4_WVALID && LSU_AXI4_WREADY ) begin
+                            state <= WRITE_WIRE_2;
+                            LSU_AXI4_WVALID <= 1'b0;
+                end else if(LSU_AXI4_ARVALID && LSU_AXI4_ARREADY) begin
+                            state <= READ_START;
+                            LSU_AXI4_ARVALID <= 1'b0;
+                end else 
+                    state <= START;
+            end
+            
+            // 读操作 ------------------------------------------------------
+            READ_START: begin
+                // 发送读地址
+                LSU_AXI4_RREADY <= 1'b1;
+                
+                if (LSU_AXI4_RREADY && LSU_AXI4_RVALID) begin
+                    LSU_AXI4_RREADY <= 1'b0;
+                    LSU_WBU_valid <= 1'b1;
+                    LSU_RDATA <= LSU_AXI4_RDATA;
+                    state <= IDLE;
+                end
+                else begin
+                    LSU_WBU_valid <= 1'b0;
+                    state <= READ_START;
+                end
+            end
+            
+            // 写操作 ------------------------------------------------------
+            WRITE_WIRE_1: begin
+                // 发送写地址
+                
+                if(LSU_AXI4_WVALID && LSU_AXI4_WREADY ) begin
+                    state <= WRITE_WIRE_2;
+                    LSU_AXI4_WVALID <= 1'b0;
+                    state <= WRITE_DATA;
+                end else begin
+                    
+                    state <= WRITE_WIRE_1;
+                end
+            end
+            
+            WRITE_WIRE_2: begin
+                // 等待另一个握手完成
+                if(LSU_AXI4_AWVALID && LSU_AXI4_AWREADY ) begin
+                    state <= WRITE_WIRE_1;
+                    LSU_AXI4_AWVALID <= 1'b0;
+                    state <= WRITE_DATA;
+                end else begin
+                    state <= WRITE_WIRE_2;
+                end
+            end
+            
+            WRITE_DATA: begin   
+                LSU_AXI4_BREADY <= 1'b1;
+                if(LSU_AXI4_BVALID && LSU_AXI4_BREADY) begin
+                    LSU_WBU_valid <= 1'b1;
+                    LSU_AXI4_BREADY <= 1'b0;
+                    state <= IDLE;  
+                end
+                else begin
+                    LSU_WBU_valid <= 1'b0;
+                    state <= WRITE_DATA;
+                end
+            end
+            
+            default: state <= IDLE;
+        endcase
+    end
+end
 
 //import "DPI-C" function void vpmem_read(input int raddr,input byte ren,output int rdata);
 //import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
 //reg [31:0] RDATAIN,WDATA;
+reg LSU_WBU_lb,LSU_WBU_lh,LSU_WBU_lw,LSU_WBU_lbu,LSU_WBU_lhu;
 always @(posedge clk) begin
     if(!rst_n)begin
         //RDATAIN <= 32'b0;
@@ -90,25 +305,37 @@ always @(posedge clk) begin
         LSU_WBU_C_type <= 1'b0;
         LSU_WBU_csr_rst <= 2'b0;
         LSU_WBU_csr_in <= 32'b0;
-        LSU_WBU_JUMP <= 1'b0;
-        LSU_WBU_pc <= 32'b0;
+        //LSU_WBU_JUMP <= 1'b0;
+        //LSU_WBU_pc <= 32'b0;
         LSU_REN      <= 1'b0;
+        LSU_WBU_lb <= 1'b0;
+        LSU_WBU_lh <= 1'b0;
+        LSU_WBU_lw <= 1'b0;
+        LSU_WBU_lbu <= 1'b0;
+        LSU_WBU_lhu <= 1'b0;
+        LSU_WBU_PC <= 32'b0;
     end else if(LSU_WBU_ready && LSU_WBU_valid) begin
         //RDATAIN <= rdata_in;
         //WDATA   <= wdata;
-        LSU_WBU_result <= EXU_LSU_result;
-        LSU_REN      <= EXU_LSU_ren;
-        LSU_WBU_rd <= EXU_LSU_rd;
-        LSU_WBU_reg<= EXU_LSU_reg;
-        LSU_WBU_ebreak<= EXU_LSU_ebreak;
-        LSU_WBU_csr_data <= EXU_LSU_csr_data;
-        LSU_WBU_ecall <= EXU_LSU_ecall;
-        LSU_WBU_mret <= EXU_LSU_mret;
-        LSU_WBU_C_type <= EXU_LSU_C_type;
-        LSU_WBU_csr_rst <= EXU_LSU_csr_rst;
-        LSU_WBU_csr_in <= EXU_LSU_csr_in;
-        LSU_WBU_JUMP <= EXU_LSU_JUMP;
-        LSU_WBU_pc <= EXU_IFU_pc;
+        LSU_WBU_result <= result;
+        LSU_REN      <= ren;
+        LSU_WBU_rd <= rd;
+        LSU_WBU_reg<= reg_en;
+        LSU_WBU_ebreak<= ebreak;
+        LSU_WBU_csr_data <= csr_data;
+        LSU_WBU_ecall <= ecall;
+        LSU_WBU_mret <= mret;
+        LSU_WBU_C_type <= C_type;
+        LSU_WBU_csr_rst <= csr_rst;
+        LSU_WBU_csr_in <= csr_in;
+        //LSU_WBU_JUMP <= EXU_LSU_JUMP;
+        //LSU_WBU_pc <= EXU_IFU_pc;
+        LSU_WBU_lb <= lb;
+        LSU_WBU_lh <= lh;
+        LSU_WBU_lw <= lw;
+        LSU_WBU_lbu <= lbu;
+        LSU_WBU_lhu <= lhu;
+        LSU_WBU_PC <= pc;
     end else begin
         //RDATAIN <= 32'b0;
         //WDATA   <= 32'b0;
@@ -122,24 +349,21 @@ always @(posedge clk) begin
         LSU_WBU_C_type <= 1'b0;
         LSU_WBU_csr_rst <= 2'b0;
         LSU_WBU_csr_in <= 32'b0;
-        LSU_WBU_JUMP <= 1'b0;
-        LSU_WBU_pc <= 32'b0;
+        //LSU_WBU_JUMP <= 1'b0;
+        //LSU_WBU_pc <= 32'b0;
         LSU_REN      <= 1'b0;
+        LSU_WBU_lb <= 1'b0;
+        LSU_WBU_lh <= 1'b0;
+        LSU_WBU_lw <= 1'b0;
+        LSU_WBU_lbu <= 1'b0;
+        LSU_WBU_lhu <= 1'b0;
+        LSU_WBU_PC <= 32'b0;
     end
 end
 
-always @(posedge clk) begin
-    if(!rst_n)
-        LSU_WBU_valid <= 1'b0;
-    else if(EXU_LSU_valid && LSU_EXU_ready)
-        LSU_WBU_valid <= 1'b1;
-    else if(LSU_WBU_ready && LSU_WBU_valid) 
-        LSU_WBU_valid <= 1'b0;
-    else
-        LSU_WBU_valid <= 1'b0;
-end
-assign LSU_EXU_ready = ~LSU_WBU_valid;
 
+assign LSU_EXU_ready = ~LSU_WBU_valid;
+/*
 sram_data data_sram(
     .CLK(clk),
     .wen(EXU_LSU_wen),
@@ -149,6 +373,7 @@ sram_data data_sram(
     .data(wdata),
     .Q(rdata_in)
 );
+*/
 /*
 always @(posedge clk) begin
     vpmem_read(addr,{7'b0, ren},rdata_in);

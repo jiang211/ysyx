@@ -58,7 +58,7 @@ $(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 
 
 NPC_FLAGS += $(ARGS)
-
+#NPC_FLAGS += -b
 NPC_FLAGS +=  --log=$(BUILD_DIR)/npc-log.txt
 
 NPC_FLAGS += --diff=$(NEMU_HOME)/build/riscv32-nemu-interpreter-so

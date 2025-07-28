@@ -143,21 +143,21 @@ NPCState npc_state = { .state = NPC_STOP };
 void difftest_step(vaddr_t pc, vaddr_t npc);
 uint64_t get_time();
 
-static void trace_and_difftest(Decode *_this, vaddr_t dnpc){
+static void trace_and_difftest(Decode *_this, vaddr_t dnpc,bool difftest) {
    
    log_write("%s\n", _this->logbuf);
   if( g_print_step ) { puts(_this->logbuf); }
 
 #ifdef CONFIG_DIFFTEST
-   
+   if(difftest){
     difftest_step(_this->pc, dnpc);
-   
+   }
 #endif
 }
 
-void run_step(Decode *s, CPU_state *cpu,bool *pass_diff_out);
-bool pass_diff;
-static void exec_once(Decode *s, vaddr_t pc){
+void run_step(Decode *s, CPU_state *cpu,bool *difftest);
+//bool difftest;
+static void exec_once(Decode *s, vaddr_t pc,bool *difftest){
 
   s->pc = pc;
   s->snpc = pc;
@@ -165,7 +165,7 @@ static void exec_once(Decode *s, vaddr_t pc){
   
   
         
-  run_step(s, &cpu,&pass_diff);
+  run_step(s, &cpu,difftest);
  
   cpu.pc = s->dnpc;
   char *p = s->logbuf;
@@ -179,6 +179,7 @@ static void exec_once(Decode *s, vaddr_t pc){
 
 
   uint8_t *inst = (uint8_t *)&s->isa.inst.val;
+  
   for (i = ilen - 1; i >= 0; i --) {
     p += snprintf(p, 4, " %02x", inst[i]);
   }
@@ -197,18 +198,19 @@ static void exec_once(Decode *s, vaddr_t pc){
    void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
   disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
       s->snpc, (uint8_t *)&s->isa.inst.val, ilen);
-    
+  
 } 
  
 static void execute(uint64_t n) {
   Decode s;
+  bool difftest = false;
   for(; n>0; n--) {
-    exec_once(&s,cpu.pc);
+    exec_once(&s,cpu.pc,&difftest);
     
     g_nr_guest_inst ++;
- 
-    trace_and_difftest(&s, cpu.pc);
-    
+  
+    trace_and_difftest(&s, cpu.pc,difftest);
+  
     if(npc_state.state != NPC_RUNNING) {
       break;
     }
