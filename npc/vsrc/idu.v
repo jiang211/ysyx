@@ -1,6 +1,7 @@
 module idu(
     input wire [31:0] INSTR,
     input wire [31:0] IFU_IDU_PC,
+    input [31:0]IFU_IDU_dnpc,
     //input wire EXU_IFU_flush,
     input clk,
     input rst_n,
@@ -48,7 +49,8 @@ module idu(
     //output reg IDU_EXU_pcsrc         ,
     output reg IDU_EXU_C_type        ,
     //output reg IDU_EXU_STALL         ,
-    output reg [31:0] IDU_EXU_PC
+    output reg [31:0] IDU_EXU_PC  ,
+    output reg [31:0] IDU_EXU_dnpc
 );
 
 reg [31:0]instr;
@@ -227,6 +229,7 @@ begin
     IDU_EXU_C_type              <=        1'b0;
     //IDU_EXU_STALL               <=        1'b0;
     IDU_EXU_PC                  <=        32'b0;
+    IDU_EXU_dnpc                <=        32'b0;
     end
     else if(IDU_EXU_valid && EXU_IDU_ready)begin
    // IDU_EXU_opcode        <=        opcode   ;     
@@ -269,7 +272,7 @@ begin
     IDU_EXU_C_type              <=        C_type    ;
     //IDU_EXU_STALL               <=        IFU_IDU_STALL;
     IDU_EXU_PC                  <=        IFU_IDU_PC;
-
+    IDU_EXU_dnpc                <=        IFU_IDU_dnpc;
     end
     else begin
         IDU_EXU_funct3        <=        3'b0;   
@@ -312,7 +315,7 @@ begin
     IDU_EXU_C_type              <=        1'b0;
     //IDU_EXU_STALL               <=        1'b0;
     IDU_EXU_PC                  <=        32'b0;
-
+    IDU_EXU_dnpc                <=        32'b0;
     end
 end
 //wire I_type_1 = (opcode == 7'b0010011);

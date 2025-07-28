@@ -68,7 +68,7 @@ wire [31:0] inst_addr;
 assign inst_addr   = pc;
 
 reg start,start_r;
-
+   
 always @(posedge clk) begin
     if (!rstn) begin
         start <= 1'b1;
@@ -140,8 +140,10 @@ always @(posedge clk) begin
         endcase
     end
 end
-
-
+reg update_valid;
+always @(posedge clk) begin
+    update_valid <= EXU_LSU_valid;
+end
 always@(posedge clk)
 begin 
    if(!rstn)begin
@@ -150,7 +152,7 @@ begin
     else if(WBU_IFU_JUMP)begin 
     pc <= WBU_IFU_pc;
     end
-    else if(EXU_LSU_valid)begin
+    else if(update_valid)begin
     pc <= pc + 32'h4;
     end
 end

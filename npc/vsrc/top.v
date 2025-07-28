@@ -42,7 +42,8 @@ wire     alu_src2;
 
 wire     U_type_1;
 wire     J_type_1;
-assign pc = IFU_IDU_PC ;
+assign pc = TO_top_pc ;
+assign dnpc = TO_top_dnpc ;
 
 wire IDU_EXU_valid;
 wire IFU_IDU_valid;
@@ -57,7 +58,7 @@ wire EXU_LSU_valid;
 //wire EXU_IFU_STALL_done;
 //wire [31:0] instr;
 wire [31:0] IFU_IDU_PC;
-
+wire [31:0] IFU_IDU_dnpc;
 wire [31:0] IFU_AXI4_rdata,IFU_AXI4_araddr;
 wire IFU_AXI4_arvalid,IFU_AXI4_arready,IFU_AXI4_rvalid,IFU_AXI4_rready;
 ifu my_ifu(
@@ -82,7 +83,7 @@ ifu my_ifu(
     //.mret           (LSU_WBU_mret       ),
     //.csr_data       (csr_data   ),
     //.stall          (IFU_IDU_STALL),
-    .IFU_dnpc           (dnpc       ),
+    .IFU_dnpc           (IFU_IDU_dnpc       ),
    // .inst_addr_o    (inst_addr_o),
     .IFU_IDU_PC     (IFU_IDU_PC),
     .instr          (instr),
@@ -117,6 +118,7 @@ idu my_idu(
     .clk                    (clk        ),
     .IFU_IDU_PC             (IFU_IDU_PC),
     .rst_n                   (rstn       ),
+    .IFU_IDU_dnpc           (IFU_IDU_dnpc       ),
    // .IFU_IDU_STALL           (IFU_IDU_STALL),
     .IFU_IDU_valid          (IFU_IDU_valid),
     .IDU_IFU_ready           (IDU_IFU_ready),
@@ -162,7 +164,8 @@ idu my_idu(
    // .IDU_EXU_pcsrc          (pcsrc       ),
     .IDU_EXU_C_type         (IDU_EXU_C_type    ),
     //.IDU_EXU_STALL          (IDU_EXU_STALL),
-    .IDU_EXU_PC             (IDU_EXU_PC)
+    .IDU_EXU_PC             (IDU_EXU_PC),
+    .IDU_EXU_dnpc           (IDU_EXU_dnpc)
 );  
 
 
@@ -180,6 +183,7 @@ exu my_exu(
     .IDU_EXU_rd(rd),
     .clk(clk),
     .rstn(rstn),
+    .IDU_EXU_dnpc   (IDU_EXU_dnpc),
     //.IDU_EXU_STALL(IDU_EXU_STALL),
     .IDU_EXU_ebreak(IDU_EXU_ebreak),
     .IDU_EXU_csr_rst(IDU_EXU_csr_rst),
@@ -249,9 +253,10 @@ exu my_exu(
     //.EXU_IFU_STALL_done  (EXU_IFU_STALL_done),
     .EXU_IFU_JUMP       (EXU_IFU_JUMP),
     .EXU_LSU_RS2DATA    (EXU_LSU_RS2DATA),
-    .EXU_LSU_PC         (EXU_LSU_PC)
+    .EXU_LSU_PC         (EXU_LSU_PC),
+    .EXU_LSU_dnpc       (EXU_LSU_dnpc)
 );
-wire [31:0] EXU_LSU_PC,LSU_WBU_PC,PC_DATA;
+wire [31:0] EXU_LSU_PC,LSU_WBU_PC,PC_DATA,DNPC_DATA,EXU_LSU_dnpc,LSU_WBU_dnpc,IDU_EXU_dnpc;
 wire [31:0] LSU_WBU_DATA;
 wire [31:0] LSU_WBU_csr_data,LSU_WBU_csr_in,WBU_CSR_DATA;
 wire [1:0] WBU_CSR_ADDR;
@@ -270,6 +275,7 @@ lsu my_lsu(
     //.LSU_WBU_pc      (LSU_WBU_pc),
     //.EXU_LSU_JUMP   (EXU_IFU_JUMP),
     //.LSU_WBU_JUMP   (LSU_WBU_JUMP),
+    .EXU_LSU_dnpc   (EXU_LSU_dnpc),
     .EXU_LSU_PC     (EXU_LSU_PC),
     .EXU_LSU_lw     (EXU_LSU_lw),
     .EXU_LSU_lh     (EXU_LSU_lh),
@@ -313,6 +319,7 @@ lsu my_lsu(
     .LSU_WBU_ebreak(ebreak),
     .LSU_WBU_csr_rst(LSU_WBU_csr_rst),
     .LSU_WBU_csr_in (LSU_WBU_csr_in),
+    .LSU_WBU_dnpc   (LSU_WBU_dnpc),
     //.LSU_WLEN       (LSU_WLEN),
     //.LSU_WDATA      (LSU_WDATA),
     //.LSU_RDATA      (LSU_RDATA)
@@ -375,6 +382,7 @@ wire WBU_ECALL;
 //wire WBU_IFU_JUMP;
 wbu my_wbu(
     .clk                (clk),
+    .LSU_WBU_dnpc       (LSU_WBU_dnpc),
     //.LSU_WBU_pc         (LSU_WBU_pc),
     //.WBU_IFU_pc         (WBU_IFU_pc),
     //.LSU_WBU_JUMP       (LSU_WBU_JUMP),
@@ -405,7 +413,8 @@ wbu my_wbu(
     .WBU_CSR_ADDR       (WBU_CSR_ADDR),
     .WBU_CSR_WEN        (WBU_CSR_WEN),
     .WBU_ECALL          (WBU_ECALL),
-    .PC_DATA            (PC_DATA)
+    .PC_DATA            (PC_DATA),
+    .DNPC_DATA          (DNPC_DATA)
 );
 
 
@@ -437,13 +446,18 @@ csr_reg #(.ADDR_WIDTH(2), .DATA_WIDTH(32)) csr1(
 
 ///////////////////difftest/////////////////
 reg WBU_IFU_valid_cache;
+reg [31:0]TO_top_pc,TO_top_dnpc;
 always @(posedge clk ) begin
     if(rstn == 1'b0) begin
         difftest_valid <= 1'b0;
         WBU_IFU_valid_cache <= 1'b0;
+        TO_top_pc <= 32'h00000000;
+        TO_top_dnpc <= 32'h00000000;
     end else begin
         WBU_IFU_valid_cache <= (WBU_IFU_valid);
         difftest_valid <= WBU_IFU_valid_cache;
+        TO_top_pc <= PC_DATA;
+        TO_top_dnpc <= DNPC_DATA;
     end
 end
 

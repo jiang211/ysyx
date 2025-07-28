@@ -155,9 +155,10 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
         s->dnpc = top->dnpc;
         s->pc = top->pc;
         s->snpc = top->pc + 4;
-      
+
         s->isa.inst.val = top->instr;
-        
+        //printf("pc = %08x, instr = %08x\n",s->pc,s->isa.inst.val);
+        //printf("snpc = %08x, dnpc = %08x\n",s->snpc,s->dnpc);
         if(top->difftest_valid){
         for (int i=0; i<32; i++) {
           cpu->gpr[i] = cpu_gpr[i];

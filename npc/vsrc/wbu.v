@@ -4,6 +4,7 @@ module wbu(
     //input LSU_WBU_JUMP,
     //output reg WBU_IFU_JUMP,
     input [31:0] LSU_WBU_PC,
+    input [31:0] LSU_WBU_dnpc,
    // output reg [31:0] WBU_IFU_pc,
 
     output reg WBU_IFU_valid,
@@ -29,7 +30,8 @@ module wbu(
     output reg WBU_wen,
     output reg WBU_CSR_WEN,
     output reg WBU_ECALL,
-    output reg [31:0] PC_DATA
+    output reg [31:0] PC_DATA,
+    output reg [31:0] DNPC_DATA
 );
 
 //wire [4:0] csr_addr;
@@ -50,6 +52,7 @@ always @(posedge clk) begin
         //WBU_IFU_JUMP <= 1'b0;
         //WBU_IFU_pc <= 32'b0;
         PC_DATA <= 32'b0;
+        DNPC_DATA <= 32'b0;
     end else if(LSU_WBU_C_type && WBU_IFU_ready && WBU_IFU_valid) begin
         WBU_REG_DATA <= LSU_WBU_csr_data;
         WBU_REG_ADDR   <= addr;
@@ -59,6 +62,7 @@ always @(posedge clk) begin
         WBU_CSR_WEN    <= csr_en;
         WBU_ECALL      <= LSU_WBU_ecall;
         PC_DATA        <= LSU_WBU_PC;
+        DNPC_DATA      <= LSU_WBU_dnpc;
         //WBU_IFU_JUMP   <= LSU_WBU_JUMP;
         //WBU_IFU_pc     <= LSU_WBU_pc;
     end else if(WBU_IFU_ready && WBU_IFU_valid) begin
@@ -70,6 +74,7 @@ always @(posedge clk) begin
         WBU_CSR_WEN    <= csr_en;
         WBU_ECALL      <= LSU_WBU_ecall;
         PC_DATA        <= LSU_WBU_PC;
+        DNPC_DATA      <= LSU_WBU_dnpc;
         //WBU_IFU_JUMP   <= LSU_WBU_JUMP;
         //WBU_IFU_pc     <= LSU_WBU_pc;
     end else begin
@@ -84,6 +89,7 @@ always @(posedge clk) begin
         //WBU_IFU_JUMP <= 1'b0;
         //WBU_IFU_pc <= 32'b0;
         PC_DATA <= 32'b0;
+        DNPC_DATA <= 32'b0;
     end
 end
 assign LSU_WBU_ready = ~WBU_IFU_valid;
