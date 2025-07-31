@@ -3,6 +3,7 @@
 #include <locale.h>
 #include <paddr.h>
 #include <elf.h>
+#include <config.h>
 #define MAX_INST_TO_PRINT 30
 
 typedef struct {

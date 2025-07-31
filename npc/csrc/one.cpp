@@ -90,10 +90,11 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
       #ifdef MTRACE
       printf("write at pc = %08x, data = %08x\n",waddr,wdata);
   #endif
-      putchar(wdata);
-      pass_diff = true;
+      //putchar(wdata);
       difftest_skip_ref();
     }
+    else if(wen && waddr == RTC_ADDR2) {
+      printf("RTC_ADDR2 write %08x\n",wdata);  }
 }
 
 extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
@@ -118,7 +119,6 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   else if(ren && raddr == RTC_ADDR2) {
       uint64_t us = get_time()>>32;
       *rdata = (uint32_t)us;
-      pass_diff = true;
       difftest_skip_ref();
     #ifdef MTRACE
       printf("addr = %08x , rdata = %08x\n",raddr,*rdata);
@@ -131,16 +131,16 @@ extern "C" void call(word_t pc , word_t dnpc);
 
 extern "C" ret(word_t pc );
 */
-void run_step(Decode *s, CPU_state *cpu,bool *pass_diff_out) {
+void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
 
        
 
       
-      pass_diff = false;
+      
       
        
       top->clk  = !top->clk;
-      top->instr =inst_fetch(&s->snpc, 4);
+      //top->instr1 =inst_fetch(&s->snpc, 4);
       top->eval();
       
       tfp->dump(main_time);
@@ -153,18 +153,23 @@ void run_step(Decode *s, CPU_state *cpu,bool *pass_diff_out) {
       main_time ++;
 
         
-       
+       *difftest = top->difftest_valid;
         s->dnpc = top->dnpc;
         s->pc = top->pc;
-       
+        s->snpc = top->pc + 4;
+
         s->isa.inst.val = top->instr;
+        //printf("pc = %08x, instr = %08x\n",s->pc,s->isa.inst.val);
+        //printf("snpc = %08x, dnpc = %08x\n",s->snpc,s->dnpc);
+        if(top->difftest_valid){
         for (int i=0; i<32; i++) {
           cpu->gpr[i] = cpu_gpr[i];
         }
         for (int i=0; i<4; i++) {
           cpu->csr[i] = cpu_csr[i];
         }
-      *pass_diff_out = pass_diff;
+        }
+      
       if(top->ebreak)  { 
         npc_trap(NPC_END , top->pc, cpu_gpr[10]);
         return ;

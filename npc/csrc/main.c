@@ -14,7 +14,9 @@ int main(int argc, char** argv, char** env) {
 
   init_verilator(argc, argv, env);
 
+
   init_module();  
+
   engine_start();
 
   // Return good completion status
