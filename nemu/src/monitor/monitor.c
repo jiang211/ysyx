@@ -118,7 +118,7 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize memory. */
   init_mem();
-printf("1");
+printf("1\n");
   /* Initialize devices. */
   IFDEF(CONFIG_DEVICE, init_device());
 printf("1");
