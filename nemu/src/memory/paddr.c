@@ -72,7 +72,6 @@ void init_mem() {
 }
 
 word_t paddr_read(paddr_t addr, int len) {
-  printf("read at    "FMT_PADDR "\n",addr);
 #ifdef CONFIG_IMTRACE
   printf("read at"FMT_PADDR "\n",addr);
 #endif
@@ -85,7 +84,7 @@ word_t paddr_read(paddr_t addr, int len) {
 }
 
 void paddr_write(paddr_t addr, int len, word_t data) {
-  printf("write at"FMT_PADDR "\n",addr);
+  
 #ifdef CONFIG_IMTRACE
    printf("write at " FMT_PADDR " len=%d, data=" FMT_WORD "\n", addr, len, data);
 #endif

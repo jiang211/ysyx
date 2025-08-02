@@ -42,5 +42,4 @@ void init_isa() {
 
   /* Initialize this virtual computer system. */
   restart();
-  printf("cpu.pc = %08x\n", cpu.pc);
 }
