@@ -64,7 +64,7 @@ void init_mem() {
 }
 
 word_t paddr_read(paddr_t addr, int len) {
-  printf("read at"FMT_PADDR "\n",addr);
+  printf("read at    "FMT_PADDR "\n",addr);
 #ifdef CONFIG_IMTRACE
   printf("read at"FMT_PADDR "\n",addr);
 #endif
