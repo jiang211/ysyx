@@ -140,7 +140,7 @@ static int decode_exec(Decode *s) {
 }
 
 int isa_exec_once(Decode *s) {
-   
+   printf("inst_fetch: pc = %08x", s->snpc);
   s->isa.inst.val = inst_fetch(&s->snpc, 4);
    printf("inst_fetch: pc = %08x", s->snpc);
   
