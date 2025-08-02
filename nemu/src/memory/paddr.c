@@ -72,17 +72,14 @@ void init_mem() {
 }
 
 word_t paddr_read(paddr_t addr, int len) {
-  printf("1\n");
 #ifdef CONFIG_IMTRACE
   printf("read at"FMT_PADDR "\n",addr);
 #endif
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
   if(addr >= MROM_base && addr < MROM_base + MROM_size){return mrom_read(addr,len);}
   if(addr >= SRAM_base && addr < SRAM_base + SRAM_size){return sram_read(addr,len);}
-  printf("2\n");
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
   out_of_bound(addr);
-
   return 0;
 }
 
