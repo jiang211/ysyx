@@ -36,13 +36,21 @@ static word_t pmem_read(paddr_t addr, int len) {
   return ret;
 }
 
+static word_t mrom_read(paddr_t addr, int len) {
+  word_t ret = host_read(guest_to_host_mrom(addr), len);
+  return ret;
+}
+
+static word_t sram_read(paddr_t addr, int len) {
+  word_t ret = host_read(guest_to_host_sram(addr), len);
+  return ret;
+}
+
 static void pmem_write(paddr_t addr, int len, word_t data) {
   host_write(guest_to_host(addr), len, data);
 }
 
-static void mrom_write(paddr_t addr, int len, word_t data) {
-  host_write(guest_to_host_mrom(addr), len, data);
-}
+
 
 static void sram_write(paddr_t addr, int len, word_t data) {
   host_write(guest_to_host_sram(addr), len, data);
@@ -69,6 +77,8 @@ word_t paddr_read(paddr_t addr, int len) {
   printf("read at"FMT_PADDR "\n",addr);
 #endif
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
+  if(addr >= MROM_base && addr < MROM_base + MROM_size){return mrom_read(addr,len);}
+  if(addr >= SRAM_base && addr < SRAM_base + SRAM_size){return sram_read(addr,len);}
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
   out_of_bound(addr);
   return 0;
@@ -80,7 +90,6 @@ void paddr_write(paddr_t addr, int len, word_t data) {
    printf("write at " FMT_PADDR " len=%d, data=" FMT_WORD "\n", addr, len, data);
 #endif
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
-  if(addr >= MROM_base && addr < MROM_base + MROM_size){mrom_write(addr,len,data);return;}
   if(addr >= SRAM_base && addr < SRAM_base + SRAM_size){sram_write(addr,len,data);return;}
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
   
