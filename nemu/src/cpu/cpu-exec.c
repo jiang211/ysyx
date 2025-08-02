@@ -304,6 +304,7 @@ static void execute(uint64_t n) {
   Decode s;
   
   for (;n > 0; n --) {
+    printf("cpu.pc1 = 0x%08x:",cpu.pc);
     exec_once(&s, cpu.pc);
     printf("cpu.pc1 = 0x%08x:",cpu.pc);
     g_nr_guest_inst ++;
