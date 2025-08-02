@@ -189,6 +189,7 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
         s->snpc = monitor_data[1] + 4;
 
         s->isa.inst.val = monitor_data[3];
+        printf("pc = %08x, dnpc = %08x, snpc = %08x, isa = %08x\n",s->pc,s->dnpc,s->snpc,s->isa.inst.val);
         if(monitor_data[0]){
         for (int i=0; i<32; i++) {
           cpu->gpr[i] = cpu_gpr[i];
