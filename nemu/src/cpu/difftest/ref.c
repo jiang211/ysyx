@@ -41,6 +41,7 @@ __EXPORT void difftest_regcpy(CPU_state *dut, bool direction) {
       
     }
   }
+  printf("cpu.pc =%08x\n",cpu.pc);
  
 }
 
