@@ -121,13 +121,13 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize devices. */
   IFDEF(CONFIG_DEVICE, init_device());
-
+printf("1");
   /* Perform ISA dependent initialization. */
   init_isa();
   printf("2");
   /* Load the image to memory. This will overwrite the built-in image. */
   long img_size = load_img();
-printf("1");
+
   /* Initialize differential testing. */
   init_difftest(diff_so_file, img_size, difftest_port);
 
