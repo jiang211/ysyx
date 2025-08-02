@@ -121,7 +121,8 @@ assign io_slave_rdata = 'd0;
 assign io_slave_rlast = 'd0;
 assign io_slave_rid = 'd0;
 
-
+wire [1:0] resp;
+assign resp = io_master_rresp | io_master_bresp;
 //wire [6:0] opcode;
 wire [2:0] funct3;
 wire [5:0] funct7;
@@ -179,6 +180,7 @@ ifu my_ifu(
     .IDU_IFU_ready  (IDU_IFU_ready),
     .WBU_IFU_ready  (WBU_IFU_ready),
     .WBU_IFU_valid  (WBU_IFU_valid),
+    .resp           (resp),
     .clk            (clock        ),
     .rstn           (reset       ),
    //.pcsrc          (pcsrc     ),

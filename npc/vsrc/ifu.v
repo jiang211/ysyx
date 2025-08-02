@@ -8,6 +8,7 @@ module ifu(
     output reg IFU_IDU_valid, //IFU传递给IDU的指令是否有效
     input  IDU_IFU_ready, //IDU是否准备好接收IFU的指令
     input [31:0]WBU_IFU_pc,
+    input [1:0] resp,
     //input       EXU_IFU_STALL_done,
     //input pcsrc,
     //input [31:0] imm,
@@ -145,7 +146,7 @@ always @(posedge clk) begin
 end
 always@(posedge clk)
 begin 
-   if(rstn)begin
+   if(rstn | (resp != 2'b00))begin
     pc<=32'h20000000 ;
     end
     else if(WBU_IFU_JUMP)begin 
