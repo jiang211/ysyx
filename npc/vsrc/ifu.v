@@ -70,7 +70,7 @@ assign inst_addr   = pc;
 reg start,start_r;
    
 always @(posedge clk) begin
-    if (!rstn) begin
+    if (rstn) begin
         start <= 1'b1;
         start_r <= 1'b0;
     end
@@ -80,7 +80,7 @@ always @(posedge clk) begin
     end
 end
 always @(posedge clk) begin
-    if (!rstn) begin
+    if (rstn) begin
         state <= IDLE;
         IFU_IDU_valid <= 1'b0;
         IFU_AXI4_arvalid <= 1'b0;
@@ -97,14 +97,13 @@ always @(posedge clk) begin
         end
         case (state)
             IDLE: begin
-                instr <= 32'h1;
                 IFU_AXI4_rready <= 1'b0;
                 IFU_AXI4_araddr <= inst_addr;
-                if((WBU_IFU_valid && WBU_IFU_ready) | start_r) begin
+                if((WBU_IFU_valid && WBU_IFU_ready) | start) begin
                     IFU_AXI4_arvalid <= 1'b1;
                 end
                 if(IFU_AXI4_arvalid && IFU_AXI4_arready) begin
-                    
+                    IFU_AXI4_rready <= 1'b1;
                     IFU_AXI4_arvalid <= 1'b0;
                     state <= READ;
                     
@@ -126,7 +125,7 @@ always @(posedge clk) begin
                 end
                 else begin
                     IFU_IDU_valid <= 1'b0;
-                    instr <= 32'h0;
+                    instr <= instr;
                     state <= READ;
                 end
             end
@@ -146,8 +145,8 @@ always @(posedge clk) begin
 end
 always@(posedge clk)
 begin 
-   if(!rstn)begin
-    pc<=32'h80000000 ;
+   if(rstn)begin
+    pc<=32'h20000000 ;
     end
     else if(WBU_IFU_JUMP)begin 
     pc <= WBU_IFU_pc;
@@ -167,7 +166,7 @@ sram_inst inst_sram(
 );*/
 always@(posedge clk)
 begin
-    if(!rstn)begin
+    if(rstn)begin
         IFU_IDU_PC <= 32'h80000000;
         IFU_dnpc <= 32'h80000000;
     end

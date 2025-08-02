@@ -132,7 +132,7 @@ reg [1:0] csr_rst;
 reg [31:0] csr_in,pc,dnpc;
 reg lw,lh,lb,lbu,lhu,ren;
 always @(posedge clk) begin
-    if (!rst_n) begin
+    if (rst_n) begin
         state <= IDLE;
         
         // AXI 信号复位
@@ -225,6 +225,7 @@ always @(posedge clk) begin
                             state <= WRITE_WIRE_2;
                             LSU_AXI4_WVALID <= 1'b0;
                 end else if(LSU_AXI4_ARVALID && LSU_AXI4_ARREADY) begin
+                            LSU_AXI4_RREADY <= 1'b1;
                             state <= READ_START;
                             LSU_AXI4_ARVALID <= 1'b0;
                 end else 
@@ -234,7 +235,6 @@ always @(posedge clk) begin
             // 读操作 ------------------------------------------------------
             READ_START: begin
                 // 发送读地址
-                LSU_AXI4_RREADY <= 1'b1;
                 
                 if (LSU_AXI4_RREADY && LSU_AXI4_RVALID) begin
                     LSU_AXI4_RREADY <= 1'b0;
@@ -296,7 +296,7 @@ end
 //reg [31:0] RDATAIN,WDATA;
 reg LSU_WBU_lb,LSU_WBU_lh,LSU_WBU_lw,LSU_WBU_lbu,LSU_WBU_lhu;
 always @(posedge clk) begin
-    if(!rst_n)begin
+    if(rst_n)begin
         //RDATAIN <= 32'b0;
         //WDATA   <= 32'b0;
         LSU_WBU_rd <= 5'b0;

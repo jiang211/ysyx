@@ -37,26 +37,26 @@ module axi_arbiter #(
     input                   lsu_bready,
     
     // SRAM 从设备接口
-    output [ADDR_WIDTH-1:0] sram_araddr,
-    output                  sram_arvalid,
-    input                   sram_arready,
+    output [ADDR_WIDTH-1:0] master_araddr,
+    output                  master_arvalid,
+    input                   master_arready,
     
-    input  [DATA_WIDTH-1:0] sram_rdata,
-    input                   sram_rvalid,
-    output                  sram_rready,
+    input  [DATA_WIDTH-1:0] master_rdata,
+    input                   master_rvalid,
+    output                  master_rready,
     
-    output [ADDR_WIDTH-1:0] sram_awaddr,
-    output                  sram_awvalid,
-    input                   sram_awready,
+    output [ADDR_WIDTH-1:0] master_awaddr,
+    output                  master_awvalid,
+    input                   master_awready,
     
-    output [DATA_WIDTH-1:0] sram_wdata,
-    output [3:0]            sram_wstrb,
-    output                  sram_wvalid,
-    input                   sram_wready,
+    output [DATA_WIDTH-1:0] master_wdata,
+    output [3:0]            master_wstrb,
+    output                  master_wvalid,
+    input                   master_wready,
     
     //input  [1:0]            sram_bresp,
-    input                   sram_bvalid,
-    output                  sram_bready
+    input                   master_bvalid,
+    output                  master_bready
 );
 
 // 仲裁状态定义
@@ -84,7 +84,7 @@ reg [3:0]            saved_wstrb;
 
 // 状态机
 always @(posedge clk ) begin
-    if (!rstn) begin
+    if (rstn) begin
         state <= IDLE;
         saved_araddr <= '0;
         saved_awaddr <= '0;
@@ -114,45 +114,45 @@ always @(posedge clk ) begin
             
             // IFU读操作
             IFU_READ_START: begin
-                if (sram_arready) begin
+                if (master_arready) begin
                     state <= IFU_READ_WAIT;
                 end
             end
             
             IFU_READ_WAIT: begin
-                if (sram_rvalid && sram_rready) begin
+                if (master_rvalid && master_rready) begin
                     state <= IDLE;
                 end
             end
             
             // LSU读操作
             LSU_READ_START: begin
-                if (sram_arready) begin
+                if (master_arready) begin
                     state <= LSU_READ_WAIT;
                 end
             end
             
             LSU_READ_WAIT: begin
-                if (sram_rvalid && sram_rready) begin
+                if (master_rvalid && master_rready) begin
                     state <= IDLE;
                 end
             end
             
             // LSU写操作
             LSU_WRITE_START: begin
-                if (sram_awready) begin
+                if (master_awready) begin
                     state <= LSU_WRITE_DATA;
                 end
             end
             
             LSU_WRITE_DATA: begin
-                if (sram_wready) begin
+                if (master_wready) begin
                     state <= LSU_WRITE_RESP;
                 end
             end
             
             LSU_WRITE_RESP: begin
-                if (sram_bvalid && sram_bready) begin
+                if (master_bvalid && master_bready) begin
                     state <= IDLE;
                 end
             end
@@ -163,38 +163,38 @@ always @(posedge clk ) begin
 end
 
 // 读地址通道仲裁
-assign sram_araddr = (state == IFU_READ_START || state == IFU_READ_WAIT) ? saved_araddr :
-                     (state == LSU_READ_START || state == LSU_READ_WAIT) ? saved_araddr : '0;
+assign master_araddr = saved_araddr;/*(state == IFU_READ_START || state == IFU_READ_WAIT) ? saved_araddr :
+                     (state == LSU_READ_START || state == LSU_READ_WAIT) ? saved_araddr : '0;*/
 
-assign sram_arvalid = (state == IFU_READ_START || state == LSU_READ_START) ? 1'b1 : 1'b0;
+assign master_arvalid = (state == IFU_READ_START || state == LSU_READ_START) ? 1'b1 : 1'b0;
 
-assign ifu_arready = (state == IFU_READ_START) ? sram_arready : 1'b0;
-assign lsu_arready = (state == LSU_READ_START) ? sram_arready : 1'b0;
+assign ifu_arready = (state == IFU_READ_START) ? master_arready : 1'b0;
+assign lsu_arready = (state == LSU_READ_START) ? master_arready : 1'b0;
 
 // 读数据通道仲裁
-assign ifu_rdata = sram_rdata;
-assign lsu_rdata = sram_rdata;
+assign ifu_rdata = master_rdata;
+assign lsu_rdata = master_rdata;
 
-assign ifu_rvalid = (state == IFU_READ_WAIT) ? sram_rvalid : 1'b0;
-assign lsu_rvalid = (state == LSU_READ_WAIT) ? sram_rvalid : 1'b0;
+assign ifu_rvalid = (state == IFU_READ_WAIT) ? master_rvalid : 1'b0;
+assign lsu_rvalid = (state == LSU_READ_WAIT) ? master_rvalid : 1'b0;
 
-assign sram_rready = (state == IFU_READ_WAIT) ? ifu_rready :
+assign master_rready = (state == IFU_READ_WAIT) ? ifu_rready :
                      (state == LSU_READ_WAIT) ? lsu_rready : 1'b0;
 
 // 写地址通道仲裁 (仅LSU)
-assign sram_awaddr = saved_awaddr;
-assign sram_awvalid = (state == LSU_WRITE_START) ? 1'b1 : 1'b0;
-assign lsu_awready = (state == LSU_WRITE_START) ? sram_awready : 1'b0;
+assign master_awaddr = saved_awaddr;
+assign master_awvalid = (state == LSU_WRITE_START) ? 1'b1 : 1'b0;
+assign lsu_awready = (state == LSU_WRITE_START) ? master_awready : 1'b0;
 
 // 写数据通道仲裁 (仅LSU)
-assign sram_wdata = saved_wdata;
-assign sram_wstrb = saved_wstrb;
-assign sram_wvalid = (state == LSU_WRITE_DATA) ? 1'b1 : 1'b0;
-assign lsu_wready = (state == LSU_WRITE_DATA) ? sram_wready : 1'b0;
+assign master_wdata = saved_wdata;
+assign master_wstrb = saved_wstrb;
+assign master_wvalid = (state == LSU_WRITE_DATA) ? 1'b1 : 1'b0;
+assign lsu_wready = (state == LSU_WRITE_DATA) ? master_wready : 1'b0;
 
 // 写响应通道仲裁 (仅LSU)
 //assign lsu_bresp = sram_bresp;
-assign lsu_bvalid = (state == LSU_WRITE_RESP) ? sram_bvalid : 1'b0;
-assign sram_bready = (state == LSU_WRITE_RESP) ? lsu_bready : 1'b0;
+assign lsu_bvalid = (state == LSU_WRITE_RESP) ? master_bvalid : 1'b0;
+assign master_bready = (state == LSU_WRITE_RESP) ? lsu_bready : 1'b0;
 
 endmodule

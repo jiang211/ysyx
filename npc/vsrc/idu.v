@@ -167,7 +167,7 @@ assign alu_op = (R_type) ? 2'b10 :
 //wire pcsrc = (branch /*& zero*/) | jump | ecall | mret;
 
 always@(posedge clk) begin
-    if(!rst_n) instr <= 32'b0;
+    if(rst_n) instr <= 32'b0;
     else if(IFU_IDU_valid)instr <= INSTR;
     else instr <= instr;
 end
@@ -177,7 +177,7 @@ end
 //always @(posedge clk) begin IDU_EXU_valid <= (IFU_IDU_valid);  end
 assign IDU_IFU_ready =  ~IDU_EXU_valid;  // 设置IDU到IFU的就绪信号
 always @(posedge clk) begin
-    if(!rst_n) begin
+    if(rst_n) begin
         IDU_EXU_valid <= 1'b0;
     end else if(IFU_IDU_valid && IDU_IFU_ready) begin
         IDU_EXU_valid <= 1'b1;
@@ -187,7 +187,7 @@ always @(posedge clk) begin
 end
 always@(posedge clk)
 begin 
-   if((!rst_n ))begin
+   if((rst_n ))begin
    // IDU_EXU_opcode        <=        7'b0;     
     IDU_EXU_funct3        <=        3'b0;   
     IDU_EXU_funct7        <=        6'b0;

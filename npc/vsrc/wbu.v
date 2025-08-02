@@ -41,7 +41,7 @@ wire csr_en;
 
 assign csr_en = LSU_WBU_C_type&(~LSU_WBU_mret)&(~LSU_WBU_ecall);
 always @(posedge clk) begin
-    if(!rst_n)begin
+    if(rst_n)begin
         WBU_REG_DATA <= 32'b0;
         WBU_REG_ADDR <= 5'b0;
         WBU_CSR_DATA <= 32'b0;
@@ -94,7 +94,7 @@ always @(posedge clk) begin
 end
 assign LSU_WBU_ready = ~WBU_IFU_valid;
 always @(posedge clk) begin
-    if(!rst_n)begin
+    if(rst_n)begin
         WBU_IFU_valid <= 1'b0;
     end else if(LSU_WBU_valid && LSU_WBU_ready)
         WBU_IFU_valid <= 1'b1;

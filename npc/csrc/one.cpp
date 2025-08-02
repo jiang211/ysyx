@@ -6,9 +6,9 @@
 #include <verilated_dpi.h>
 #include "verilated_fst_c.h"
 // Inculde model header, generated from Verilating "top.v"
-#include <Vtop.h>
+#include <VysyxSoCFull.h>
 #include "svdpi.h"
-#include "Vtop__Dpi.h"
+#include "VysyxSoCFull__Dpi.h"
 #include <cpu.h>
 
 
@@ -21,7 +21,7 @@ uint64_t get_time();
 
 
 VerilatedContext* contextp;
-Vtop* top;
+VysyxSoCFull* top;
  
 VerilatedFstC* tfp;
 vluint64_t main_time = 0;
@@ -30,9 +30,10 @@ void npc_trap(int state, vaddr_t pc, int halt_ret);
 
    
 void init_verilator(int argc, char** argv, char** env) {
+  Verilated::commandArgs(argc, argv);
   contextp = new VerilatedContext;
   contextp->commandArgs(argc, argv);
-  top = new Vtop{contextp};
+  top = new VysyxSoCFull{contextp};
   //VCD波形设置  start
   Verilated::traceEverOn(true);
   tfp = new VerilatedFstC;
@@ -41,11 +42,11 @@ void init_verilator(int argc, char** argv, char** env) {
    
 }
 static void single_cycle() {
-  top->clk  = !top->clk;
+  top->clock  = !top->clock;
   
   top->eval(); 
   tfp->dump(main_time);
-  top->clk  = !top->clk;
+  top->clock  = !top->clock;
   main_time ++;
   top->eval(); 
   //tfp->dump(main_time);
@@ -53,10 +54,10 @@ static void single_cycle() {
 }
 
 void reset(int n) {
-  top->rstn = 0;
+  top->reset = 1;
   //top->ifu_ARREADY = 0;
   while( n-- > 0) single_cycle();
-  top->rstn = 1;
+  top->reset = 0;
   
 } 
 
@@ -74,6 +75,12 @@ uint32_t *cpu_csr = NULL;
 extern "C" void set_csr_ptr(const svOpenArrayHandle r) {
   cpu_csr = (uint32_t *)(((VerilatedDpiOpenVar*)r)->datap());
 }
+
+uint32_t *monitor_data = NULL;
+extern "C" void set_monitor_ptr(const svOpenArrayHandle r) {
+  monitor_data = (uint32_t *)(((VerilatedDpiOpenVar*)r)->datap());
+}
+
 extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
   // 总是往地址为`waddr & ~0x3u`的4字节按写掩码`wmask`写入`wdata`
   // `wmask`中每比特表示`wdata`中1个字节的掩码,
@@ -90,9 +97,11 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
       #ifdef MTRACE
       printf("write at pc = %08x, data = %08x\n",waddr,wdata);
   #endif
-      putchar(wdata);
+      //putchar(wdata);
       difftest_skip_ref();
     }
+    else if(wen && waddr == RTC_ADDR2) {
+      printf("RTC_ADDR2 write %08x\n",wdata);  }
 }
 
 extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
@@ -124,6 +133,29 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   }
 
 }
+
+extern "C" void flash_read(int32_t addr, int32_t *data) { 
+  assert(0); ; 
+}
+
+static uint8_t rom_data[1024];  // 假设 ROM 最大 1KB
+static size_t rom_size = 0;
+extern "C" void mrom_read(int32_t addr, int32_t *data) { 
+
+  *data = mrom_read((paddr_t)(addr),4);
+  /*
+  FILE *fp = fopen("/home/jx/ysyx-workbench/npc/char-test.bin", "rb");
+  if (!fp) {
+    printf("error\n");
+}
+    rom_size = fread(rom_data, 1, sizeof(rom_data), fp);
+    fclose(fp);
+   
+    *data = *(int32_t *)(rom_data + addr - 0x20000000);  
+    */
+}
+
+
 /*
 extern "C" void call(word_t pc , word_t dnpc);
 
@@ -137,13 +169,13 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
       
       
        
-      top->clk  = !top->clk;
+      top->clock  = !top->clock;
       //top->instr1 =inst_fetch(&s->snpc, 4);
       top->eval();
       
       tfp->dump(main_time);
       main_time ++;
-      top->clk  = !top->clk;
+      top->clock  = !top->clock;
 
       top->eval(); 
 
@@ -151,15 +183,13 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
       main_time ++;
 
         
-       *difftest = top->difftest_valid;
-        s->dnpc = top->dnpc;
-        s->pc = top->pc;
-        s->snpc = top->pc + 4;
+       *difftest = monitor_data[0];
+        s->dnpc = monitor_data[2];
+        s->pc = monitor_data[1];
+        s->snpc = monitor_data[1] + 4;
 
-        s->isa.inst.val = top->instr;
-        //printf("pc = %08x, instr = %08x\n",s->pc,s->isa.inst.val);
-        //printf("snpc = %08x, dnpc = %08x\n",s->snpc,s->dnpc);
-        if(top->difftest_valid){
+        s->isa.inst.val = monitor_data[3];
+        if(monitor_data[0]){
         for (int i=0; i<32; i++) {
           cpu->gpr[i] = cpu_gpr[i];
         }
@@ -168,8 +198,8 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
         }
         }
       
-      if(top->ebreak)  { 
-        npc_trap(NPC_END , top->pc, cpu_gpr[10]);
+      if(monitor_data[4])  { 
+        npc_trap(NPC_END , monitor_data[1], cpu_gpr[10]);
         return ;
       }
       

@@ -77,7 +77,7 @@ reg [ADDR_WIDTH-1:0] read_addr_reg;
 
 // State machine
 always @(posedge CLK) begin
-    if (!rstn) begin
+    if (rstn) begin
         state_read <= RIDLE;
         LSU_AXI4_ARREADY <= 1'b0;
         LSU_AXI4_RVALID <= 1'b0;
@@ -118,7 +118,7 @@ end
 reg [31:0] write_addr_reg, write_data;
 reg [3:0] wirte_wstrb;
 always @(posedge CLK) begin
-    if (!rstn) begin
+    if (rstn) begin
         state_write <= WIDLE;
         LSU_AXI4_AWREADY <= 1'b0;
         LSU_AXI4_WREADY <= 1'b0;

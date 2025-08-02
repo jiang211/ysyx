@@ -9,12 +9,14 @@ int is_exit_status_bad();
 
 
 int main(int argc, char** argv, char** env) {
-
+  
   init_monitor(argc, argv);
 
   init_verilator(argc, argv, env);
 
+
   init_module();  
+
   engine_start();
 
   // Return good completion status
