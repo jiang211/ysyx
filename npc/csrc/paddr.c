@@ -12,7 +12,7 @@
 
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 
-uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
+uint8_t* guest_to_host(paddr_t paddr) {  return pmem + paddr - 0x20000000; }
 uint8_t* mrom_to_host(paddr_t paddr) {
     return pmem + paddr - 0x20000000;
 }
@@ -65,7 +65,7 @@ void init_mem() {
   #ifdef CONFIG_PMEM_MALLOC
     printf("CONFIG_PMEM_MALLOC defined\n")
     pmem = malloc(CONFIG_MSIZE);
-    assert(pemm);
+    assert(pmem);
   #endif
   #ifdef CONFIG_MEM_RANDOM
     printf("CONFIG_PMEM_MALLOC defined\n")

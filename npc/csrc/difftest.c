@@ -36,6 +36,7 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
   assert(ref_difftest_memcpy);
 
   ref_difftest_regcpy = (void (*)(CPU_state *dut, bool direction))dlsym(handle, "difftest_regcpy");
+  
   assert(ref_difftest_regcpy);
 
   ref_difftest_exec = (void (*)(uint64_t n))dlsym(handle, "difftest_exec");
@@ -55,6 +56,7 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
   ref_difftest_memcpy(RESET_VECTOR, guest_to_host(RESET_VECTOR), img_size, DIFFTEST_TO_REF);
 
   ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
+  printf("pc = %08x\n",cpu.pc);
 }
 
 static inline bool difftest_check_reg(const char *name, vaddr_t pc, word_t ref, word_t dut) {
