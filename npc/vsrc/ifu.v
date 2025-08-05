@@ -147,7 +147,7 @@ end
 always@(posedge clk)
 begin 
    if(rstn | (resp != 2'b00))begin
-    pc<=32'h30000000 ;
+    pc<=32'h20000000 ;
     end
     else if(WBU_IFU_JUMP)begin 
     pc <= WBU_IFU_pc;

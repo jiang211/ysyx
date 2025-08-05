@@ -30,8 +30,10 @@ void npc_trap(int state, vaddr_t pc, int halt_ret);
 
    
 void init_verilator(int argc, char** argv, char** env) {
-  Verilated::commandArgs(argc, argv);
+  printf("1\n");
+  //Verilated::commandArgs(argc, argv);
   contextp = new VerilatedContext;
+  printf("1\n");
   contextp->commandArgs(argc, argv);
   top = new VysyxSoCFull{contextp};
   //VCD波形设置  start

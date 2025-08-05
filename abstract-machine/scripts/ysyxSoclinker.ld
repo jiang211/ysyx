@@ -9,11 +9,11 @@ MEMORY {
 
 SECTIONS {
   /* _pmem_start and _entry_offset are defined in LDFLAGS */
-  . = ORIGIN(flash);
+  . = ORIGIN(mrom);
   .text : {
     *(entry)
     *(.text*)
-  } > flash AT> flash : text
+  } > mrom AT> mrom : text
   etext = .;
   _etext = .;
   .rodata : {
@@ -21,7 +21,7 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*)
     .erodata = .;
-  } > flash AT> flash
+  } > mrom AT> mrom
   _data_lma_start = LOADADDR(.rodata) + SIZEOF(.rodata);
   . = ORIGIN(sram);
   .data : {
@@ -29,7 +29,7 @@ SECTIONS {
     *(.data*)
     *(.sdata*)
     _edata = .;      /* SRAM中数据结束地址 (VMA) */
-  } > sram AT> flash : data
+  } > sram AT> mrom : data
   _sidata = _data_lma_start; /* flash中初始数据地址 (LMA) */
   edata = .;
   _data = .;
@@ -38,7 +38,7 @@ SECTIONS {
     *(.bss*)
     *(.sbss*)
     *(.scommon)
-  } > sram AT> flash
+  } > sram AT> mrom
   _stack_top = ALIGN(0x10);
   . = _stack_top + 0x800;
   _stack_pointer = .;
