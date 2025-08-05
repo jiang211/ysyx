@@ -135,7 +135,7 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
 }
 
 extern "C" void flash_read(int32_t addr, int32_t *data) { 
-  assert(0); ; 
+  *data = flash_read((paddr_t)(addr),4); 
 }
 
 static uint8_t rom_data[1024];  // 假设 ROM 最大 1KB

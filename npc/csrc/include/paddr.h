@@ -16,6 +16,7 @@ static inline bool in_pmem(paddr_t addr) {
 
 word_t paddr_read(paddr_t addr, int len);
 word_t mrom_read(paddr_t addr, int len);
+word_t flash_read(paddr_t addr, int len);
 void paddr_write(paddr_t addr, int len, word_t data);
 uint32_t inst_fetch(vaddr_t *pc, int len);
 word_t isa_reg_str2val(const char *s, bool *success);
