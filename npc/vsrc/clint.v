@@ -46,7 +46,7 @@ import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input
 
 reg [63:0] mtime;
 always @(posedge CLK) begin
-    if (!rstn) begin
+    if (rstn) begin
         mtime <= 64'b0;
     end else begin
         mtime <= mtime + 64'b1;
@@ -73,7 +73,7 @@ reg [ADDR_WIDTH-1:0] read_addr_reg;
 
 // State machine
 always @(posedge CLK) begin
-    if (!rstn) begin
+    if (rstn) begin
         state_read <= RIDLE;
         AXI4_CLINT_ARREADY <= 1'b0;
         AXI4_CLINT_RVALID <= 1'b0;
@@ -115,7 +115,7 @@ end
 reg [31:0] write_addr_reg, write_data;
 reg [3:0] wirte_wstrb;
 always @(posedge CLK) begin
-    if (!rstn) begin
+    if (rstn) begin
         state_write <= WIDLE;
         AXI4_CLINT_AWREADY <= 1'b0;
         AXI4_CLINT_WREADY <= 1'b0;

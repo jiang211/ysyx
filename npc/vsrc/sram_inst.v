@@ -47,7 +47,7 @@ reg [ADDR_WIDTH-1:0] read_addr_reg;
 
 // State machine
 always @(posedge CLK) begin
-    if (!rstn) begin
+    if (rstn) begin
         state <= IDLE;
         IFU_AXI4_ARREADY <= 1'b0;
         IFU_AXI4_RVALID <= 1'b0;

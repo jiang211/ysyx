@@ -84,7 +84,7 @@ reg [3:0]            saved_wstrb;
 
 // 状态机
 always @(posedge clk ) begin
-    if (!rstn) begin
+    if (rstn) begin
         state <= IDLE;
         saved_araddr <= '0;
         saved_awaddr <= '0;

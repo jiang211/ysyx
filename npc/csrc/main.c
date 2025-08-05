@@ -9,7 +9,7 @@ int is_exit_status_bad();
 
 
 int main(int argc, char** argv, char** env) {
-
+  
   init_monitor(argc, argv);
 
   init_verilator(argc, argv, env);

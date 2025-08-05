@@ -112,7 +112,7 @@ always@(posedge clk) begin EXU_IFU_JUMP <= (IDU_EXU_ecall || IDU_EXU_mret || IDU
 assign EXU_IDU_ready = ~EXU_LSU_valid;  
 
 always @(posedge clk) begin 
-    if(!rstn) begin
+    if(rstn) begin
         EXU_LSU_valid <= 1'b0;
     end
     else if(EXU_IDU_ready & IDU_EXU_valid) begin
@@ -133,7 +133,7 @@ wire [31:0] pc_jump = (IDU_EXU_ecall || IDU_EXU_mret) ? csr_data : (IDU_EXU_jal)
 
 always@(posedge clk)
 begin 
-   if(!rstn)begin
+   if(rstn)begin
     //EXU_IFU_zero              <=        1'b0;
     EXU_LSU_alu_out           <=        32'b0;
     EXU_LSU_rd                <=        5'b0;

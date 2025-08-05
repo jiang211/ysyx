@@ -53,7 +53,7 @@ static int parse_args(int argc, char *argv[]) {
   return 0;
 }
 
-static long load_img() {
+static long long load_img() {
   if (img_file == NULL) {
     Log("No image is given. Use the default build-in image.\n");
     return 4096;  //built-in image size
@@ -63,7 +63,7 @@ static long load_img() {
   Assert(fp, "Can not open '%s'", img_file);
   fseek(fp, 0, SEEK_END);
 
-  long size = ftell(fp);
+  long long size = ftell(fp);
   Log("The image is %s, size = %ld\n", img_file, size);
 
   fseek(fp, 0, SEEK_SET);
@@ -104,9 +104,7 @@ void init_monitor(int argc, char** argv) {
   init_mem();
 
   /* Initialize device. */
-  #ifdef CONFIG_DEVICE
-    init_device();
-  #endif
+ 
   
   /* Perform ISA dependent initialization. */
   init_isa();

@@ -1,4 +1,5 @@
-module top(
+module ysyx_24070003_cpu(
+    /*
     input clk,
     input rstn,
     //input [31:0] instr1,
@@ -8,9 +9,120 @@ module top(
     output [31:0] pc,
     output ebreak,
     output reg difftest_valid
+    */
+    input   wire        clock,
+    input   wire        reset,
+    input   wire        io_interrupt,
+    input   wire        io_master_awready,
+    output  wire        io_master_awvalid, 
+    output  wire [31:0] io_master_awaddr,  
+    output  wire [3:0]  io_master_awid,   
+    output  wire [7:0]  io_master_awlen, 
+    output  wire [2:0]  io_master_awsize,
+    output  wire [1:0]  io_master_awburst, 
+    input   wire        io_master_wready,
+    output  wire        io_master_wvalid,  
+    output  wire [31:0]  io_master_wdata,   
+    output  wire [3:0]    io_master_wstrb,   
+    output  wire        io_master_wlast ,  
+    output  wire        io_master_bready , 
+    input   wire        io_master_bvalid  ,
+    input   wire [1:0]     io_master_bresp   ,
+    input   wire [3:0]     io_master_bid     ,
+    input   wire        io_master_arready ,
+    output  wire        io_master_arvalid,
+    output  wire [31:0]   io_master_araddr  ,
+    output  wire [3:0]    io_master_arid    ,
+    output  wire [7:0]    io_master_arlen   ,
+    output  wire [2:0]    io_master_arsize  ,
+    output  wire [1:0]    io_master_arburst ,
+    output  wire        io_master_rready  ,
+    input   wire        io_master_rvalid  ,
+    input   wire [1:0]     io_master_rresp   ,
+    input   wire [31:0]    io_master_rdata   ,
+    input   wire        io_master_rlast   ,
+    input   wire [3:0]     io_master_rid   ,
+    output  wire            io_slave_awready,
+    input   wire           io_slave_awvalid,
+    input   wire     [31:0] io_slave_awaddr ,
+    input   wire     [3:0] io_slave_awid   ,
+    input   wire     [7:0] io_slave_awlen ,
+    input   wire     [2:0] io_slave_awsize ,
+    input   wire     [1:0] io_slave_awburst,
+    output  wire              io_slave_wready ,
+    input   wire             io_slave_wvalid,
+    input   wire    [31:0] io_slave_wdata,
+    input   wire    [3:0] io_slave_wstrb,
+    input   wire     io_slave_wlast  ,
+    input   wire     io_slave_bready ,
+    output  wire     io_slave_bvalid ,
+    output  wire        [1:0] io_slave_bresp ,
+    output  wire    [3:0] io_slave_bid   ,
+    output  wire     io_slave_arready,
+    input   wire     io_slave_arvalid,
+    input   wire    [31:0] io_slave_araddr,
+    input   wire    [3:0] io_slave_arid,    
+    input   wire    [7:0] io_slave_arlen,
+    input   wire    [2:0] io_slave_arsize,
+    input   wire    [1:0] io_slave_arburst,
+    input   wire     io_slave_rready,
+    output  wire     io_slave_rvalid,
+    output  wire        [1:0] io_slave_rresp,   
+    output  wire            [31:0] io_slave_rdata ,
+    output  wire      io_slave_rlast ,
+    output  wire        [3:0] io_slave_rid   
 );
+wire [31:0] AXI4_MASTER_ARADDR,AXI4_MASTER_RDATA,AXI4_MASTER_AWADDR,AXI4_MASTER_WDATA;
+wire [3:0] AXI4_MASTER_WSTRB;
+wire AXI4_MASTER_ARVALID,AXI4_MASTER_ARREADY,AXI4_MASTER_RVALID,AXI4_MASTER_RREADY;
+wire AXI4_MASTER_AWVALID,AXI4_MASTER_AWREADY,AXI4_MASTER_WVALID,AXI4_MASTER_WREADY,AXI4_MASTER_BVALID,AXI4_MASTER_BREADY;
+
+assign io_master_awvalid = AXI4_MASTER_AWVALID;
+assign io_master_awaddr = AXI4_MASTER_AWADDR;
+assign io_master_rready = AXI4_MASTER_RREADY;
+assign io_master_awid = 'd0;//AXI4_MASTER_AWID;
+assign io_master_awlen = 'd0;//AXI4_MASTER_AWLEN;
+assign io_master_awsize = 'd0;//AXI4_MASTER_AWSIZE;
+assign io_master_awburst = 2'd01;//AXI4_MASTER_AWBURST;
+assign io_master_wvalid = AXI4_MASTER_WVALID;
+assign io_master_wdata = AXI4_MASTER_WDATA;
+assign io_master_wstrb = AXI4_MASTER_WSTRB;
+assign io_master_wlast = 'd0;//AXI4_MASTER_WLAST;
+assign io_master_bready = AXI4_MASTER_BREADY;
+assign io_master_arvalid = AXI4_MASTER_ARVALID;
+assign io_master_araddr = AXI4_MASTER_ARADDR;
+assign io_master_arid = 'd0;//AXI4_MASTER_ARID;
+assign io_master_arlen = 'd0;//AXI4_MASTER_ARLEN;
+assign io_master_arsize = 'd0;//AXI4_MASTER_ARSIZE;
+assign io_master_arburst = 2'd01;//AXI4_MASTER_ARBURST;
+
+assign AXI4_MASTER_AWREADY = io_master_awready;
+assign AXI4_MASTER_WREADY = io_master_wready;
+assign AXI4_MASTER_BVALID = io_master_bvalid;
+assign AXI4_MASTER_RDATA = io_master_rdata;
+assign AXI4_MASTER_ARREADY = io_master_arready;
+assign AXI4_MASTER_RVALID = io_master_rvalid;
+//assign AXI4_MASTER_BRESP = io_master_bresp;
+//assign AXI4_MASTER_BID = io_master_bid;
+//assign AXI4_MASTER_RRESP = io_master_rresp;
+//assign AXI4_MASTER_RID = io_master_rid;
+//assign AXI4_MASTER_RLAST = io_master_rlast;
 
 
+assign io_slave_awready = 'd0;
+assign io_slave_wready = 'd0;
+assign io_slave_bvalid = 'd0;
+assign io_slave_bresp = 'd0;
+assign io_slave_bid = 'd0;
+assign io_slave_arready = 'd0;
+assign io_slave_rvalid = 'd0;
+assign io_slave_rresp = 'd0;
+assign io_slave_rdata = 'd0;
+assign io_slave_rlast = 'd0;
+assign io_slave_rid = 'd0;
+
+wire [1:0] resp;
+assign resp = io_master_rresp | io_master_bresp;
 //wire [6:0] opcode;
 wire [2:0] funct3;
 wire [5:0] funct7;
@@ -42,9 +154,10 @@ wire     alu_src2;
 
 wire     U_type_1;
 wire     J_type_1;
-assign pc = TO_top_pc ;
-assign dnpc = TO_top_dnpc ;
-
+//assign pc = TO_top_pc ;
+//assign dnpc = TO_top_dnpc ;
+reg difftest_valid; 
+wire ebreak;
 wire IDU_EXU_valid;
 wire IFU_IDU_valid;
 wire EXU_IDU_ready;
@@ -56,7 +169,7 @@ wire LSU_WBU_valid;
 wire LSU_EXU_ready;
 wire EXU_LSU_valid;
 //wire EXU_IFU_STALL_done;
-//wire [31:0] instr;
+wire [31:0] instr;
 wire [31:0] IFU_IDU_PC;
 wire [31:0] IFU_IDU_dnpc;
 wire [31:0] IFU_AXI4_rdata,IFU_AXI4_araddr;
@@ -67,8 +180,9 @@ ifu my_ifu(
     .IDU_IFU_ready  (IDU_IFU_ready),
     .WBU_IFU_ready  (WBU_IFU_ready),
     .WBU_IFU_valid  (WBU_IFU_valid),
-    .clk            (clk        ),
-    .rstn           (rstn       ),
+    .resp           (resp),
+    .clk            (clock        ),
+    .rstn           (reset       ),
    //.pcsrc          (pcsrc     ),
     .WBU_IFU_pc     (EXU_IFU_pc),
     .EXU_LSU_valid  (EXU_LSU_valid),
@@ -104,18 +218,15 @@ wire AXI4_UART_ARVALID,AXI4_UART_ARREADY,AXI4_UART_RVALID,AXI4_UART_RREADY;
 wire AXI4_UART_AWVALID,AXI4_UART_AWREADY,AXI4_UART_WVALID,AXI4_UART_WREADY,AXI4_UART_BVALID,AXI4_UART_BREADY;
 wire [31:0] AXI4_UART_ARADDR,AXI4_UART_RDATA,AXI4_UART_AWADDR,AXI4_UART_WDATA;
 wire [3:0] AXI4_UART_WSTRB;
-wire [31:0] AXI4_MASTER_ARADDR,AXI4_MASTER_RDATA,AXI4_MASTER_AWADDR,AXI4_MASTER_WDATA;
-wire [3:0] AXI4_MASTER_WSTRB;
-wire AXI4_MASTER_ARVALID,AXI4_MASTER_ARREADY,AXI4_MASTER_RVALID,AXI4_MASTER_RREADY;
-wire AXI4_MASTER_AWVALID,AXI4_MASTER_AWREADY,AXI4_MASTER_WVALID,AXI4_MASTER_WREADY,AXI4_MASTER_BVALID,AXI4_MASTER_BREADY;
+
 wire AXI4_CLINT_ARVALID,AXI4_CLINT_ARREADY,AXI4_CLINT_RVALID,AXI4_CLINT_RREADY;
 wire AXI4_CLINT_AWVALID,AXI4_CLINT_AWREADY,AXI4_CLINT_WVALID,AXI4_CLINT_WREADY,AXI4_CLINT_BVALID,AXI4_CLINT_BREADY;
 wire [31:0] AXI4_CLINT_ARADDR,AXI4_CLINT_RDATA,AXI4_CLINT_AWADDR,AXI4_CLINT_WDATA;
 wire [3:0] AXI4_CLINT_WSTRB;
 
 axi_arbiter my_axi_arbiter(
-    .clk                    (clk),
-    .rstn                   (rstn),   
+    .clk                    (clock),
+    .rstn                   (reset),   
     
     // IFU 接口 (指令获取)
     .ifu_araddr             (IFU_AXI4_araddr),
@@ -170,6 +281,8 @@ axi_arbiter my_axi_arbiter(
     .master_bready             (AXI4_MASTER_BREADY)
 );
 
+
+/*
 axi_xbar my_axi_xbar(
     //.clk                     (clk),
     //.rstn                    (rstn),    
@@ -313,6 +426,7 @@ clint my_clint(
     .AXI4_CLINT_BREADY               (AXI4_CLINT_BREADY)
     //output reg [1:0]       AXI4_SRAM_BRESP 
 );
+*/
 
 /*
 sram_inst inst_sram(
@@ -333,9 +447,9 @@ wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU
 wire [1:0] IDU_EXU_csr_rst;
 idu my_idu(
    // .EXU_IFU_flush          (EXU_IFU_flush),
-    .clk                    (clk        ),
+    .clk                    (clock        ),
     .IFU_IDU_PC             (IFU_IDU_PC),
-    .rst_n                   (rstn       ),
+    .rst_n                   (reset       ),
     .IFU_IDU_dnpc           (IFU_IDU_dnpc       ),
    // .IFU_IDU_STALL           (IFU_IDU_STALL),
     .IFU_IDU_valid          (IFU_IDU_valid),
@@ -399,8 +513,8 @@ wire [31:0] EXU_IFU_pc;
 wire [31:0] EXU_LSU_RS2DATA;
 exu my_exu(
     .IDU_EXU_rd(rd),
-    .clk(clk),
-    .rstn(rstn),
+    .clk(clock),
+    .rstn(reset),
     .IDU_EXU_dnpc   (IDU_EXU_dnpc),
     //.IDU_EXU_STALL(IDU_EXU_STALL),
     .IDU_EXU_ebreak(IDU_EXU_ebreak),
@@ -488,6 +602,7 @@ wire LSU_AXI4_RVALID,LSU_AXI4_RREADY,LSU_AXI4_AWVALID,LSU_AXI4_AWREADY,LSU_AXI4_
 wire LSU_AXI4_ARVALID,LSU_AXI4_ARREADY;
 wire [31:0] LSU_AXI4_RDATA,LSU_AXI4_AWADDR,LSU_AXI4_WDATA,LSU_AXI4_ARADDR;
 wire [3:0] LSU_AXI4_WSTRB;
+wire LSU_WBU_skip;
 lsu my_lsu(
     //.EXU_IFU_pc      (EXU_IFU_pc),
     //.LSU_WBU_pc      (LSU_WBU_pc),
@@ -521,8 +636,8 @@ lsu my_lsu(
     .EXU_LSU_valid  (EXU_LSU_valid),
     .LSU_WBU_valid  (LSU_WBU_valid),
     .LSU_WBU_ready  (LSU_WBU_ready),
-    .clk            (clk         ),
-    .rst_n          (rstn        ),
+    .clk            (clock         ),
+    .rst_n          (reset        ),
     .LSU_WBU_PC     (LSU_WBU_PC),
     //.alu_result     (alu_out     ),
     .rs2_data       (EXU_LSU_RS2DATA    ),
@@ -538,6 +653,7 @@ lsu my_lsu(
     .LSU_WBU_csr_rst(LSU_WBU_csr_rst),
     .LSU_WBU_csr_in (LSU_WBU_csr_in),
     .LSU_WBU_dnpc   (LSU_WBU_dnpc),
+    .LSU_WBU_skip   (LSU_WBU_skip),
     //.LSU_WLEN       (LSU_WLEN),
     //.LSU_WDATA      (LSU_WDATA),
     //.LSU_RDATA      (LSU_RDATA)
@@ -596,11 +712,12 @@ sram_data data_sram(
     //output reg [1:0]       LSU_AXI4_BRESP 
 );
 */
-wire WBU_ECALL;
+wire WBU_ECALL,WBU_TOP_skip;
 //wire WBU_IFU_JUMP;
 wbu my_wbu(
-    .clk                (clk),
+    .clk                (clock),
     .LSU_WBU_dnpc       (LSU_WBU_dnpc),
+    .LSU_WBU_skip       (LSU_WBU_skip),
     //.LSU_WBU_pc         (LSU_WBU_pc),
     //.WBU_IFU_pc         (WBU_IFU_pc),
     //.LSU_WBU_JUMP       (LSU_WBU_JUMP),
@@ -618,7 +735,7 @@ wbu my_wbu(
    // .LSU_WBU_jal        (LSU_WBU_jal),
     //.LSU_WBU_jalr       (LSU_WBU_jalr),
     .LSU_WBU_csr_rst    (LSU_WBU_csr_rst),
-    .rst_n              (rstn),
+    .rst_n              (reset),
    // .wbu_en             (),
     .LSU_WBU_valid      (LSU_WBU_valid),
     .LSU_WBU_ready      (LSU_WBU_ready),
@@ -632,7 +749,8 @@ wbu my_wbu(
     .WBU_CSR_WEN        (WBU_CSR_WEN),
     .WBU_ECALL          (WBU_ECALL),
     .PC_DATA            (PC_DATA),
-    .DNPC_DATA          (DNPC_DATA)
+    .DNPC_DATA          (DNPC_DATA),
+    .WBU_TOP_skip       (WBU_TOP_skip)
 );
 
 
@@ -640,7 +758,7 @@ wire [31:0] wbu_data;
 wire [4:0] wbu_addr;
 wire WBU_wen,WBU_CSR_WEN;
 RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
-        .clk(clk),
+        .clk(clock),
         .wdata(wbu_data),
         .waddr(wbu_addr),
         .wen(WBU_wen),
@@ -652,7 +770,7 @@ RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
 wire [1:0] WBU_CSR_RADDR;
 assign WBU_CSR_RADDR = (IDU_EXU_ecall) ? 'd3 : (IDU_EXU_mret) ? 'd0 :IDU_EXU_csr_rst;
 csr_reg #(.ADDR_WIDTH(2), .DATA_WIDTH(32)) csr1(
-        .clk(clk),
+        .clk(clock),
         .wdata(WBU_CSR_DATA),
         .ecall(WBU_ECALL),
         .pc(PC_DATA),
@@ -663,21 +781,35 @@ csr_reg #(.ADDR_WIDTH(2), .DATA_WIDTH(32)) csr1(
     );
 
 ///////////////////difftest/////////////////
-reg WBU_IFU_valid_cache;
+
+reg WBU_IFU_valid_cache,ref_skip;
 reg [31:0]TO_top_pc,TO_top_dnpc;
-always @(posedge clk ) begin
-    if(rstn == 1'b0) begin
+always @(posedge clock ) begin
+    if(reset) begin
         difftest_valid <= 1'b0;
         WBU_IFU_valid_cache <= 1'b0;
         TO_top_pc <= 32'h00000000;
         TO_top_dnpc <= 32'h00000000;
+        ref_skip <= 1'b0;
     end else begin
         WBU_IFU_valid_cache <= (WBU_IFU_valid);
         difftest_valid <= WBU_IFU_valid_cache;
         TO_top_pc <= PC_DATA;
         TO_top_dnpc <= DNPC_DATA;
+        ref_skip <= WBU_TOP_skip;
     end
 end
+
+import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
+reg [31:0] dpi_monitor_data[0:5];
+// 初始化时绑定指针
+initial set_monitor_ptr(dpi_monitor_data);
+assign dpi_monitor_data[0] = {31'b0,difftest_valid};
+assign dpi_monitor_data[1] = TO_top_pc;
+assign dpi_monitor_data[2] = TO_top_dnpc;
+assign dpi_monitor_data[3] = instr;
+assign dpi_monitor_data[4] = {31'b0,ebreak};
+assign dpi_monitor_data[5] = {31'b0,ref_skip};
 
 endmodule
 

@@ -14,7 +14,7 @@ static const uint32_t img [] = {
 static void restart() {  
   /* Set the initial program counter. */
   cpu.pc = RESET_VECTOR;
-
+  printf("Reset PC: 0x%08x\n", cpu.pc);
   /* The zero register is always 0. */
   cpu.gpr[0] = 0;
   cpu.csr[1] = 0x1800;
@@ -24,7 +24,6 @@ static void restart() {
 void init_isa() {
   /* Load build-in image. */
   memcpy(guest_to_host(RESET_VECTOR), img, sizeof(img));
-
   /* Initialize this vertual computer system. */
   restart();
 }

@@ -1,9 +1,9 @@
 #include <common.h>
 #include <isa.h>
 #include <paddr.h>
-#include <Vtop.h>
+#include <VysyxSoCFull.h>
 #include "svdpi.h"
-#include "Vtop__Dpi.h"
+#include "VysyxSoCFull__Dpi.h"
 #define CONFIG_MTRACE
 #define PG_ALIGN __attribute((aligned(4096))) 
 
@@ -12,12 +12,24 @@
 
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 
-uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
+uint8_t* guest_to_host(paddr_t paddr) {  return pmem + paddr - 0x20000000; }
+uint8_t* mrom_to_host(paddr_t paddr) {
+    return pmem + paddr - 0x20000000;
+}
+
 paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
 
 static word_t pmem_read(paddr_t addr, int len) {
   
     word_t ret = host_read(guest_to_host(addr), len);
+
+   
+    return ret;
+}
+
+word_t mrom_read(paddr_t addr, int len) {
+  
+    word_t ret = host_read(mrom_to_host(addr), len);
 
    
     return ret;
@@ -31,7 +43,7 @@ static void pmem_write(paddr_t addr, int len, word_t data) {
 }
 
 void delete_module();
-extern Vtop* top;
+extern VysyxSoCFull* top;
 
 
 static void out_of_bound(paddr_t addr) {
@@ -39,7 +51,7 @@ static void out_of_bound(paddr_t addr) {
   //top->clk = !top->clk;
   top->eval();
  
-  top->clk = !top->clk;
+  top->clock = !top->clock;
   top->eval();
  
   delete_module();
@@ -53,7 +65,7 @@ void init_mem() {
   #ifdef CONFIG_PMEM_MALLOC
     printf("CONFIG_PMEM_MALLOC defined\n")
     pmem = malloc(CONFIG_MSIZE);
-    assert(pemm);
+    assert(pmem);
   #endif
   #ifdef CONFIG_MEM_RANDOM
     printf("CONFIG_PMEM_MALLOC defined\n")
@@ -73,9 +85,7 @@ void  mmio_write(paddr_t addr, int len, word_t data);
 
 word_t paddr_read(paddr_t addr, int len) {
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
-  #ifdef CONFIG_DEVICE
-    return mmio_read(addr, len);
-  #endif
+  
   out_of_bound(addr);
   return 0;
 }
@@ -83,10 +93,7 @@ word_t paddr_read(paddr_t addr, int len) {
 
 void paddr_write(paddr_t addr, int len, word_t data) {
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
-  #ifdef CONFIG_DEVICE
-    mmio_write(addr, len, data);
-    return ;
-  #endif
+  
   out_of_bound(addr);
 }
 

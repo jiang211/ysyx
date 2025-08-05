@@ -8,6 +8,7 @@ module ifu(
     output reg IFU_IDU_valid, //IFU传递给IDU的指令是否有效
     input  IDU_IFU_ready, //IDU是否准备好接收IFU的指令
     input [31:0]WBU_IFU_pc,
+    input [1:0] resp,
     //input       EXU_IFU_STALL_done,
     //input pcsrc,
     //input [31:0] imm,
@@ -70,7 +71,7 @@ assign inst_addr   = pc;
 reg start,start_r;
    
 always @(posedge clk) begin
-    if (!rstn) begin
+    if (rstn) begin
         start <= 1'b1;
         start_r <= 1'b0;
     end
@@ -80,7 +81,7 @@ always @(posedge clk) begin
     end
 end
 always @(posedge clk) begin
-    if (!rstn) begin
+    if (rstn) begin
         state <= IDLE;
         IFU_IDU_valid <= 1'b0;
         IFU_AXI4_arvalid <= 1'b0;
@@ -97,14 +98,13 @@ always @(posedge clk) begin
         end
         case (state)
             IDLE: begin
-                instr <= 32'h1;
                 IFU_AXI4_rready <= 1'b0;
                 IFU_AXI4_araddr <= inst_addr;
-                if((WBU_IFU_valid && WBU_IFU_ready) | start_r) begin
+                if((WBU_IFU_valid && WBU_IFU_ready) | start) begin
                     IFU_AXI4_arvalid <= 1'b1;
                 end
                 if(IFU_AXI4_arvalid && IFU_AXI4_arready) begin
-                    
+                    IFU_AXI4_rready <= 1'b1;
                     IFU_AXI4_arvalid <= 1'b0;
                     state <= READ;
                     
@@ -126,7 +126,7 @@ always @(posedge clk) begin
                 end
                 else begin
                     IFU_IDU_valid <= 1'b0;
-                    instr <= 32'h0;
+                    instr <= instr;
                     state <= READ;
                 end
             end
@@ -146,8 +146,8 @@ always @(posedge clk) begin
 end
 always@(posedge clk)
 begin 
-   if(!rstn)begin
-    pc<=32'h80000000 ;
+   if(rstn | (resp != 2'b00))begin
+    pc<=32'h20000000 ;
     end
     else if(WBU_IFU_JUMP)begin 
     pc <= WBU_IFU_pc;
@@ -167,7 +167,7 @@ sram_inst inst_sram(
 );*/
 always@(posedge clk)
 begin
-    if(!rstn)begin
+    if(rstn)begin
         IFU_IDU_PC <= 32'h80000000;
         IFU_dnpc <= 32'h80000000;
     end
