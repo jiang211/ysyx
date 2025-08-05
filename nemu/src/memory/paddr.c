@@ -30,7 +30,7 @@ static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
 paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
 uint8_t* guest_to_host_flash(paddr_t paddr) { return pmem + paddr - FLASH_base; }
-uint8_t* guest_to_host_sram(paddr_t paddr) { return pmem + paddr - SRAM_base + FLASH_size; }
+uint8_t* guest_to_host_sram(paddr_t paddr) { return pmem + paddr - SRAM_base + 0x10000; }
 static word_t pmem_read(paddr_t addr, int len) {
   word_t ret = host_read(guest_to_host(addr), len);
   return ret;
