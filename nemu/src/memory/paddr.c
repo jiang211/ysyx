@@ -37,7 +37,6 @@ static word_t pmem_read(paddr_t addr, int len) {
 }
 
 static word_t mrom_read(paddr_t addr, int len) {
-  printf("ret = %08x\n",host_read(guest_to_host_mrom(addr), len));
   word_t ret = host_read(guest_to_host_mrom(addr), len);
   return ret;
 }
