@@ -13,7 +13,7 @@ static const uint32_t img [] = {
 
 static void restart() {  
   /* Set the initial program counter. */
-  cpu.pc = 0x30000000;
+  cpu.pc = 0x20000000;
   printf("Reset PC: 0x%08x\n", cpu.pc);
   /* The zero register is always 0. */
   cpu.gpr[0] = 0;
@@ -23,7 +23,7 @@ static void restart() {
 
 void init_isa() {
   /* Load build-in image. */
-  memcpy(guest_to_host(0x30000000), img, sizeof(img));
+  memcpy(guest_to_host(0x20000000), img, sizeof(img));
   /* Initialize this vertual computer system. */
   restart();
 }
