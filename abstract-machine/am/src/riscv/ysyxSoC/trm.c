@@ -25,7 +25,20 @@ void halt(int code) {
   while (1);
 }
 
+extern char _sdata;
+extern char _edata;
+extern char _sidata;
+extern char _etext;
+
+volatile void memcpy(void *dest, const void *src, size_t n) {
+    uint8_t *d = (uint8_t *)dest;
+    const uint8_t *s = (const uint8_t *)src;
+    while (n--) *d++ = *s++;
+}
+
+
 void _trm_init() {
+  memcpy(&_sdata, &_sidata, &_edata - &_sdata);
   int ret = main(mainargs);
   halt(ret);
 }

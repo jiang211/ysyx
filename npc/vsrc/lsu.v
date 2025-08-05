@@ -99,21 +99,39 @@ reg [2:0] state;
     wire [3:0] LSU_WLEN;
     wire [31:0] rdata;
     reg [31:0] LSU_RDATA,LSU_WDATA;
+    wire [3:0] lsu_wstrb;
+    wire [31:0] lsu_wdata;
+    wire [31:0] lsu_rdata;
+    wire [31:0] lsu_rdata_;
     assign LSU_WDATA = ( {32{EXU_LSU_sb}} & {24'b0,rs2_data[7:0]}) |
                    ( {32{EXU_LSU_sh}} & {16'b0,rs2_data[15:0]}) |
                    ( {32{EXU_LSU_sw}} & rs2_data);
 
-    assign rdata = ( {32{LSU_WBU_lb}} & {{24{LSU_RDATA[7]}},LSU_RDATA[7:0]}) |
-                   ( {32{LSU_WBU_lh}} & {{16{LSU_RDATA[15]}}, (LSU_RDATA[15:0])}) |
-                   ( {32{LSU_WBU_lw}} & LSU_RDATA) |
-                   ( {32{LSU_WBU_lbu}} & {24'b0,LSU_RDATA[7:0]}) |
-                   ( {32{LSU_WBU_lhu}} & {16'b0,LSU_RDATA[15:0]});
+    assign lsu_rdata = ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b00) ? (LSU_RDATA >> 32'd0) :
+                       ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b01) ? (LSU_RDATA >> 32'd8) :
+                       ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b10) ? (LSU_RDATA >> 32'd16) :
+                       ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b11) ? (LSU_RDATA >> 32'd24) : (LSU_RDATA >> 32'd0);
 
-    assign  LSU_WLEN = ( {4{EXU_LSU_sb}} & 4'd1 )  |
-                   ( {4{EXU_LSU_sh}} & 4'd2 )  |
-                   ( {4{EXU_LSU_sw}} & 4'd4 ) ;
+    assign lsu_rdata_ = ((LSU_AXI4_ARADDR >= 32'h20000000) && (LSU_AXI4_ARADDR < 32'h20010000)) ? LSU_RDATA : lsu_rdata;
+    assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata_[7]}},lsu_rdata_[7:0]}) |
+                   ( {32{LSU_WBU_lh}} & {{16{lsu_rdata_[15]}}, (lsu_rdata_[15:0])}) |
+                   ( {32{LSU_WBU_lw}} & lsu_rdata_) |
+                   ( {32{LSU_WBU_lbu}} & {24'b0,lsu_rdata_[7:0]}) |
+                   ( {32{LSU_WBU_lhu}} & {16'b0,lsu_rdata_[15:0]});
+
+    assign  LSU_WLEN = ( {4{EXU_LSU_sb}} & 4'b1 )  |
+                   ( {4{EXU_LSU_sh}} & 4'b11 )  |
+                   ( {4{EXU_LSU_sw}} & 4'b1111 ) ;
     
-    
+    assign lsu_wstrb = ((EXU_LSU_result[1:0] & 2'b11) == 2'b00) ? (LSU_WLEN << 2'd0) :
+                       ((EXU_LSU_result[1:0] & 2'b11) == 2'b01) ? (LSU_WLEN << 2'd1) :
+                       ((EXU_LSU_result[1:0] & 2'b11) == 2'b10) ? (LSU_WLEN << 2'd2) :
+                       ((EXU_LSU_result[1:0] & 2'b11) == 2'b11) ? (LSU_WLEN << 2'd3) : (LSU_WLEN << 2'd0);
+
+    assign lsu_wdata = ((EXU_LSU_result[1:0] & 2'b11) == 2'b00) ? (LSU_WDATA << 32'd0) :
+                       ((EXU_LSU_result[1:0] & 2'b11) == 2'b01) ? (LSU_WDATA << 32'd8) :
+                       ((EXU_LSU_result[1:0] & 2'b11) == 2'b10) ? (LSU_WDATA << 32'd16) :
+                       ((EXU_LSU_result[1:0] & 2'b11) == 2'b11) ? (LSU_WDATA << 32'd24) : (LSU_WDATA << 32'd0);
     //wire [31:0] LSU_WBU_DATA;
     reg [31:0] LSU_WBU_result;
     assign LSU_WBU_DATA = (LSU_REN) ? rdata : LSU_WBU_result;
@@ -202,8 +220,8 @@ always @(posedge clk) begin
                     state <= IDLE;
                 end else if (EXU_LSU_wen  ) begin
                     LSU_AXI4_AWADDR <= EXU_LSU_result;
-                    LSU_AXI4_WDATA <= LSU_WDATA;
-                    LSU_AXI4_WSTRB <= LSU_WLEN;
+                    LSU_AXI4_WDATA <= lsu_wdata;
+                    LSU_AXI4_WSTRB <= lsu_wstrb;
                     LSU_AXI4_AWVALID <= 1'b1;
                     LSU_AXI4_WVALID <= 1'b1;
                     state <= START;

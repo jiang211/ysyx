@@ -83,7 +83,7 @@ assign io_master_rready = AXI4_MASTER_RREADY;
 assign io_master_awid = 'd0;//AXI4_MASTER_AWID;
 assign io_master_awlen = 'd0;//AXI4_MASTER_AWLEN;
 assign io_master_awsize = 'd0;//AXI4_MASTER_AWSIZE;
-assign io_master_awburst = 'd0;//AXI4_MASTER_AWBURST;
+assign io_master_awburst = 2'd01;//AXI4_MASTER_AWBURST;
 assign io_master_wvalid = AXI4_MASTER_WVALID;
 assign io_master_wdata = AXI4_MASTER_WDATA;
 assign io_master_wstrb = AXI4_MASTER_WSTRB;
@@ -94,7 +94,7 @@ assign io_master_araddr = AXI4_MASTER_ARADDR;
 assign io_master_arid = 'd0;//AXI4_MASTER_ARID;
 assign io_master_arlen = 'd0;//AXI4_MASTER_ARLEN;
 assign io_master_arsize = 'd0;//AXI4_MASTER_ARSIZE;
-assign io_master_arburst = 'd0;//AXI4_MASTER_ARBURST;
+assign io_master_arburst = 2'd01;//AXI4_MASTER_ARBURST;
 
 assign AXI4_MASTER_AWREADY = io_master_awready;
 assign AXI4_MASTER_WREADY = io_master_wready;
