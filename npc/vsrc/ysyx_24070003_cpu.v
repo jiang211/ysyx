@@ -602,6 +602,7 @@ wire LSU_AXI4_RVALID,LSU_AXI4_RREADY,LSU_AXI4_AWVALID,LSU_AXI4_AWREADY,LSU_AXI4_
 wire LSU_AXI4_ARVALID,LSU_AXI4_ARREADY;
 wire [31:0] LSU_AXI4_RDATA,LSU_AXI4_AWADDR,LSU_AXI4_WDATA,LSU_AXI4_ARADDR;
 wire [3:0] LSU_AXI4_WSTRB;
+wire LSU_WBU_skip;
 lsu my_lsu(
     //.EXU_IFU_pc      (EXU_IFU_pc),
     //.LSU_WBU_pc      (LSU_WBU_pc),
@@ -652,6 +653,7 @@ lsu my_lsu(
     .LSU_WBU_csr_rst(LSU_WBU_csr_rst),
     .LSU_WBU_csr_in (LSU_WBU_csr_in),
     .LSU_WBU_dnpc   (LSU_WBU_dnpc),
+    .LSU_WBU_skip   (LSU_WBU_skip),
     //.LSU_WLEN       (LSU_WLEN),
     //.LSU_WDATA      (LSU_WDATA),
     //.LSU_RDATA      (LSU_RDATA)
@@ -710,11 +712,12 @@ sram_data data_sram(
     //output reg [1:0]       LSU_AXI4_BRESP 
 );
 */
-wire WBU_ECALL;
+wire WBU_ECALL,WBU_TOP_skip;
 //wire WBU_IFU_JUMP;
 wbu my_wbu(
     .clk                (clock),
     .LSU_WBU_dnpc       (LSU_WBU_dnpc),
+    .LSU_WBU_skip       (LSU_WBU_skip),
     //.LSU_WBU_pc         (LSU_WBU_pc),
     //.WBU_IFU_pc         (WBU_IFU_pc),
     //.LSU_WBU_JUMP       (LSU_WBU_JUMP),
@@ -746,7 +749,8 @@ wbu my_wbu(
     .WBU_CSR_WEN        (WBU_CSR_WEN),
     .WBU_ECALL          (WBU_ECALL),
     .PC_DATA            (PC_DATA),
-    .DNPC_DATA          (DNPC_DATA)
+    .DNPC_DATA          (DNPC_DATA),
+    .WBU_TOP_skip       (WBU_TOP_skip)
 );
 
 
@@ -778,7 +782,7 @@ csr_reg #(.ADDR_WIDTH(2), .DATA_WIDTH(32)) csr1(
 
 ///////////////////difftest/////////////////
 
-reg WBU_IFU_valid_cache;
+reg WBU_IFU_valid_cache,ref_skip;
 reg [31:0]TO_top_pc,TO_top_dnpc;
 always @(posedge clock ) begin
     if(reset) begin
@@ -786,16 +790,18 @@ always @(posedge clock ) begin
         WBU_IFU_valid_cache <= 1'b0;
         TO_top_pc <= 32'h00000000;
         TO_top_dnpc <= 32'h00000000;
+        ref_skip <= 1'b0;
     end else begin
         WBU_IFU_valid_cache <= (WBU_IFU_valid);
         difftest_valid <= WBU_IFU_valid_cache;
         TO_top_pc <= PC_DATA;
         TO_top_dnpc <= DNPC_DATA;
+        ref_skip <= WBU_TOP_skip;
     end
 end
 
 import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
-reg [31:0] dpi_monitor_data[0:4];
+reg [31:0] dpi_monitor_data[0:5];
 // 初始化时绑定指针
 initial set_monitor_ptr(dpi_monitor_data);
 assign dpi_monitor_data[0] = {31'b0,difftest_valid};
@@ -803,7 +809,7 @@ assign dpi_monitor_data[1] = TO_top_pc;
 assign dpi_monitor_data[2] = TO_top_dnpc;
 assign dpi_monitor_data[3] = instr;
 assign dpi_monitor_data[4] = {31'b0,ebreak};
-
+assign dpi_monitor_data[5] = {31'b0,ref_skip};
 
 endmodule
 

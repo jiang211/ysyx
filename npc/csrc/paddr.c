@@ -16,7 +16,9 @@ uint8_t* guest_to_host(paddr_t paddr) {  return pmem + paddr - 0x20000000; }
 uint8_t* mrom_to_host(paddr_t paddr) {
     return pmem + paddr - 0x20000000;
 }
-
+uint8_t* flash_to_host(paddr_t paddr) {
+    return pmem + paddr - 0x30000000;
+}
 paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
 
 static word_t pmem_read(paddr_t addr, int len) {
@@ -30,6 +32,14 @@ static word_t pmem_read(paddr_t addr, int len) {
 word_t mrom_read(paddr_t addr, int len) {
   
     word_t ret = host_read(mrom_to_host(addr), len);
+
+   
+    return ret;
+}
+
+word_t flash_read(paddr_t addr, int len) {
+  
+    word_t ret = host_read(flash_to_host(addr), len);
 
    
     return ret;

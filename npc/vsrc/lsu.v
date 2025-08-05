@@ -51,6 +51,7 @@ module lsu(
     output   reg    LSU_WBU_C_type,
     output   reg [1:0] LSU_WBU_csr_rst,
     output   reg [31:0] LSU_WBU_dnpc,
+    output   reg LSU_WBU_skip,
     //output   [3:0]  LSU_WLEN,
    // output    [31:0] LSU_WDATA,
     //input    [31:0] LSU_RDATA,
@@ -103,6 +104,8 @@ reg [2:0] state;
     wire [31:0] lsu_wdata;
     wire [31:0] lsu_rdata;
     wire [31:0] lsu_rdata_;
+    wire skip;
+    assign skip = (((LSU_AXI4_ARADDR >= 32'h10000000) && (LSU_AXI4_ARADDR < 32'h10000fff)) || ((LSU_AXI4_AWADDR >= 32'h10000000) && (LSU_AXI4_AWADDR < 32'h10000fff))) ? 1'b1 : 1'b0;
     assign LSU_WDATA = ( {32{EXU_LSU_sb}} & {24'b0,rs2_data[7:0]}) |
                    ( {32{EXU_LSU_sh}} & {16'b0,rs2_data[15:0]}) |
                    ( {32{EXU_LSU_sw}} & rs2_data);
@@ -330,6 +333,7 @@ always @(posedge clk) begin
         //LSU_WBU_JUMP <= 1'b0;
         //LSU_WBU_pc <= 32'b0;
         LSU_REN      <= 1'b0;
+        LSU_WBU_skip <= 1'b0;
         LSU_WBU_lb <= 1'b0;
         LSU_WBU_lh <= 1'b0;
         LSU_WBU_lw <= 1'b0;
@@ -360,6 +364,7 @@ always @(posedge clk) begin
         LSU_WBU_lhu <= lhu;
         LSU_WBU_PC <= pc;
         LSU_WBU_dnpc <= dnpc;
+        LSU_WBU_skip <= skip;
     end else begin
         //RDATAIN <= 32'b0;
         //WDATA   <= 32'b0;
@@ -383,6 +388,7 @@ always @(posedge clk) begin
         LSU_WBU_lhu <= 1'b0;
         LSU_WBU_PC <= 32'b0;
         LSU_WBU_dnpc <= 32'b0;
+        LSU_WBU_skip <= 1'b0;
     end
 end
 
