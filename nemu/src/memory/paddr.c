@@ -25,11 +25,14 @@ static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 #endif
 #define MROM_base 0x20000000
 #define MROM_size 0x00001000
+#define FLASH_base 0x30000000
+#define FLASH_size 0x10000000
 #define SRAM_base 0x0f000000
 #define SRAM_size 0x01000000
 uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
 paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
 uint8_t* guest_to_host_mrom(paddr_t paddr) { return pmem + paddr - MROM_base; }
+uint8_t* guest_to_host_flash(paddr_t paddr) { return pmem + paddr - FLASH_base; }
 uint8_t* guest_to_host_sram(paddr_t paddr) { return pmem + paddr - SRAM_base + MROM_size; }
 static word_t pmem_read(paddr_t addr, int len) {
   word_t ret = host_read(guest_to_host(addr), len);
@@ -41,6 +44,10 @@ static word_t mrom_read(paddr_t addr, int len) {
   return ret;
 }
 
+static word_t flash_read(paddr_t addr, int len) {
+  word_t ret = host_read(guest_to_host_flash(addr), len);
+  return ret;
+}
 static word_t sram_read(paddr_t addr, int len) {
   word_t ret = host_read(guest_to_host_sram(addr), len);
   return ret;
@@ -78,6 +85,7 @@ word_t paddr_read(paddr_t addr, int len) {
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
   if(addr >= MROM_base && addr < MROM_base + MROM_size){return mrom_read(addr,len);}
   if(addr >= SRAM_base && addr < SRAM_base + SRAM_size){return sram_read(addr,len);}
+  if(addr >= FLASH_base && addr < FLASH_base + FLASH_size){return flash_read(addr,len);}
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
   out_of_bound(addr);
   return 0;

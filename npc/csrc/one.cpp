@@ -30,10 +30,8 @@ void npc_trap(int state, vaddr_t pc, int halt_ret);
 
    
 void init_verilator(int argc, char** argv, char** env) {
-  printf("1\n");
-  //Verilated::commandArgs(argc, argv);
+  Verilated::commandArgs(argc, argv);
   contextp = new VerilatedContext;
-  printf("1\n");
   contextp->commandArgs(argc, argv);
   top = new VysyxSoCFull{contextp};
   //VCD波形设置  start
@@ -137,7 +135,7 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
 }
 
 extern "C" void flash_read(int32_t addr, int32_t *data) { 
-  *data = flash_read((paddr_t)(addr),4);
+  assert(0); ; 
 }
 
 static uint8_t rom_data[1024];  // 假设 ROM 最大 1KB
