@@ -10,7 +10,7 @@
 #define likely(cond)   __builtin_expect(cond, 1)
 #define unlikely(cond) __builtin_expect(cond, 0)
 
-static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
+static uint8_t pmem[0x10000000] PG_ALIGN = {};
 
 uint8_t* guest_to_host(paddr_t paddr) {  return pmem + paddr - 0x20000000; }
 uint8_t* mrom_to_host(paddr_t paddr) {

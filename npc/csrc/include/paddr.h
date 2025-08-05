@@ -3,7 +3,7 @@
 
 #include <common.h>
 
-#define RESET_VECTOR (0x20000000)
+#define RESET_VECTOR (0x30000000)
 
 /* convert the guest physical address in the guest program to host virtual address in NEMU */
 uint8_t* guest_to_host(paddr_t paddr);
