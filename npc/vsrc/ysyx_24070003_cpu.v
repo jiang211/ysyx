@@ -716,7 +716,7 @@ wire WBU_ECALL,WBU_TOP_skip;
 //wire WBU_IFU_JUMP;
 wbu my_wbu(
     .clk                (clock),
-    .LSU_WBU_dnpc       (LSU_WBU_dnpc),
+    .LSU_WBU_dnpc       (IFU_IDU_dnpc),
     .LSU_WBU_skip       (LSU_WBU_skip),
     //.LSU_WBU_pc         (LSU_WBU_pc),
     //.WBU_IFU_pc         (WBU_IFU_pc),
@@ -806,7 +806,7 @@ reg [31:0] dpi_monitor_data[0:5];
 initial set_monitor_ptr(dpi_monitor_data);
 assign dpi_monitor_data[0] = {31'b0,difftest_valid};
 assign dpi_monitor_data[1] = TO_top_pc;
-assign dpi_monitor_data[2] = TO_top_dnpc;
+assign dpi_monitor_data[2] = IFU_IDU_PC;
 assign dpi_monitor_data[3] = instr;
 assign dpi_monitor_data[4] = {31'b0,ebreak};
 assign dpi_monitor_data[5] = {31'b0,ref_skip};
