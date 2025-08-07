@@ -12,16 +12,17 @@ SECTIONS {
   /* _pmem_start and _entry_offset are defined in LDFLAGS */
   . = ORIGIN(flash);
   .text : {
+    _stext = .;
     *(entry)
     *(.text*)
   } > flash AT> flash : text
   etext = .;
   _etext = .;
   .rodata : {
-    .srodata = .;
+    _srodata = .;
     *(.rodata*)
     *(.srodata*)
-    .erodata = .;
+    _erodata = .;
   } > flash AT> flash
   _data_lma_start = LOADADDR(.rodata) + SIZEOF(.rodata);
   . = ORIGIN(psram);

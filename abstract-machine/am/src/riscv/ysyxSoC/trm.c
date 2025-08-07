@@ -43,7 +43,7 @@ void puts(char *s) {
         putch(*s++);
     }
 }
-
+/*
 // 十进制数字输出函数
 void print_dec(uint32_t num) {
     if (num == 0) {
@@ -87,6 +87,8 @@ static inline uint32_t csr_read(uint32_t csr) {
     asm volatile ("csrr %0, %1" : "=r"(val) : "i"(csr));
     return val;
 }
+*/
+/*
 static void printf_ysyx() {
     uint32_t mvendorid = csr_read(0xF11);
     uint32_t marchid = csr_read(0xF12);
@@ -96,7 +98,7 @@ static void printf_ysyx() {
     putch(mvendorid & 0xFF);
     print_dec(marchid);
 
-}
+}*/
 void halt(int code) {
   asm volatile("mv a0, %0; ebreak" : :"r"(code));
   while (1);
@@ -115,7 +117,7 @@ volatile void _memcpy(void *dest, const void *src, size_t n) {
 
 
 void _trm_init() {
-  printf_ysyx();
+  //printf_ysyx();
   init_uart();
   _memcpy(&_sdata, &_sidata, &_edata - &_sdata);
   int ret = main(mainargs);
