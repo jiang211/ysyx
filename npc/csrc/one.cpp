@@ -134,12 +134,22 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
 
 }
 
-extern "C" void flash_read(int32_t addr, int32_t *data) { 
-  *data = flash_read((paddr_t)(addr),4); 
-}
-
 static uint8_t rom_data[1024];  // 假设 ROM 最大 1KB
 static size_t rom_size = 0;
+extern "C" void flash_read(int32_t addr, int32_t *data) { 
+  *data = flash_read((paddr_t)(addr),4);
+  /*
+  FILE *fp = fopen("/home/jx/ysyx-workbench/npc/char-test.bin", "rb");
+  if (!fp) {
+    printf("error\n");
+}
+    rom_size = fread(rom_data, 1, sizeof(rom_data), fp);
+    fclose(fp);
+   
+    *data = *(int32_t *)(rom_data + addr);  */
+    
+}
+
 extern "C" void mrom_read(int32_t addr, int32_t *data) { 
 
   *data = mrom_read((paddr_t)(addr),4);
@@ -155,7 +165,14 @@ extern "C" void mrom_read(int32_t addr, int32_t *data) {
     */
 }
 
+extern "C" void psram_read(int32_t addr, int32_t *data) { 
+  *data = psram_read((paddr_t)(addr),4);
+  //printf("psram_read addr = %x, data = %x\n", addr, *data);
+}
 
+extern "C" void psram_write(int addr,int data,int wstrb) {
+  psram_write(addr, data);
+}
 /*
 extern "C" void call(word_t pc , word_t dnpc);
 

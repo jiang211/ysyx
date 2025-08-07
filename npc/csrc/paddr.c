@@ -10,14 +10,15 @@
 #define likely(cond)   __builtin_expect(cond, 1)
 #define unlikely(cond) __builtin_expect(cond, 0)
 
-static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
-
-uint8_t* guest_to_host(paddr_t paddr) {  return pmem + paddr - 0x20000000; }
+static uint8_t pmem[10000000] PG_ALIGN = {};
+static uint8_t psram_mem[10000000] PG_ALIGN = {};
+uint8_t* guest_to_host(paddr_t paddr) {  return pmem + paddr - 0x30000000; }
+uint8_t* guest_to_host_psram(paddr_t paddr) {  return psram_mem + paddr ; }
 uint8_t* mrom_to_host(paddr_t paddr) {
     return pmem + paddr - 0x20000000;
 }
 uint8_t* flash_to_host(paddr_t paddr) {
-    return pmem + paddr - 0x30000000;
+    return pmem + paddr;
 }
 paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
 
@@ -36,12 +37,26 @@ word_t mrom_read(paddr_t addr, int len) {
    
     return ret;
 }
+
 word_t flash_read(paddr_t addr, int len) {
   
     word_t ret = host_read(flash_to_host(addr), len);
 
     return ret;
 }
+
+
+word_t psram_read(paddr_t addr, int len) {
+    word_t ret = host_read(guest_to_host_psram(addr), len);
+    //printf("psram_read ret = %x\n", ret);
+    return ret;
+}
+
+void psram_write(paddr_t addr,word_t data) {
+ 
+    host_write(guest_to_host_psram(addr), 4, data);
+}
+
 static void pmem_write(paddr_t addr, int len, word_t data) {
     host_write(guest_to_host(addr), len, data);
 #ifdef CONFIG_MTRACE

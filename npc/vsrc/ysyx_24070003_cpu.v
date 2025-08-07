@@ -444,7 +444,7 @@ sram_inst inst_sram(
 wire [31:0] IDU_EXU_PC;
 wire IDU_EXU_lw, IDU_EXU_lh, IDU_EXU_lb, IDU_EXU_lbu, IDU_EXU_lhu, IDU_EXU_sw, IDU_EXU_sb, IDU_EXU_sh;
 wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr,IDU_EXU_C_type;
-wire [1:0] IDU_EXU_csr_rst;
+wire [2:0] IDU_EXU_csr_rst;
 idu my_idu(
    // .EXU_IFU_flush          (EXU_IFU_flush),
     .clk                    (clock        ),
@@ -506,7 +506,7 @@ wire [4:0] EXU_LSU_rd,LSU_WBU_rd;
 wire EXU_LSU_ren,EXU_LSU_reg,LSU_WBU_reg,EXU_LSU_ebreak,IDU_EXU_ebreak,EXU_LSU_wen;
 wire EXU_LSU_lw,EXU_LSU_lh,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh;
 wire EXU_LSU_ecall,EXU_LSU_mret,EXU_LSU_C_type;
-wire [1:0] EXU_LSU_csr_rst;
+wire [2:0] EXU_LSU_csr_rst;
 wire [31:0] EXU_LSU_csr_data,EXU_LSU_csr_in;
 wire EXU_IFU_JUMP;
 wire [31:0] EXU_IFU_pc;
@@ -591,8 +591,8 @@ exu my_exu(
 wire [31:0] EXU_LSU_PC,LSU_WBU_PC,PC_DATA,DNPC_DATA,EXU_LSU_dnpc,LSU_WBU_dnpc,IDU_EXU_dnpc;
 wire [31:0] LSU_WBU_DATA;
 wire [31:0] LSU_WBU_csr_data,LSU_WBU_csr_in,WBU_CSR_DATA;
-wire [1:0] WBU_CSR_ADDR;
-wire [1:0]LSU_WBU_csr_rst;
+wire [2:0] WBU_CSR_ADDR;
+wire [2:0]LSU_WBU_csr_rst;
 wire LSU_WBU_ecall,LSU_WBU_mret,LSU_WBU_C_type;
 //wire LSU_WBU_JUMP;
 //wire [31:0] LSU_WDATA,LSU_RDATA;
@@ -767,9 +767,9 @@ RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
         .rdata2(rs2_data),
         .raddr2(rs2)
     );
-wire [1:0] WBU_CSR_RADDR;
+wire [2:0] WBU_CSR_RADDR;
 assign WBU_CSR_RADDR = (IDU_EXU_ecall) ? 'd3 : (IDU_EXU_mret) ? 'd0 :IDU_EXU_csr_rst;
-csr_reg #(.ADDR_WIDTH(2), .DATA_WIDTH(32)) csr1(
+csr_reg #(.ADDR_WIDTH(3), .DATA_WIDTH(32)) csr1(
         .clk(clock),
         .wdata(WBU_CSR_DATA),
         .ecall(WBU_ECALL),

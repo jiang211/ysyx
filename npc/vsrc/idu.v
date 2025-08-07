@@ -16,7 +16,7 @@ module idu(
     output reg[4:0] IDU_EXU_rd,
     output reg[4:0] IDU_EXU_rs1,
     output reg[4:0] IDU_EXU_rs2,
-    output reg[1:0] IDU_EXU_csr_rst,
+    output reg[2:0] IDU_EXU_csr_rst,
     output reg[31:0]IDU_EXU_imm,
     output reg [1:0]IDU_EXU_alu_op ,       
     output reg IDU_EXU_u_alu_type    ,
@@ -59,14 +59,14 @@ wire    [31:0]    immS_num ;
 wire    [31:0]    immB_num ;
 wire    [31:0]    immU_num ;
 wire    [31:0]    immJ_num ;
-wire    [1:0]     immC_num ;
+wire    [2:0]     immC_num ;
 wire    [6:0]     opcode   ;
 wire    [2:0]     funct3   ; 
 wire    [6:0]     funct7   ; 
 wire    [4:0]     rd       ;     
 wire    [4:0]     rs1      ; 
 wire    [4:0]     rs2      ; 
-wire    [1:0]     csr_rst  ; 
+wire    [2:0]     csr_rst  ; 
 wire    [31:0]    imm      ; 
 wire U_type;
 wire J_type;
@@ -93,12 +93,14 @@ assign  immS_num = { {21{instr[31]}}, instr[30:25], instr[11:7] };
 assign  immB_num = { {20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0 };
 assign  immU_num = { instr[31], instr[30:12], 12'b0 };
 assign  immJ_num = { {12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0 };
-assign  immC_num =   (instr[31:20] == 'h341) ? 2'd0 :
-                    (instr[31:20] == 'h300) ? 2'd1 :
-                    (instr[31:20] == 'h342) ? 2'd2 :
-                    (instr[31:20] == 'h305) ? 2'd3 : 2'd0;
+assign  immC_num =   (instr[31:20] == 'h341) ? 3'd0 :
+                    (instr[31:20] == 'h300) ? 3'd1 :
+                    (instr[31:20] == 'h342) ? 3'd2 :
+                    (instr[31:20] == 'h305) ? 3'd3 : 
+                    (instr[31:20] == 'hf11) ? 3'd4 :
+                    (instr[31:20] == 'hf12) ? 3'd5 :3'd0;
 assign rs2 = (R_type || S_type || B_type) ? instr[24:20] :5'b0;
-assign csr_rst = (C_type) ? immC_num : 2'd0;
+assign csr_rst = (C_type) ? immC_num : 3'd0;
 assign rs1 = (R_type || S_type || B_type || I_type || C_type) ? instr[19:15] : 5'b0;
 
 assign rd = (R_type || I_type || U_type || J_type || C_type) ? instr[11:7] : 5'b0;
@@ -194,7 +196,7 @@ begin
     IDU_EXU_rd            <=        5'b0;
     IDU_EXU_rs1           <=        5'b0;  
     IDU_EXU_rs2           <=        5'b0;
-    IDU_EXU_csr_rst       <=        2'b0;    
+    IDU_EXU_csr_rst       <=        3'b0;    
     IDU_EXU_imm           <=        32'b0;
 
     IDU_EXU_alu_op              <=        2'b0;     
@@ -280,7 +282,7 @@ begin
     IDU_EXU_rd            <=        5'b0;
     IDU_EXU_rs1           <=        5'b0;  
     IDU_EXU_rs2           <=        5'b0;
-    IDU_EXU_csr_rst       <=        2'b0;    
+    IDU_EXU_csr_rst       <=        3'b0;    
     IDU_EXU_imm           <=        32'b0;
 
     IDU_EXU_alu_op              <=        2'b0;     

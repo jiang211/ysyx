@@ -39,8 +39,9 @@ module EF_PSRAM_CTRL_wb (
     output  wire [3:0]      douten
 );
 
-    localparam  ST_IDLE = 1'b0,
-                ST_WAIT = 1'b1;
+    localparam  QPI_INIT = 2'b0,
+                ST_IDLE = 2'b01, 
+                ST_WAIT = 2'b10;
 
     wire        mr_sck;
     wire        mr_ce_n;
@@ -60,6 +61,13 @@ module EF_PSRAM_CTRL_wb (
     wire        mw_wr;
     wire        mw_done;
 
+    // QPI初始化使用的信号
+    reg         init_start;
+    wire        init_done;
+    reg        init_sck;
+    reg        init_ce_n;
+    wire [3:0]  init_dout;
+    wire        init_doe;
     //wire        doe;
 
     // WB Control Signals
@@ -69,15 +77,28 @@ module EF_PSRAM_CTRL_wb (
     //wire[3:0]   wb_byte_sel     =   sel_i & {4{wb_we}};
 
     // The FSM
-    reg         state, nstate;
+    reg[1:0]         state, nstate;
     always @ (posedge clk_i or posedge rst_i)
         if(rst_i)
-            state <= ST_IDLE;
+            state <= QPI_INIT;
         else
             state <= nstate;
 
+    always @(*) begin
+        if(state == QPI_INIT)begin
+            init_start  = 1'b1;
+        end else begin
+            init_start  = 1'b0;
+        end
+    end
     always @* begin
         case(state)
+            QPI_INIT :
+                if(init_done)
+                    nstate = ST_IDLE;
+                else
+                    nstate = QPI_INIT;
+
             ST_IDLE :
                 if(wb_valid)
                     nstate = ST_WAIT;
@@ -89,6 +110,8 @@ module EF_PSRAM_CTRL_wb (
                     nstate = ST_IDLE;
                 else
                     nstate = ST_WAIT;
+            default :
+                nstate = QPI_INIT;
         endcase
     end
 
@@ -161,12 +184,55 @@ module EF_PSRAM_CTRL_wb (
         .douten(mw_doe)
     );
 
-    assign sck  = wb_we ? mw_sck  : mr_sck;
-    assign ce_n = wb_we ? mw_ce_n : mr_ce_n;
-    assign dout = wb_we ? mw_dout : mr_dout;
-    assign douten  = wb_we ? {4{mw_doe}}  : {4{mr_doe}};
+    assign sck  = (state == QPI_INIT) ? init_sck  : wb_we ? mw_sck  : mr_sck;   
+    assign ce_n = (state == QPI_INIT) ? init_ce_n : wb_we ? mw_ce_n : mr_ce_n;
+    assign dout = (state == QPI_INIT) ? init_dout : wb_we ? mw_dout : mr_dout;
+    assign douten  = (state == QPI_INIT) ?  {4{init_doe}}  : wb_we ? {4{mw_doe}}  : {4{mr_doe}};
 
     assign mw_din = din;
     assign mr_din = din;
     assign ack_o = wb_we ? mw_done :mr_done ;
+
+    wire [7:0] CMD_35H = 8'h35;
+
+    reg [3:0] counter;
+
+    // 输出时钟
+    always @(posedge clk_i or posedge rst_i) begin
+        if(rst_i)begin
+            init_sck     <= 1'b0;
+        // end else if(start == 1'b1)begin      // 直接使用start对于sck不一定正确
+        end else if(init_ce_n == 1'b0)begin
+            init_sck     <= ~init_sck;
+        end else begin
+            init_sck     <= 1'b0;
+        end
+    end
+
+    // 输出ce_n
+    always @(posedge clk_i or posedge rst_i) begin
+        if(rst_i)begin
+            init_ce_n    <= 1'b1;
+        end else if(init_start == 1'b1)begin
+            init_ce_n    <= 1'b0;
+        end else begin
+            init_ce_n    <= 1'b1;
+        end
+    end
+
+    // 计数counter
+    always @(posedge init_sck or posedge rst_i) begin
+        if(rst_i)begin
+            counter <= 4'b0;
+        end else if(init_sck & ~init_done) begin
+            counter <= counter + 1'b1;
+        end else begin
+            counter <= 4'b0;
+        end
+    end
+
+    // 输出dout,douten,init_done
+    assign init_dout         = (counter < 4'd8) ? {3'b0, CMD_35H[7 - counter]} : 4'b0;   // 在进入QPI模式之前，命令只在SPI0位进行输入
+    assign init_doe       = 1;
+    assign init_done    = (counter == 4'd8);
 endmodule

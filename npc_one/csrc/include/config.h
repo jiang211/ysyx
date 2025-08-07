@@ -17,6 +17,6 @@
 #define CONFIG_PC_RESET_OFFSET 0x0
 
 #define CONFIG_MSIZE 0x1000          // memory size
-#define CONFIG_MBASE 0x20000000         // memory base address
+#define CONFIG_MBASE 0x30000000         // memory base address
 
 #endif

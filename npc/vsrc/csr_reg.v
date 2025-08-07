@@ -14,7 +14,7 @@ module csr_reg #(
     input [ADDR_WIDTH-1:0] raddr1
 );
 
-    reg [DATA_WIDTH-1:0] csr[3:0];
+    reg [DATA_WIDTH-1:0] csr[5:0];
     reg clk_reg;
     wire clk_neg;
     always@(posedge clk)
@@ -22,6 +22,10 @@ module csr_reg #(
         clk_reg <= clk;
     end
     assign clk_neg = ~clk & clk_reg;
+    initial begin
+        csr[4] = 32'h79737978; // zero register
+        csr[5] = 32'h016e38bf; // zero register
+    end
     import "DPI-C" function void set_csr_ptr(input logic [31:0] a []);
     initial set_csr_ptr(csr); // set the pointer to the CSR array
     initial csr[1] = 'h1800;

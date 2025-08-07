@@ -15,7 +15,7 @@ module wbu(
     input LSU_WBU_reg,
     input [31:0] LSU_WBU_csr_data,
     input [31:0] LSU_WBU_csr_in,
-    input [1:0]  LSU_WBU_csr_rst,
+    input [2:0]  LSU_WBU_csr_rst,
     input LSU_WBU_ecall,
     input LSU_WBU_mret,
     input LSU_WBU_C_type,
@@ -27,7 +27,7 @@ module wbu(
     output reg [31:0]WBU_REG_DATA,
     output reg [4:0]WBU_REG_ADDR,
     output reg [31:0]WBU_CSR_DATA,
-    output reg [1:0]WBU_CSR_ADDR,
+    output reg [2:0]WBU_CSR_ADDR,
     output reg WBU_wen,
     output reg WBU_CSR_WEN,
     output reg WBU_ECALL,
@@ -47,7 +47,7 @@ always @(posedge clk) begin
         WBU_REG_DATA <= 32'b0;
         WBU_REG_ADDR <= 5'b0;
         WBU_CSR_DATA <= 32'b0;
-        WBU_CSR_ADDR <= 2'b0;
+        WBU_CSR_ADDR <= 3'b0;
         WBU_CSR_WEN <= 1'b0;
         WBU_wen <= 1'b0;
         WBU_ECALL <= 1'b0;
@@ -87,7 +87,7 @@ always @(posedge clk) begin
         WBU_REG_DATA <= 32'b0;
         WBU_REG_ADDR <= 5'b0;
         WBU_CSR_DATA <= 32'b0;
-        WBU_CSR_ADDR <= 2'b0;
+        WBU_CSR_ADDR <= 3'b0;
         WBU_CSR_WEN <= 1'b0;
         WBU_wen <= 1'b0;
         WBU_ECALL <= 1'b0;

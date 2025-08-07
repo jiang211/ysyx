@@ -29,15 +29,74 @@ void init_uart(){
 }
 
 void putch(char ch) {
-  *(volatile char *)(UART_BASE + UART_TX) = ch;
+  *(volatile char *)(UART_BASE + UART_TX) = ch;/*
   uint8_t TX_ISEMPTY = *(volatile char *)(UART_BASE + UART_LS);
     while ((TX_ISEMPTY & 0x40) != 0x40) { //等待uart数据发送完成
         TX_ISEMPTY = *(volatile char *)(UART_BASE + UART_LS);
     }
     while(((*(volatile char *)(UART_BASE + UART_LS))&0x20) != 0x20); //等待传输FIFO为空
-    *(volatile char *)(UART_BASE + UART_FC) = 0b11000100; //清空缓存区
+    *(volatile char *)(UART_BASE + UART_FC) = 0b11000100; //清空缓存区*/
 }
 
+void puts(char *s) {
+    while (*s) {
+        putch(*s++);
+    }
+}
+
+// 十进制数字输出函数
+void print_dec(uint32_t num) {
+    if (num == 0) {
+        putch('0');
+        return;
+    }
+    
+    // 处理小数字的快速路径（0-99）
+    if (num < 100) {
+        if (num < 10) {
+            putch('0' + num);
+        } else {
+            putch('0' + num / 10);
+            putch('0' + num % 10);
+        }
+        return;
+    }
+    
+    // 计算数字位数（避免除法）
+    uint32_t temp = num;
+    int digits = 0;
+    uint32_t divisor = 1;
+    
+    while (temp >= 10) {
+        temp /= 10;
+        divisor *= 10;
+        digits++;
+    }
+    
+    // 从最高位开始输出
+    while (divisor > 0) {
+        uint32_t digit = num / divisor;
+        putch('0' + digit);
+        num %= divisor;
+        divisor /= 10;
+    }
+}
+
+static inline uint32_t csr_read(uint32_t csr) {
+    uint32_t val;
+    asm volatile ("csrr %0, %1" : "=r"(val) : "i"(csr));
+    return val;
+}
+static void printf_ysyx() {
+    uint32_t mvendorid = csr_read(0xF11);
+    uint32_t marchid = csr_read(0xF12);
+    putch((mvendorid >> 24) & 0xFF);
+    putch((mvendorid >> 16) & 0xFF);
+    putch((mvendorid >> 8)  & 0xFF);
+    putch(mvendorid & 0xFF);
+    print_dec(marchid);
+
+}
 void halt(int code) {
   asm volatile("mv a0, %0; ebreak" : :"r"(code));
   while (1);
@@ -56,6 +115,7 @@ volatile void _memcpy(void *dest, const void *src, size_t n) {
 
 
 void _trm_init() {
+  printf_ysyx();
   init_uart();
   _memcpy(&_sdata, &_sidata, &_edata - &_sdata);
   int ret = main(mainargs);
