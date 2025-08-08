@@ -394,39 +394,25 @@ uart my_uart(
     .AXI4_UART_BREADY                       (AXI4_UART_BREADY)
     //output reg [1:0]       AXI4_UART_BRESP 
 );
+*/
 
+ 
 clint my_clint(
-    .CLK                         (clk)  ,
-    .rstn                        (rstn),    
+    .CLK                         (clock)  ,
+    .rstn                        (reset),    
 
 
     // AXI-Lite4 Read Address Channel
-    .AXI4_CLINT_ARADDR               (AXI4_CLINT_ARADDR),
-    .AXI4_CLINT_ARVALID               (AXI4_CLINT_ARVALID),
+    .AXI4_CLINT_ARADDR               (LSU_AXI4_ARADDR),
+    .AXI4_CLINT_ARVALID               (LSU_AXI4_ARVALID),
     .AXI4_CLINT_ARREADY               (AXI4_CLINT_ARREADY),
     
     // AXI-Lite4 Read Data Channel
     .AXI4_CLINT_RDATA               (AXI4_CLINT_RDATA),
     .AXI4_CLINT_RVALID               (AXI4_CLINT_RVALID),
-    .AXI4_CLINT_RREADY               (AXI4_CLINT_RREADY),
-
-    // AXI-Lite4 Write Address Channel
-    .AXI4_CLINT_AWADDR               (AXI4_CLINT_AWADDR),
-    .AXI4_CLINT_AWVALID               (AXI4_CLINT_AWVALID),
-    .AXI4_CLINT_AWREADY               (AXI4_CLINT_AWREADY),
-   
-    // AXI-Lite4 Write Data Channel
-    .AXI4_CLINT_WDATA               (AXI4_CLINT_WDATA),
-    .AXI4_CLINT_WSTRB               (AXI4_CLINT_WSTRB),  
-    .AXI4_CLINT_WVALID               (AXI4_CLINT_WVALID),
-    .AXI4_CLINT_WREADY               (AXI4_CLINT_WREADY),
-   
-    // AXI-Lite4 Write Response Channel
-    .AXI4_CLINT_BVALID               (AXI4_CLINT_BVALID),
-    .AXI4_CLINT_BREADY               (AXI4_CLINT_BREADY)
-    //output reg [1:0]       AXI4_SRAM_BRESP 
+    .AXI4_CLINT_RREADY               (LSU_AXI4_RREADY)
 );
-*/
+
 
 /*
 sram_inst inst_sram(
@@ -603,6 +589,12 @@ wire LSU_AXI4_ARVALID,LSU_AXI4_ARREADY;
 wire [31:0] LSU_AXI4_RDATA,LSU_AXI4_AWADDR,LSU_AXI4_WDATA,LSU_AXI4_ARADDR;
 wire [3:0] LSU_AXI4_WSTRB;
 wire LSU_WBU_skip;
+wire LSU_ARREADY;
+wire [31:0] LSU_RDATA;
+wire LSU_RVALID;
+assign LSU_RDATA = (LSU_AXI4_ARADDR >= 32'ha0000048 && LSU_AXI4_ARADDR <= 32'ha000004c) ? AXI4_CLINT_RDATA : LSU_AXI4_RDATA;
+assign LSU_RVALID = (LSU_AXI4_ARADDR >= 32'ha0000048 && LSU_AXI4_ARADDR <= 32'ha000004c) ? AXI4_CLINT_RVALID : LSU_AXI4_RVALID;
+assign LSU_ARREADY = (LSU_AXI4_ARADDR >= 32'ha0000048 && LSU_AXI4_ARADDR <= 32'ha000004c) ? AXI4_CLINT_ARREADY : LSU_AXI4_ARREADY;
 lsu my_lsu(
     //.EXU_IFU_pc      (EXU_IFU_pc),
     //.LSU_WBU_pc      (LSU_WBU_pc),
@@ -659,9 +651,9 @@ lsu my_lsu(
     //.LSU_RDATA      (LSU_RDATA)
     .LSU_AXI4_ARADDR    (LSU_AXI4_ARADDR),
     .LSU_AXI4_ARVALID    (LSU_AXI4_ARVALID),
-    .LSU_AXI4_ARREADY    (LSU_AXI4_ARREADY),
-    .LSU_AXI4_RDATA   (LSU_AXI4_RDATA),
-    .LSU_AXI4_RVALID  (LSU_AXI4_RVALID),
+    .LSU_AXI4_ARREADY    (LSU_ARREADY),
+    .LSU_AXI4_RDATA   (LSU_RDATA),
+    .LSU_AXI4_RVALID  (LSU_RVALID),
     .LSU_AXI4_RREADY  (LSU_AXI4_RREADY),
     .LSU_AXI4_AWADDR  (LSU_AXI4_AWADDR),
     .LSU_AXI4_AWVALID (LSU_AXI4_AWVALID),
