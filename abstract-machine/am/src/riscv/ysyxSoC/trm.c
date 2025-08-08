@@ -30,6 +30,7 @@ void init_uart(){
 }
 
 void putch(char ch) {
+    while(((*(volatile char *)(UART_BASE + UART_LS))&0x20) == 0);
   *(volatile char *)(UART_BASE + UART_TX) = ch;/*
   uint8_t TX_ISEMPTY = *(volatile char *)(UART_BASE + UART_LS);
     while ((TX_ISEMPTY & 0x40) != 0x40) { //等待uart数据发送完成
