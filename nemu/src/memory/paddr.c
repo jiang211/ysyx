@@ -94,7 +94,7 @@ word_t paddr_read(paddr_t addr, int len) {
 #ifdef CONFIG_IMTRACE
   printf("read at"FMT_PADDR "\n",addr);
 #endif
-  //if (likely(in_pmem(addr))) return pmem_read(addr, len);
+  if (likely(in_pmem(addr))) return pmem_read(addr, len);
   if(addr >= PSRAM_base && addr < PSRAM_base + PSRAM_size){return psram_read(addr,len);}
   if(addr >= MROM_base && addr < MROM_base + MROM_size){return mrom_read(addr,len);}
   if(addr >= SRAM_base && addr < SRAM_base + SRAM_size){return sram_read(addr,len);}
@@ -109,7 +109,7 @@ void paddr_write(paddr_t addr, int len, word_t data) {
 #ifdef CONFIG_IMTRACE
    printf("write at " FMT_PADDR " len=%d, data=" FMT_WORD "\n", addr, len, data);
 #endif
-  //if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
+  if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
   if(addr >= PSRAM_base && addr < PSRAM_base + PSRAM_size){return psram_write(addr,len,data);}
   if(addr >= SRAM_base && addr < SRAM_base + SRAM_size){sram_write(addr,len,data);return;}
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
