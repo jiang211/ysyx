@@ -13,7 +13,7 @@ CFLAGS    += -Os
 LDFLAGS   += -T $(AM_HOME)/scripts/ysyxSoclinker.ld \
 						 --defsym=_pmem_start=0x30000000 --defsym=_entry_offset=0x0 --defsym=_sram_start=0x0f000000
 LDFLAGS   += --gc-sections -e _start #告诉链接器移除未被使用的节
-#SOCFLAGS  += -b 
+SOCFLAGS  += -b 
 CFLAGS += -DMAINARGS=\"$(mainargs)\"
 .PHONY: $(AM_HOME)/am/src/riscv/ysyxSoC/trm.c
 

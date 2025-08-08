@@ -1,6 +1,7 @@
 #include <am.h>
 #include <klib-macros.h>
 #include <riscv/riscv.h>
+#include <klib.h>
 #define DEVICE_BASE 0xa0000000
 #define SERIAL_PORT (DEVICE_BASE + 0x000003f8)
 
@@ -103,23 +104,73 @@ void halt(int code) {
   asm volatile("mv a0, %0; ebreak" : :"r"(code));
   while (1);
 }
-
-extern char _sdata;
-extern char _edata;
-extern char _sidata;
-extern char _etext;
-
+volatile void _memcpy(void *dest, const void *src, size_t n)__attribute__((section(".entry")));
 volatile void _memcpy(void *dest, const void *src, size_t n) {
     uint8_t *d = (uint8_t *)dest;
     const uint8_t *s = (const uint8_t *)src;
     while (n--) *d++ = *s++;
 }
 
+volatile void _memcpy1(void *dest, const void *src, size_t n)__attribute__((section(".ssbl")));
+volatile void _memcpy1(void *dest, const void *src, size_t n) {
+    uint8_t *d = (uint8_t *)dest;
+    const uint8_t *s = (const uint8_t *)src;
+    while (n--) *d++ = *s++;
+}
 
+
+extern char _text_SA [];
+extern char _text_MA [];
+extern char _text_end [];
+extern char _rodata_SA [];
+extern char _rodata_MA [];
+extern char _rodata_end [];
+extern char _data_SA [];
+extern char _data_MA [];
+extern char _data_end [];
+extern char _ssbl_SA [];
+extern char _ssbl_MA [];
+extern char _ssbl_end [];
+
+
+void _bootloader (void)__attribute__((section(".entry")));
+void _bootloader (void) {
+    // 1. 复制代码段到SRAM
+    _memcpy(_ssbl_SA, _ssbl_MA, (_ssbl_end - _ssbl_SA));
+    
+    
+    // 6. 跳转到SRAM中的入口点
+    asm volatile (
+        "lui t0, %hi(_bootloader_2)\n"  // main的高20位
+        "addi t0, t0, %lo(_bootloader_2)\n" // 得到main的低12位跳转到main
+        "jalr ra, 0(t0)\n"
+    );
+}
+
+void _bootloader_2 (void) __attribute__((section(".ssbl")));
+void _bootloader_2 (void) {
+    _memcpy1(_text_SA, _text_MA, (_text_end - _text_SA));
+    
+    // 2. 复制只读数据段到SRAM
+    _memcpy1(_rodata_SA, _rodata_MA, (_rodata_end - _rodata_SA));
+    
+    // 3. 复制初始化数据段到SRAM
+    _memcpy1(_data_SA, _data_MA, (_data_end - _data_SA));
+    
+    // 5. 设置堆栈指针（指向PSRAM中的栈顶）
+    //asm volatile("mv sp, %0" : : "r" (_stack_top));
+    
+    // 6. 跳转到SRAM中的入口点
+    asm volatile (
+        "lui t0, %hi(_trm_init)\n"  // main的高20位
+        "addi t0, t0, %lo(_trm_init)\n" // 得到main的低12位跳转到main
+        "jalr ra, 0(t0)\n"
+    );
+}
 void _trm_init() {
   //printf_ysyx();
   init_uart();
-  _memcpy(&_sdata, &_sidata, &_edata - &_sdata);
+  //_memcpy(&_sdata, &_sidata, &_edata - &_sdata);
   int ret = main(mainargs);
   halt(ret);
 }

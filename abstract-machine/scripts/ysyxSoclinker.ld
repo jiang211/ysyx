@@ -1,5 +1,5 @@
 ENTRY(_start)
-PHDRS { text PT_LOAD; data PT_LOAD; } 
+
 
 MEMORY {
   mrom : ORIGIN = 0x20000000, LENGTH = 4K
@@ -11,30 +11,45 @@ MEMORY {
 SECTIONS {
   /* _pmem_start and _entry_offset are defined in LDFLAGS */
   . = ORIGIN(flash);
-  .text : {
-    _stext = .;
+  .entry : {
+    _entry_start = .;
     *(entry)
+    *(.entry)
+    _entry_end = .;
+  } > flash
+
+  .ssbl :{
+    _ssbl_MA = LOADADDR(.ssbl);
+    _ssbl_SA = .; 
+    *(.ssbl)
+    *(.scommon)
+    _ssbl_end = .;
+  } > sram AT> flash
+  .text : {
+    _text_MA = LOADADDR(.text);
+    _text_SA = .;
     *(.text*)
-  } > flash AT> flash : text
+    _text_end = .;
+  } > psram AT> flash 
   etext = .;
   _etext = .;
-  .rodata : {
-    _srodata = .;
+  .rodata : { 
+    _rodata_MA = LOADADDR(.rodata); 
+    _rodata_SA = .; 
     *(.rodata*)
     *(.srodata*)
-    _erodata = .;
-  } > flash AT> flash
+    _rodata_end = .;
+  } > psram AT> flash
   _data_lma_start = LOADADDR(.rodata) + SIZEOF(.rodata);
-  . = ORIGIN(psram);
+ 
   .data : {
-    _sdata = .;      /* SRAM中数据起始地址 (VMA) */
+    _data_MA = LOADADDR(.data); 
+    _data_SA = .;  
     *(.data*)
     *(.sdata*)
-    _edata = .;      /* SRAM中数据结束地址 (VMA) */
-  } > psram AT> flash : data
-  _sidata = _data_lma_start; /* flash中初始数据地址 (LMA) */
-  edata = .;
-  _data = .;
+    _data_end = .;
+  } > psram AT> flash
+ 
   .bss : {
 	_bss_start = .;
     *(.bss*)
@@ -48,4 +63,6 @@ SECTIONS {
   _end = .;
   _heap_start = ALIGN(0x10);
   _heap_end = _heap_start + 0x400;
+
+  
 }
