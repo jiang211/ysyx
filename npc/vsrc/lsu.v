@@ -105,7 +105,9 @@ reg [2:0] state;
     wire [31:0] lsu_rdata;
     wire [31:0] lsu_rdata_;
     wire skip;
-    assign skip = (((LSU_AXI4_ARADDR >= 32'h10000000) && (LSU_AXI4_ARADDR < 32'h10000fff)) || ((LSU_AXI4_AWADDR >= 32'h10000000) && (LSU_AXI4_AWADDR < 32'h10000fff))) ? 1'b1 : 1'b0;
+    wire skip1 = (((LSU_AXI4_ARADDR >= 32'h10000000) && (LSU_AXI4_ARADDR < 32'h10000fff)) || ((LSU_AXI4_AWADDR >= 32'h10000000) && (LSU_AXI4_AWADDR < 32'h10000fff))) ? 1'b1 : 1'b0;
+    wire skip2 = (((LSU_AXI4_ARADDR >= 32'h02000000) && (LSU_AXI4_ARADDR < 32'h0200ffff)) || ((LSU_AXI4_AWADDR >= 32'h02000000) && (LSU_AXI4_AWADDR < 32'h0200ffff))) ? 1'b1 : 1'b0;
+    assign skip = skip1 | skip2;
     assign LSU_WDATA = ( {32{EXU_LSU_sb}} & {24'b0,rs2_data[7:0]}) |
                    ( {32{EXU_LSU_sh}} & {16'b0,rs2_data[15:0]}) |
                    ( {32{EXU_LSU_sw}} & rs2_data);
