@@ -28,7 +28,12 @@ static const uint32_t img [] = {
 
 static void restart() {
   /* Set the initial program counter. */
+  #ifndef CONFIG_TARGET_SHARE
   cpu.pc = RESET_VECTOR;
+  #else
+  cpu.pc = 0x30000000;
+  #endif
+  /* Set the initial values of the CSRs. */
   cpu.csr[1] = 0x1800;
   /* The zero register is always 0. */
   cpu.gpr[0] = 0;
@@ -36,8 +41,11 @@ static void restart() {
 
 void init_isa() {
   /* Load built-in image. */
-
+  #ifndef CONFIG_TARGET_SHARE
   memcpy(guest_to_host(RESET_VECTOR), img, sizeof(img));
+  #else
+  memcpy(guest_to_host(0x30000000), img, sizeof(img));
+  #endif
   
 
   /* Initialize this virtual computer system. */
