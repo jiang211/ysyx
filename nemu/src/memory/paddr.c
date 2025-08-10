@@ -19,7 +19,7 @@
 #include <isa.h>
 
 
-/*
+
 #ifndef CONFIG_TARGET_SHARE
 #if   defined(CONFIG_PMEM_MALLOC)
 static uint8_t *pmem = NULL;
@@ -90,7 +90,7 @@ void paddr_write(paddr_t addr, int len, word_t data) {
 
 #else
 
-*/
+
 static uint8_t mrom[4*1024] PG_ALIGN = {};
 static uint8_t sram[8*1024] PG_ALIGN = {};
 static uint8_t flash[16*1024*1024] PG_ALIGN = {};
@@ -154,4 +154,4 @@ void init_mem() {
   Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
 }
 
-//#endif
+#endif
