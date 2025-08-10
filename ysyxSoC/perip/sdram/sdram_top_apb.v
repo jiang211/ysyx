@@ -26,7 +26,7 @@ module sdram_top_apb (
   always@(posedge clock) begin
     if(in_paddr >= 32'ha000ef60 && in_paddr <= 32'ha000efff) begin
       if(in_pwrite) begin
-      $write("write in addr %x data %x\n", in_paddr, in_pwdata);
+      //$write("write in addr %x data %x\n", in_paddr, in_pwdata);
       end
     end
   end

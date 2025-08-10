@@ -104,10 +104,10 @@ reg [2:0] state;
     wire [31:0] lsu_wdata;
     wire [31:0] lsu_rdata;
     wire [31:0] lsu_rdata_;
-    wire skip;
-    wire skip1 = (((LSU_AXI4_ARADDR >= 32'h10000000) && (LSU_AXI4_ARADDR < 32'h10000fff)) || ((LSU_AXI4_AWADDR >= 32'h10000000) && (LSU_AXI4_AWADDR < 32'h10000fff))) ? 1'b1 : 1'b0;
-    wire skip2 = (((LSU_AXI4_ARADDR >= 32'h02000000) && (LSU_AXI4_ARADDR < 32'h0200ffff)) || ((LSU_AXI4_AWADDR >= 32'h02000000) && (LSU_AXI4_AWADDR < 32'h0200ffff))) ? 1'b1 : 1'b0;
-    assign skip = skip1 | skip2;
+    reg skip;
+    wire skip1 = (((EXU_LSU_result >= 32'h10000000) && (EXU_LSU_result < 32'h10000fff)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
+    wire skip2 = (((EXU_LSU_result >= 32'h02000000) && (EXU_LSU_result < 32'h0200ffff)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
+    wire EXU_skip = skip1 | skip2;
     assign LSU_WDATA = ( {32{EXU_LSU_sb}} & {24'b0,rs2_data[7:0]}) |
                    ( {32{EXU_LSU_sh}} & {16'b0,rs2_data[15:0]}) |
                    ( {32{EXU_LSU_sw}} & rs2_data);
@@ -153,7 +153,7 @@ reg mret;
 reg C_type;
 reg [2:0] csr_rst;
 reg [31:0] csr_in,pc,dnpc;
-reg lw,lh,lb,lbu,lhu,ren;
+reg lw,lh,lb,lbu,lhu,ren,wen;
 always @(posedge clk) begin
     if (rst_n) begin
         state <= IDLE;
@@ -184,8 +184,10 @@ always @(posedge clk) begin
         lbu <=  1'b0;
         lhu <=  1'b0;
         ren <=  1'b0;
+        wen <=  1'b0;
         pc <=  32'd0;
         dnpc <=  32'd0;
+        skip <=  1'b0;
     end
     else begin
         case (state)
@@ -218,8 +220,10 @@ always @(posedge clk) begin
                 lbu <=  EXU_LSU_lbu;
                 lhu <=  EXU_LSU_lhu;
                 ren <=  EXU_LSU_ren;
+                wen <=  EXU_LSU_wen;
                 pc <=  EXU_LSU_PC;
                 dnpc <=  EXU_LSU_dnpc;
+                skip <=  EXU_skip;
                 if((!(EXU_LSU_ren || EXU_LSU_wen))) begin
                     LSU_WBU_valid <= 1'b1;
                     state <= IDLE;
@@ -366,7 +370,7 @@ always @(posedge clk) begin
         LSU_WBU_lhu <= lhu;
         LSU_WBU_PC <= pc;
         LSU_WBU_dnpc <= dnpc;
-        LSU_WBU_skip <= skip;
+        LSU_WBU_skip <= skip ;
     end else begin
         //RDATAIN <= 32'b0;
         //WDATA   <= 32'b0;
