@@ -97,7 +97,7 @@ static uint8_t flash[16*1024*1024] PG_ALIGN = {};
 static uint8_t psram[4*1024*1024] PG_ALIGN = {};
 static uint8_t sdram[64*1024*1024] PG_ALIGN = {};
 
-#ifdef CONFIG_YSYXSOC
+
 static void out_of_bound(paddr_t addr) {
   panic("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
       addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
@@ -119,14 +119,7 @@ uint8_t* guest_to_host(paddr_t paddr) {
     assert(0);
   }
 }
-#else
-#if   defined(CONFIG_PMEM_MALLOC)
-static uint8_t *pmem = NULL;
-#else // CONFIG_PMEM_GARRAY
-static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
-#endif
-uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
-#endif
+
 
 paddr_t host_to_guest(uint8_t *haddr) { return 0; }
 
