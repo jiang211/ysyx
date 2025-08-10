@@ -235,7 +235,7 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
           cpu->csr[i] = cpu_csr[i];
         }
         }
-      if(monitor_data[5]){difftest_skip_ref();}
+      if(monitor_data[5]){printf("skip\n"); difftest_skip_ref();}
       if(monitor_data[4])  { 
         npc_trap(NPC_END , monitor_data[1], cpu_gpr[10]);
         return ;
