@@ -228,7 +228,7 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
         s->isa.inst.val = monitor_data[3];
         //printf("pc = %08x, dnpc = %08x, snpc = %08x, isa = %08x\n",s->pc,s->dnpc,s->snpc,s->isa.inst.val);
         if(monitor_data[0]){
-          if(monitor_data[5]){printf("skip\n");printf("pc = %08x,instr = %08x\n",monitor_data[1],monitor_data[3]); difftest_skip_ref();}
+          //if(monitor_data[5]){printf("skip\n");printf("pc = %08x,instr = %08x\n",monitor_data[1],monitor_data[3]); difftest_skip_ref();}
           for (int i=0; i<32; i++) {
             cpu->gpr[i] = cpu_gpr[i];
           }

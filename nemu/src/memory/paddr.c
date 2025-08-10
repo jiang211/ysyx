@@ -127,7 +127,7 @@ static word_t pmem_read(paddr_t addr, int len) {
   
   word_t ret = host_read(guest_to_host(addr), len);
   //if(addr >= 0xa000ef60 && addr <= 0xa000efff){printf("nemu: sdram_read addr = %x, data = %x\n", addr,ret);}
-  if(addr >= 0x80000000 && addr <= 0x800000ff){printf("nemu: psram_read addr = %x, data = %x\n", addr,ret);}
+  //if(addr >= 0x80000000 && addr <= 0x800000ff){printf("nemu: psram_read addr = %x, data = %x\n", addr,ret);}
   // Log(" MTRACE: Read  Memory Address: 0x%x, len: %d, data: 0x%x", addr, len, ret);
   return ret;
 }
