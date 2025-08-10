@@ -1,4 +1,4 @@
-#define WAVE_ON  //
+//#define WAVE_ON  //
 #include <common.h>
 #include <paddr.h>
 
@@ -180,13 +180,13 @@ extern "C" void mrom_read(int32_t addr, int32_t *data) {
 }
 
 extern "C" void psram_read(int32_t addr, int32_t *data) { 
-  if(addr >= 0xef60 && addr <= 0xefff){printf("psram_read addr = %x, data = %x\n", addr, *data);}
   *data = psram_read((paddr_t)(addr),4);
+  //if(addr >= 0xef60 && addr <= 0xefff){printf("psram_read addr = %x, data = %x\n", addr, *data);}
   //printf("psram_read addr = %x, data = %x\n", addr, *data);
 }
 
 extern "C" void psram_write(int addr,int data,int wstrb) {
-  if(addr >= 0xef60 && addr <= 0xefff){printf("psram_write addr = %x, data = %x\n", addr, data);}
+  //if(addr >= 0xef60 && addr <= 0xefff){printf("psram_write addr = %x, data = %x\n", addr, data);}
   psram_write(addr, data);
   //printf("psram_write addr = %x, data = %x\n", addr, data);
 }

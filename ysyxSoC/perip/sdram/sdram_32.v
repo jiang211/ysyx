@@ -10,6 +10,7 @@ module sdram_32(
   input [ 3:0] dqm,
   inout [31:0] dq
 );
+
   sdram_16 sdram_1(
     .clk      (clk),
     .cke      (cke),
