@@ -124,12 +124,15 @@ uint8_t* guest_to_host(paddr_t paddr) {
 paddr_t host_to_guest(uint8_t *haddr) { return 0; }
 
 static word_t pmem_read(paddr_t addr, int len) {
+  
   word_t ret = host_read(guest_to_host(addr), len);
+  if(addr >= 0x8000ef60 && addr <= 0x8000efff){printf("psram_read addr = %x, data = %x\n", addr,ret);}
   // Log(" MTRACE: Read  Memory Address: 0x%x, len: %d, data: 0x%x", addr, len, ret);
   return ret;
 }
 
 static void pmem_write(paddr_t addr, int len, word_t data) {
+  if(addr >= 0x8000ef60 && addr <= 0x8000efff){printf("psram_write addr = %x, data = %x\n", addr,data);}
   // Log("MTRACE: Write Memory Address: 0x%x, len: %d, data: 0x%x", addr, len, data);
   host_write(guest_to_host(addr), len, data);
 }

@@ -15,7 +15,38 @@ module ps2_top_apb(
   input         ps2_clk,
   input         ps2_data
 );
-/*
+
+  wire [7:0] data;
+  reg empty;
+   localparam PS2_STATE_WIDTH = 2;
+  reg [PS2_STATE_WIDTH-1:0] ps2_apb_state;
+  localparam [PS2_STATE_WIDTH-1:0] PS2_APB_IDLE = 'd0;
+  localparam [PS2_STATE_WIDTH-1:0] PS2_APB_READ = 'd1;
+
+  assign in_pready  = (ps2_apb_state == PS2_APB_READ) ? 1'b1 : 1'b0;
+  assign in_prdata  = (ps2_apb_state == PS2_APB_READ) ? (empty ? {24'd0, data} : 'd0) : 'd0;
+  assign in_pslverr = 1'b0;
+
+  always @(posedge clock or posedge reset) begin
+    if (reset) begin
+      ps2_apb_state <= PS2_APB_IDLE;
+    end else begin
+      case (ps2_apb_state)
+        PS2_APB_IDLE: begin
+          if (in_psel && !in_pwrite) begin
+            ps2_apb_state <= PS2_APB_READ;
+          end
+        end
+        PS2_APB_READ: begin
+          ps2_apb_state <= PS2_APB_IDLE;
+        end
+        default: begin
+          ps2_apb_state <= PS2_APB_IDLE;
+        end
+      endcase
+    end
+  end
+
   reg [9:0] buffer;        // ps2_data bits
     reg [7:0] fifo[7:0];     // data fifo
     reg [2:0] w_ptr,r_ptr;   // fifo write and read pointers
@@ -29,35 +60,31 @@ module ps2_top_apb(
     wire sampling = ps2_clk_sync[2] & ~ps2_clk_sync[1];
 
     always @(posedge clock) begin
-        if (reset) begin // reset
-            count <= 0; w_ptr <= 0; r_ptr <= 0; overflow <= 0; ready<= 0;
+    if (reset) begin
+      count <= 'd0; w_ptr   <= 'd0; r_ptr   <= 'd0;
+      empty   <= 'd0;
+    end else begin
+      if (sampling) begin
+        if (count == 4'd10) begin
+          if ((buffer[0] == 0) && (ps2_data) && (^buffer[9:1])) begin
+            fifo[w_ptr] <= buffer[8:1];
+            w_ptr       <= w_ptr + 1;
+            empty       <= 'd1;
+          end
+          count <= 'd0;
+        end else begin
+          buffer[count] <= ps2_data;
+          count <= count + 1;
         end
-        else begin
-            if ( ready ) begin // read to output next data
-                if(nextdata_n == 1'b0) //read next data
-                begin
-                    r_ptr <= r_ptr + 3'b1;
-                    if(w_ptr==(r_ptr+1'b1)) //empty
-                        ready <= 1'b0;
-                end
-            end
-            if (sampling) begin
-              if (count == 4'd10) begin
-                if ((buffer[0] == 0) &&  // start bit
-                    (ps2_data)       &&  // stop bit
-                    (^buffer[9:1])) begin      // odd  parity
-                    fifo[w_ptr] <= buffer[8:1];  // kbd scan code
-                    w_ptr <= w_ptr+3'b1;
-                    ready <= 1'b1;
-                    overflow <= overflow | (r_ptr == (w_ptr + 3'b1));
-                end
-                count <= 0;     // for next
-              end else begin
-                buffer[count] <= ps2_data;  // store ps2_data
-                count <= count + 3'b1;
-              end
-            end
+      end
+
+      if (in_penable & in_pready & empty) begin
+        r_ptr <= r_ptr + 3'b1;
+        if (w_ptr == (r_ptr + 1'b1)) begin
+          empty <= 'd0;
         end
+      end
     end
-    assign data = fifo[r_ptr];*/
+  end
+    assign data = fifo[r_ptr];
 endmodule

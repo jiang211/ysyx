@@ -25,13 +25,13 @@ SECTIONS {
     *(.ssbl)
     *(.scommon)
     _ssbl_end = .;
-  } > sdram AT> flash
+  } > psram AT> flash
   .text : {
     _text_MA = LOADADDR(.text);
     _text_SA = .;
     *(.text*)
     _text_end = .;
-  } > sdram AT> flash 
+  } > psram AT> flash 
   etext = .;
   _etext = .;
   .rodata : { 
@@ -40,7 +40,7 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*)
     _rodata_end = .;
-  } > sdram AT> flash
+  } > psram AT> flash
   _data_lma_start = LOADADDR(.rodata) + SIZEOF(.rodata);
  
   .data : {
@@ -49,20 +49,20 @@ SECTIONS {
     *(.data*)
     *(.sdata*)
     _data_end = .;
-  } > sdram AT> flash
+  } > psram AT> flash
  
   .bss : {
 	_bss_start = .;
     *(.bss*)
     *(.sbss*)
     *(.scommon)
-  } > sdram AT> flash
+  } > psram AT> flash
   _stack_top = ALIGN(0x1000);
   . = _stack_top + 0x8000;
   _stack_pointer = .;
   end = .;
   _end = .;
-  _heap_start = ORIGIN(psram);
-  _psram_end = ORIGIN(psram) + LENGTH(psram);
+  _heap_start = ORIGIN(sdram);
+  _psram_end = ORIGIN(sdram) + LENGTH(sdram);
   
 }
