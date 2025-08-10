@@ -1,11 +1,15 @@
+//#define WAVE_ON  //
 #include <common.h>
 #include <paddr.h>
 
 // Include common routines
 #include <verilated.h>
 #include <verilated_dpi.h>
+#ifdef WAVE_ON
 #include "verilated_fst_c.h"
+#endif
 // Inculde model header, generated from Verilating "top.v"
+#include <nvboard.h>
 #include <VysyxSoCFull.h>
 #include "svdpi.h"
 #include "VysyxSoCFull__Dpi.h"
@@ -19,33 +23,43 @@
 
 uint64_t get_time();
 
-
 VerilatedContext* contextp;
 VysyxSoCFull* top;
  
-VerilatedFstC* tfp;
+#ifdef WAVE_ON
+VerilatedFstC* tfp;  // 仅在WAVE_ON时声明
+#endif
 vluint64_t main_time = 0;
 void difftest_skip_ref();
 void npc_trap(int state, vaddr_t pc, int halt_ret);
 
+void nvboard_bind_all_pins(TOP_NAME* top);
    
 void init_verilator(int argc, char** argv, char** env) {
+  
+  
   Verilated::commandArgs(argc, argv);
   contextp = new VerilatedContext;
   contextp->commandArgs(argc, argv);
   top = new VysyxSoCFull{contextp};
+  nvboard_bind_all_pins(top);
+  nvboard_init();
   //VCD波形设置  start
-  Verilated::traceEverOn(true);
-  tfp = new VerilatedFstC;
-  top->trace(tfp, 0);
-  tfp->open("wave.fst");
+  #ifdef WAVE_ON
+    Verilated::traceEverOn(true);
+    tfp = new VerilatedFstC;
+    top->trace(tfp, 0);
+    tfp->open("wave.fst");
+  #endif
    
 }
 static void single_cycle() {
   top->clock  = !top->clock;
   
   top->eval(); 
-  tfp->dump(main_time);
+  #ifdef WAVE_ON
+    tfp->dump(main_time);
+  #endif
   top->clock  = !top->clock;
   main_time ++;
   top->eval(); 
@@ -189,15 +203,18 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
       top->clock  = !top->clock;
       //top->instr1 =inst_fetch(&s->snpc, 4);
       top->eval();
-      
-      tfp->dump(main_time);
-      main_time ++;
+      #ifdef WAVE_ON
+        tfp->dump(main_time);
+        main_time ++;
+      #endif
       top->clock  = !top->clock;
-
+      nvboard_update();
       top->eval(); 
 
-      tfp->dump(main_time);
-      main_time ++;
+      #ifdef WAVE_ON
+        tfp->dump(main_time);
+        main_time ++;
+      #endif
 
         
        *difftest = monitor_data[0];
@@ -225,11 +242,12 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
 
 
 void delete_module() {
-
+  nvboard_quit();
   //end_sim(); 
-  tfp->close();
-
-delete tfp;
+  #ifdef WAVE_ON
+    tfp->close();
+    delete tfp;
+  #endif
   top->final();
 
   // Destory model

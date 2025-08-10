@@ -40,7 +40,7 @@ end
 wire [31:0] rdata_low = mtime[31:0];
 wire [31:0] rdata_high = mtime[63:32];
 wire [31:0] rdata;
-assign rdata = (read_addr_reg == 32'ha0000048) ? rdata_low : (read_addr_reg == 32'ha000004c) ? rdata_high : 32'b0;
+assign rdata = (read_addr_reg == 32'h02000000) ? rdata_low : (read_addr_reg == 32'h02000004) ? rdata_high : 32'b0;
 localparam RIDLE        = 2'b00;
 localparam READ_DATA  = 2'b01;
 localparam READ_WAIT   = 2'b10;

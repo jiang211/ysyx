@@ -14,13 +14,13 @@ int main(int argc, char** argv, char** env) {
 
   init_verilator(argc, argv, env);
 
-  printf("1\n");
+
   init_module();  
 
-  printf("2\n");
+ 
   engine_start();
 
-  printf("3\n");
+
   // Return good completion status
   delete_module();
   return is_exit_status_bad();

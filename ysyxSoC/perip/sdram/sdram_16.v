@@ -1,5 +1,4 @@
-/*
-module sdram(
+module sdram_16(
   input        clk,
   input        cke,
   input        cs,
@@ -168,64 +167,3 @@ reg [12:0] Line_Address[0:3];
   end
 
 endmodule
-*/
-
-module sdram(
-  input        clk,
-  input        cke,
-  input        cs,
-  input        ras,
-  input        cas,
-  input        we,
-  input [13:0] a,
-  input [ 1:0] ba,
-  input [ 3:0] dqm,
-  inout [31:0] dq
-);
-
-
-  wire high_flag = a[13];
-  reg we_0, ras_0, cas_0;
-  reg we_1, ras_1, cas_1;
-  wire [2:0] command = {ras,cas,we};
-
-always @(*) begin
-  case(command)
-    3'b000,3'b111:begin
-      {ras_0,cas_0,we_0} = command;
-      {ras_1,cas_1,we_1} = command;
-    end
-    default:begin
-      {ras_0,cas_0,we_0} = !a[13] ? command : 3'b111;
-      {ras_1,cas_1,we_1} =  a[13] ? command : 3'b111;
-    end
-  endcase
-end
-  sdram_32 sdram_1(
-    .clk      (clk),
-    .cke      (cke),
-    .cs       (cs),
-    .ras      (ras_0),
-    .cas      (cas_0),
-    .we         (we_0),
-    .a          (a[12:0]),
-    .ba         (ba),
-    .dqm        (dqm),
-    .dq         (dq)
-  );
-
-  sdram_32 sdram_2(
-    .clk      (clk),
-    .cke      (cke),
-    .cs       (cs),
-    .ras      (ras_1),
-    .cas      (cas_1),
-    .we         (we_1),
-    .a          (a[12:0]),
-    .ba         (ba),
-    .dqm        (dqm),
-    .dq         (dq)
-  );
-endmodule
-
-

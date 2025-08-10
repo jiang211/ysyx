@@ -7,6 +7,8 @@
 
 #define UART_BASE 0x10000000L
 #define UART_TX   0
+#define UART_dL1   0
+#define UART_dL2   1
 #define UART_FC   2
 #define UART_LC   3
 #define UART_LS   5
@@ -24,15 +26,18 @@ Area heap = RANGE(&_heap_start, &_psram_end);
 #endif
 static const char mainargs[] = MAINARGS;
 
-void init_uart(){
-  *(volatile char *)(UART_BASE + UART_LC) = 0b10000011;    // 1停止位，无校验位，禁止中断，开始写divisor
-  *(volatile char *)(UART_BASE + UART_TX) = 0x1E;    // 
-  *(volatile char *)(UART_BASE + UART_LC) = 0b00000011; 
+void init_uart(uint32_t rate){
+  *(volatile uint8_t *)(UART_BASE + UART_LC) = *(volatile uint8_t  *)(UART_BASE + UART_LC) | 0b10000000;    // 1停止位，无校验位，禁止中断，开始写divisor
+  uint16_t divisor = 50000000/(16*rate);
+  *(volatile uint8_t  *)(UART_BASE + UART_dL2) = divisor >> 8;    // 
+  *(volatile uint8_t  *)(UART_BASE + UART_dL1) = divisor ;    // 
+  *(volatile uint8_t *)(UART_BASE + UART_LC) = *(volatile uint8_t  *)(UART_BASE + UART_LC) & (~0b10000000); 
 }
 
 void putch(char ch) {
-    while(((*(volatile char *)(UART_BASE + UART_LS))&0x20) == 0);
-  *(volatile char *)(UART_BASE + UART_TX) = ch;/*
+    while(((inb(UART_BASE + UART_LS) & (0x2 << 5)) == 0x0) || ((inb(UART_BASE + UART_LS) & (0x1 << 5)) == 0x0));
+   // while(((*(volatile char *)(UART_BASE + UART_LS))&0x20) == 0);
+  *(volatile uint8_t *)(UART_BASE + UART_TX) = ch;/*
   uint8_t TX_ISEMPTY = *(volatile char *)(UART_BASE + UART_LS);
     while ((TX_ISEMPTY & 0x40) != 0x40) { //等待uart数据发送完成
         TX_ISEMPTY = *(volatile char *)(UART_BASE + UART_LS);
@@ -171,7 +176,7 @@ void _bootloader_2 (void) {
 }
 void _trm_init() {
   //printf_ysyx();
-  init_uart();
+  init_uart(115200);
   //_memcpy(&_sdata, &_sidata, &_edata - &_sdata);
   int ret = main(mainargs);
   halt(ret);
