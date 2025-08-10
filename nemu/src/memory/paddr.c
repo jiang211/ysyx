@@ -126,15 +126,15 @@ paddr_t host_to_guest(uint8_t *haddr) { return 0; }
 static word_t pmem_read(paddr_t addr, int len) {
   
   word_t ret = host_read(guest_to_host(addr), len);
-  if(addr >= 0xa000ef60 && addr <= 0xa000efff){printf("nemu: sdram_read addr = %x, data = %x\n", addr,ret);}
-  if(addr >= 0x80000000 && addr <= 0x80000fff){printf("nemu: psram_read addr = %x, data = %x\n", addr,ret);}
+  //if(addr >= 0xa000ef60 && addr <= 0xa000efff){printf("nemu: sdram_read addr = %x, data = %x\n", addr,ret);}
+  if(addr >= 0x80000000 && addr <= 0x800000ff){printf("nemu: psram_read addr = %x, data = %x\n", addr,ret);}
   // Log(" MTRACE: Read  Memory Address: 0x%x, len: %d, data: 0x%x", addr, len, ret);
   return ret;
 }
 
 static void pmem_write(paddr_t addr, int len, word_t data) {
-  if(addr >= 0xa000ef60 && addr <= 0xa000efff){printf("nemu: sdram_write addr = %x, data = %x\n", addr,data);}
-  if(addr >= 0x80000000 && addr <= 0x80000fff){printf("nemu: psram_write addr = %x, data = %x\n", addr,data);}
+  //if(addr >= 0xa000ef60 && addr <= 0xa000efff){printf("nemu: sdram_write addr = %x, data = %x\n", addr,data);}
+  if(addr >= 0x80000000 && addr <= 0x800000ff){printf("nemu: psram_write addr = %x, data = %x\n", addr,data);}
   // Log("MTRACE: Write Memory Address: 0x%x, len: %d, data: 0x%x", addr, len, data);
   host_write(guest_to_host(addr), len, data);
 }
