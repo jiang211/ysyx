@@ -105,7 +105,7 @@ reg [2:0] state;
     wire [31:0] lsu_rdata;
     wire [31:0] lsu_rdata_;
     reg skip;
-    wire skip1 = (((EXU_LSU_result >= 32'h10000000) && (EXU_LSU_result < 32'h10000fff)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
+    wire skip1 = (((EXU_LSU_result >= 32'h10000000) && (EXU_LSU_result < 32'h30000000)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
     wire skip2 = (((EXU_LSU_result >= 32'h02000000) && (EXU_LSU_result < 32'h0200ffff)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
     wire EXU_skip = skip1 | skip2;
     assign LSU_WDATA = ( {32{EXU_LSU_sb}} & {24'b0,rs2_data[7:0]}) |

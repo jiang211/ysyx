@@ -7,7 +7,8 @@ AM_SRCS := riscv/ysyxSoC/start.S \
            riscv/ysyxSoC/trap.S \
            platform/dummy/vme.c \
            platform/dummy/mpe.c \
-           riscv/ysyxSoC/uart.c
+           riscv/ysyxSoC/uart.c\
+           riscv/ysyxSoC/gpu.c
 
 CFLAGS    += -fdata-sections -ffunction-sections # 让编译器将每个函数和数据段分别放置在独立的节（section）
 CFLAGS    += -Os
