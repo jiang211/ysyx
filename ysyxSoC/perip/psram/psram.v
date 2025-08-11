@@ -16,7 +16,7 @@ reg [7:0] cmd;
 reg o_en;
 reg [23:0] addr;
 
-wire [3:0] wstrb;
+//wire [3:0] wstrb;
 wire [31:0] wdata;
 wire [31:0] rdata;
 wire [3:0] dio_input;
@@ -149,10 +149,10 @@ reg [31:0] write_buffer;
 assign wdata = ({32{(receive_count == 4'd2)}} & {24'b0,write_buffer[7:0]} ) |
                ({32{(receive_count == 4'd4)}} & {16'b0,write_buffer[7:0],write_buffer[15:8]} ) |
                ({32{(receive_count == 4'd8)}} & {write_buffer[7:0],write_buffer[15:8],write_buffer[23:16],write_buffer[31:24]} ) ;
-
+/*
 assign wstrb =  (receive_count == 4'd2) ? 4'b0001 :           // 1字节
                   (receive_count == 4'd4) ? 4'b0011 :           // 2字节
-                  (receive_count == 4'd8) ? 4'b1111 : 4'b1111;  // 4字节
+                  (receive_count == 4'd8) ? 4'b1111 : 4'b1111;  // 4字节*/
 reg [31:0] data;
 wire [31:0] data_cache = {rdata[7:0], rdata[15:8], rdata[23:16], rdata[31:24]};
 always@(posedge sck or posedge ce_n) begin
@@ -206,7 +206,7 @@ end
 always @(posedge ce_n) begin
   if(state == WRITE_DATA) begin//读取数据
     if(cmd == 8'h38)begin
-      psram_write({8'b0,addr}, wdata,{28'b0,wstrb});
+      psram_write({8'b0,addr}, wdata,{28'b0,receive_count});
       if(addr >= 24'hef60 && addr <= 24'hefff)begin
         $write("write in psram addr: %08h,data : %08h \n",addr,wdata);
       end

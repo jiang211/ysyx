@@ -181,13 +181,15 @@ extern "C" void mrom_read(int32_t addr, int32_t *data) {
 
 extern "C" void psram_read(int32_t addr, int32_t *data) { 
   *data = psram_read((paddr_t)(addr),4);
-  //if(addr >= 0xef60 && addr <= 0xefff){printf("psram_read addr = %x, data = %x\n", addr, *data);}
+  if(addr >= 0x4000 && addr <= 0x4000){printf("psram_read addr = %x, data = %x\n", addr, *data);}
   //printf("psram_read addr = %x, data = %x\n", addr, *data);
 }
 
 extern "C" void psram_write(int addr,int data,int wstrb) {
-  //if(addr >= 0xef60 && addr <= 0xefff){printf("psram_write addr = %x, data = %x\n", addr, data);}
-  psram_write(addr, data);
+  int shift_len = (8 - wstrb);
+  uint32_t wdata = data >> (shift_len * 4);
+  //if(addr >= 0x28 && addr <= 0x28){printf("psram_write addr = %x, data = %x\n", addr, data);}
+  _psram_write(addr, wdata,wstrb/2);
   //printf("psram_write addr = %x, data = %x\n", addr, data);
 }
 /*
@@ -224,7 +226,7 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
         s->dnpc = monitor_data[2];
         s->pc = monitor_data[1];
         s->snpc = monitor_data[1] + 4;
-
+        
         s->isa.inst.val = monitor_data[3];
         //printf("pc = %08x, dnpc = %08x, snpc = %08x, isa = %08x\n",s->pc,s->dnpc,s->snpc,s->isa.inst.val);
         if(monitor_data[0]){
