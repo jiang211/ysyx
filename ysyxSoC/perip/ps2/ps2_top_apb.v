@@ -18,30 +18,29 @@ module ps2_top_apb(
 
   wire [7:0] data;
   reg empty;
-   localparam PS2_STATE_WIDTH = 2;
-  reg [PS2_STATE_WIDTH-1:0] ps2_apb_state;
-  localparam [PS2_STATE_WIDTH-1:0] PS2_APB_IDLE = 'd0;
-  localparam [PS2_STATE_WIDTH-1:0] PS2_APB_READ = 'd1;
+  reg [1:0] state;
+  localparam [1:0] IDLE = 'd0;
+  localparam [1:0] READ = 'd1;
 
-  assign in_pready  = (ps2_apb_state == PS2_APB_READ) ? 1'b1 : 1'b0;
-  assign in_prdata  = (ps2_apb_state == PS2_APB_READ) ? (empty ? {24'd0, data} : 'd0) : 'd0;
+  assign in_pready  = (state == READ) ? 1'b1 : 1'b0;
+  assign in_prdata  = (state == READ) ? (empty ? {24'd0, data} : 'd0) : 'd0;
   assign in_pslverr = 1'b0;
 
   always @(posedge clock or posedge reset) begin
     if (reset) begin
-      ps2_apb_state <= PS2_APB_IDLE;
+      state <= IDLE;
     end else begin
-      case (ps2_apb_state)
-        PS2_APB_IDLE: begin
+      case (state)
+        IDLE: begin
           if (in_psel && !in_pwrite) begin
-            ps2_apb_state <= PS2_APB_READ;
+            state <= READ;
           end
         end
-        PS2_APB_READ: begin
-          ps2_apb_state <= PS2_APB_IDLE;
+        READ: begin
+          state <= IDLE;
         end
         default: begin
-          ps2_apb_state <= PS2_APB_IDLE;
+          state <= IDLE;
         end
       endcase
     end
