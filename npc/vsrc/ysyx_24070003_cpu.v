@@ -394,39 +394,25 @@ uart my_uart(
     .AXI4_UART_BREADY                       (AXI4_UART_BREADY)
     //output reg [1:0]       AXI4_UART_BRESP 
 );
+*/
 
+ 
 clint my_clint(
-    .CLK                         (clk)  ,
-    .rstn                        (rstn),    
+    .CLK                         (clock)  ,
+    .rstn                        (reset),    
 
 
     // AXI-Lite4 Read Address Channel
-    .AXI4_CLINT_ARADDR               (AXI4_CLINT_ARADDR),
-    .AXI4_CLINT_ARVALID               (AXI4_CLINT_ARVALID),
+    .AXI4_CLINT_ARADDR               (LSU_AXI4_ARADDR),
+    .AXI4_CLINT_ARVALID               (LSU_AXI4_ARVALID),
     .AXI4_CLINT_ARREADY               (AXI4_CLINT_ARREADY),
     
     // AXI-Lite4 Read Data Channel
     .AXI4_CLINT_RDATA               (AXI4_CLINT_RDATA),
     .AXI4_CLINT_RVALID               (AXI4_CLINT_RVALID),
-    .AXI4_CLINT_RREADY               (AXI4_CLINT_RREADY),
-
-    // AXI-Lite4 Write Address Channel
-    .AXI4_CLINT_AWADDR               (AXI4_CLINT_AWADDR),
-    .AXI4_CLINT_AWVALID               (AXI4_CLINT_AWVALID),
-    .AXI4_CLINT_AWREADY               (AXI4_CLINT_AWREADY),
-   
-    // AXI-Lite4 Write Data Channel
-    .AXI4_CLINT_WDATA               (AXI4_CLINT_WDATA),
-    .AXI4_CLINT_WSTRB               (AXI4_CLINT_WSTRB),  
-    .AXI4_CLINT_WVALID               (AXI4_CLINT_WVALID),
-    .AXI4_CLINT_WREADY               (AXI4_CLINT_WREADY),
-   
-    // AXI-Lite4 Write Response Channel
-    .AXI4_CLINT_BVALID               (AXI4_CLINT_BVALID),
-    .AXI4_CLINT_BREADY               (AXI4_CLINT_BREADY)
-    //output reg [1:0]       AXI4_SRAM_BRESP 
+    .AXI4_CLINT_RREADY               (LSU_AXI4_RREADY)
 );
-*/
+
 
 /*
 sram_inst inst_sram(
@@ -444,7 +430,7 @@ sram_inst inst_sram(
 wire [31:0] IDU_EXU_PC;
 wire IDU_EXU_lw, IDU_EXU_lh, IDU_EXU_lb, IDU_EXU_lbu, IDU_EXU_lhu, IDU_EXU_sw, IDU_EXU_sb, IDU_EXU_sh;
 wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr,IDU_EXU_C_type;
-wire [1:0] IDU_EXU_csr_rst;
+wire [2:0] IDU_EXU_csr_rst;
 idu my_idu(
    // .EXU_IFU_flush          (EXU_IFU_flush),
     .clk                    (clock        ),
@@ -506,7 +492,7 @@ wire [4:0] EXU_LSU_rd,LSU_WBU_rd;
 wire EXU_LSU_ren,EXU_LSU_reg,LSU_WBU_reg,EXU_LSU_ebreak,IDU_EXU_ebreak,EXU_LSU_wen;
 wire EXU_LSU_lw,EXU_LSU_lh,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh;
 wire EXU_LSU_ecall,EXU_LSU_mret,EXU_LSU_C_type;
-wire [1:0] EXU_LSU_csr_rst;
+wire [2:0] EXU_LSU_csr_rst;
 wire [31:0] EXU_LSU_csr_data,EXU_LSU_csr_in;
 wire EXU_IFU_JUMP;
 wire [31:0] EXU_IFU_pc;
@@ -591,8 +577,8 @@ exu my_exu(
 wire [31:0] EXU_LSU_PC,LSU_WBU_PC,PC_DATA,DNPC_DATA,EXU_LSU_dnpc,LSU_WBU_dnpc,IDU_EXU_dnpc;
 wire [31:0] LSU_WBU_DATA;
 wire [31:0] LSU_WBU_csr_data,LSU_WBU_csr_in,WBU_CSR_DATA;
-wire [1:0] WBU_CSR_ADDR;
-wire [1:0]LSU_WBU_csr_rst;
+wire [2:0] WBU_CSR_ADDR;
+wire [2:0]LSU_WBU_csr_rst;
 wire LSU_WBU_ecall,LSU_WBU_mret,LSU_WBU_C_type;
 //wire LSU_WBU_JUMP;
 //wire [31:0] LSU_WDATA,LSU_RDATA;
@@ -603,6 +589,12 @@ wire LSU_AXI4_ARVALID,LSU_AXI4_ARREADY;
 wire [31:0] LSU_AXI4_RDATA,LSU_AXI4_AWADDR,LSU_AXI4_WDATA,LSU_AXI4_ARADDR;
 wire [3:0] LSU_AXI4_WSTRB;
 wire LSU_WBU_skip;
+wire LSU_ARREADY;
+wire [31:0] LSU_RDATA;
+wire LSU_RVALID;
+assign LSU_RDATA = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RDATA : LSU_AXI4_RDATA;
+assign LSU_RVALID = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RVALID : LSU_AXI4_RVALID;
+assign LSU_ARREADY = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_ARREADY : LSU_AXI4_ARREADY;
 lsu my_lsu(
     //.EXU_IFU_pc      (EXU_IFU_pc),
     //.LSU_WBU_pc      (LSU_WBU_pc),
@@ -659,9 +651,9 @@ lsu my_lsu(
     //.LSU_RDATA      (LSU_RDATA)
     .LSU_AXI4_ARADDR    (LSU_AXI4_ARADDR),
     .LSU_AXI4_ARVALID    (LSU_AXI4_ARVALID),
-    .LSU_AXI4_ARREADY    (LSU_AXI4_ARREADY),
-    .LSU_AXI4_RDATA   (LSU_AXI4_RDATA),
-    .LSU_AXI4_RVALID  (LSU_AXI4_RVALID),
+    .LSU_AXI4_ARREADY    (LSU_ARREADY),
+    .LSU_AXI4_RDATA   (LSU_RDATA),
+    .LSU_AXI4_RVALID  (LSU_RVALID),
     .LSU_AXI4_RREADY  (LSU_AXI4_RREADY),
     .LSU_AXI4_AWADDR  (LSU_AXI4_AWADDR),
     .LSU_AXI4_AWVALID (LSU_AXI4_AWVALID),
@@ -716,7 +708,7 @@ wire WBU_ECALL,WBU_TOP_skip;
 //wire WBU_IFU_JUMP;
 wbu my_wbu(
     .clk                (clock),
-    .LSU_WBU_dnpc       (LSU_WBU_dnpc),
+    .LSU_WBU_dnpc       (IFU_IDU_dnpc),
     .LSU_WBU_skip       (LSU_WBU_skip),
     //.LSU_WBU_pc         (LSU_WBU_pc),
     //.WBU_IFU_pc         (WBU_IFU_pc),
@@ -767,9 +759,9 @@ RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
         .rdata2(rs2_data),
         .raddr2(rs2)
     );
-wire [1:0] WBU_CSR_RADDR;
+wire [2:0] WBU_CSR_RADDR;
 assign WBU_CSR_RADDR = (IDU_EXU_ecall) ? 'd3 : (IDU_EXU_mret) ? 'd0 :IDU_EXU_csr_rst;
-csr_reg #(.ADDR_WIDTH(2), .DATA_WIDTH(32)) csr1(
+csr_reg #(.ADDR_WIDTH(3), .DATA_WIDTH(32)) csr1(
         .clk(clock),
         .wdata(WBU_CSR_DATA),
         .ecall(WBU_ECALL),
@@ -806,7 +798,7 @@ reg [31:0] dpi_monitor_data[0:5];
 initial set_monitor_ptr(dpi_monitor_data);
 assign dpi_monitor_data[0] = {31'b0,difftest_valid};
 assign dpi_monitor_data[1] = TO_top_pc;
-assign dpi_monitor_data[2] = TO_top_dnpc;
+assign dpi_monitor_data[2] = IFU_IDU_PC;
 assign dpi_monitor_data[3] = instr;
 assign dpi_monitor_data[4] = {31'b0,ebreak};
 assign dpi_monitor_data[5] = {31'b0,ref_skip};

@@ -28,7 +28,7 @@ module exu(
     input IDU_EXU_ecall,
     input IDU_EXU_mret,
     input IDU_EXU_C_type,
-    input [1:0] IDU_EXU_csr_rst,
+    input [2:0] IDU_EXU_csr_rst,
     
     input [31:0] rs1_data,
     input [31:0] rs2_data,
@@ -69,7 +69,7 @@ module exu(
     output reg EXU_LSU_ecall,
     output reg EXU_LSU_mret,
     output reg EXU_LSU_C_type,
-    output reg [1:0] EXU_LSU_csr_rst,
+    output reg [2:0] EXU_LSU_csr_rst,
    // output reg EXU_IFU_STALL_done,
     output reg EXU_IFU_JUMP,
     output reg [31:0] EXU_LSU_RS2DATA,
@@ -155,7 +155,7 @@ begin
     EXU_LSU_ecall               <=        1'b0;
     EXU_LSU_mret               <=        1'b0;
     EXU_LSU_C_type               <=        1'b0;
-    EXU_LSU_csr_rst               <=        2'b0;
+    EXU_LSU_csr_rst               <=        3'b0;
     EXU_LSU_csr_in               <=        32'b0;
     EXU_IFU_pc               <=        32'b0;
     EXU_LSU_RS2DATA           <=        32'b0;
@@ -212,7 +212,7 @@ begin
     EXU_LSU_ecall               <=        1'b0;
     EXU_LSU_mret               <=        1'b0;
     EXU_LSU_C_type               <=        1'b0;
-    EXU_LSU_csr_rst               <=        2'b0;
+    EXU_LSU_csr_rst               <=        3'b0;
     EXU_LSU_csr_in               <=        32'b0;
     EXU_IFU_pc               <=        32'b0;
     EXU_LSU_RS2DATA           <=        32'b0;

@@ -18,15 +18,21 @@ module sdram_top_apb (
   output        sdram_ras,
   output        sdram_cas,
   output        sdram_we,
-  output [12:0] sdram_a,
+  output [13:0] sdram_a,
   output [ 1:0] sdram_ba,
-  output [ 1:0] sdram_dqm,
-  inout  [15:0] sdram_dq
+  output [ 3:0] sdram_dqm,
+  inout  [31:0] sdram_dq
 );
-
+  always@(posedge clock) begin
+    if(in_paddr >= 32'ha000ef60 && in_paddr <= 32'ha000efff) begin
+      if(in_pwrite) begin
+      //$write("write in addr %x data %x\n", in_paddr, in_pwdata);
+      end
+    end
+  end
   wire sdram_dout_en;
-  wire [15:0] sdram_dout;
-  assign sdram_dq = sdram_dout_en ? sdram_dout : 16'bz;
+  wire [31:0] sdram_dout;
+  assign sdram_dq = sdram_dout_en ? sdram_dout : 32'bz;
 
   typedef enum [1:0] { ST_IDLE, ST_WAIT_ACCEPT, ST_WAIT_ACK } state_t;
   reg [1:0] state;

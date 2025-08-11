@@ -17,7 +17,9 @@ int main(int argc, char** argv, char** env) {
 
   init_module();  
 
+ 
   engine_start();
+
 
   // Return good completion status
   delete_module();

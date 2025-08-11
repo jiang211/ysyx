@@ -1,5 +1,7 @@
 TOPNAME = ysyxSoCFull
 
+INC_PATH ?=
+NVBOARD_HOME ?= $(HOME)/ysyx-workbench/nvboard
 
 VERILATOR = verilator
 
@@ -33,8 +35,21 @@ OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
 
 default: $(BIN)
-
 $(shell mkdir -p $(BUILD_DIR))
+######################################################nvboard####################################
+# rules for NVBoard
+
+NXDC_FILES = constr/ysyxSoCFull.nxdc
+SRC_AUTO_BIND = $(abspath $(BUILD_DIR)/auto_bind.cpp)
+$(SRC_AUTO_BIND): $(NXDC_FILES)
+	python3 $(NVBOARD_HOME)/scripts/auto_pin_bind.py $^ $@
+
+
+
+
+
+##################################################################################################
+
 ysyxsoc = $(YSYXSOC)
 VS_DIR = $(WORK_DIR)/vsrc
 VSRCS = $(shell find $(VS_DIR) -name "*.v")
@@ -44,15 +59,22 @@ VSRCS += $(YSYXSOC)/build/ysyxSoCFull.v
 CXXFLAGS += $(shell llvm-config --cxxflags) -fPIE
 CS_DIR = $(WORK_DIR)/csrc
 CSRCS = $(shell find $(CS_DIR) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
+CSRCS += $(SRC_AUTO_BIND)
 
-INC_PATH = $(abspath ./csrc/include)
+include $(NVBOARD_HOME)/scripts/nvboard.mk
+INC_PATH += $(abspath ./csrc/include)
 INC_PATH += $(abspath ./obj_dir)
+#INC_PATH += $(NVBOARD_HOME)/include
 INCFLAGS = $(addprefix -I, $(INC_PATH))
+
+CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
 CFLAGS += -O2 -MMD -Wall  $(INCFLAGS) -Og -ggdb3 -g
 
 LDFLAGS += $(shell llvm-config --libs) 
 LDFLAGS += -O2 -Og -ggdb3 -ldl -pie -lreadline 
 VERILATOR_FLAGS += $(addprefix -CFLAGS , $(CFLAGS) $(CXXFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS))
+CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
+CXXFLAGS += -DNVBOARD
 
 
 VERILATOR_OUTFLAGS += --Mdir $(OBJ_DIR) 
@@ -69,9 +91,9 @@ $(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 	@rm -rf $(OBJ_DIR)
 	@$(VERILATOR) $(VERILATOR_FLAGS) \
 		--top-module $(TOPNAME) $^ \
-		$(NVBOARD_FLAGS) \
+		$(addprefix -CFLAGS , $(CXXFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \
+		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
 		$(VERILATOR_OUTFLAGS) 
-
 
 
 NPC_FLAGS += $(ARGS)

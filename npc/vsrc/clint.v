@@ -20,29 +20,14 @@ module clint #(
     // AXI-Lite4 Read Data Channel
     output reg [DATA_WIDTH-1:0] AXI4_CLINT_RDATA,
     output reg                  AXI4_CLINT_RVALID,
-    input                       AXI4_CLINT_RREADY,
-
-    // AXI-Lite4 Write Address Channel
-    input [ADDR_WIDTH-1:0] AXI4_CLINT_AWADDR,
-    input                  AXI4_CLINT_AWVALID,
-    output reg             AXI4_CLINT_AWREADY,
-   
-    // AXI-Lite4 Write Data Channel
-    input [DATA_WIDTH-1:0] AXI4_CLINT_WDATA,
-    input [3:0]            AXI4_CLINT_WSTRB,  
-    input                  AXI4_CLINT_WVALID,
-    output reg             AXI4_CLINT_WREADY,
-   
-    // AXI-Lite4 Write Response Channel
-    output reg             AXI4_CLINT_BVALID,
-    input                  AXI4_CLINT_BREADY
+    input                       AXI4_CLINT_RREADY
     //output reg [1:0]       AXI4_SRAM_BRESP 
 );
     //reg [DATA_WIDTH-1:0] mem [0:2**ADDR_WIDTH-1];
 
 
 //import "DPI-C" function void vpmem_read(input int raddr,input byte ren,output int rdata);
-import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
+//import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
 
 reg [63:0] mtime;
 always @(posedge CLK) begin
@@ -55,15 +40,11 @@ end
 wire [31:0] rdata_low = mtime[31:0];
 wire [31:0] rdata_high = mtime[63:32];
 wire [31:0] rdata;
-assign rdata = (read_addr_reg == 32'ha0000048) ? rdata_low : (read_addr_reg == 32'ha000004c) ? rdata_high : 32'b0;
+assign rdata = (read_addr_reg == 32'h02000000) ? rdata_low : (read_addr_reg == 32'h02000004) ? rdata_high : 32'b0;
 localparam RIDLE        = 2'b00;
 localparam READ_DATA  = 2'b01;
 localparam READ_WAIT   = 2'b10;
 
-localparam WIDLE        = 2'b00;
-localparam WRITE_WAIT_1  = 2'b01;
-localparam WRITE_WAIT_2  = 2'b10;
-localparam WRITE_DATA  = 2'b11;
 
 reg [1:0] state_read, state_write;
 reg [ADDR_WIDTH-1:0] read_addr_reg;
@@ -111,7 +92,7 @@ always @(posedge CLK) begin
         endcase
     end
 end
-
+/*
 reg [31:0] write_addr_reg, write_data;
 reg [3:0] wirte_wstrb;
 always @(posedge CLK) begin
@@ -191,6 +172,6 @@ always @(posedge CLK) begin
     end
 end
 
-
+*/
 
 endmodule

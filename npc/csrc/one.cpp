@@ -1,11 +1,15 @@
+//#define WAVE_ON  //
 #include <common.h>
 #include <paddr.h>
 
 // Include common routines
 #include <verilated.h>
 #include <verilated_dpi.h>
+#ifdef WAVE_ON
 #include "verilated_fst_c.h"
+#endif
 // Inculde model header, generated from Verilating "top.v"
+#include <nvboard.h>
 #include <VysyxSoCFull.h>
 #include "svdpi.h"
 #include "VysyxSoCFull__Dpi.h"
@@ -19,33 +23,43 @@
 
 uint64_t get_time();
 
-
 VerilatedContext* contextp;
 VysyxSoCFull* top;
  
-VerilatedFstC* tfp;
+#ifdef WAVE_ON
+VerilatedFstC* tfp;  // 仅在WAVE_ON时声明
+#endif
 vluint64_t main_time = 0;
 void difftest_skip_ref();
 void npc_trap(int state, vaddr_t pc, int halt_ret);
 
+void nvboard_bind_all_pins(TOP_NAME* top);
    
 void init_verilator(int argc, char** argv, char** env) {
+  
+  
   Verilated::commandArgs(argc, argv);
   contextp = new VerilatedContext;
   contextp->commandArgs(argc, argv);
   top = new VysyxSoCFull{contextp};
+  nvboard_bind_all_pins(top);
+  nvboard_init();
   //VCD波形设置  start
-  Verilated::traceEverOn(true);
-  tfp = new VerilatedFstC;
-  top->trace(tfp, 0);
-  tfp->open("wave.fst");
+  #ifdef WAVE_ON
+    Verilated::traceEverOn(true);
+    tfp = new VerilatedFstC;
+    top->trace(tfp, 0);
+    tfp->open("wave.fst");
+  #endif
    
 }
 static void single_cycle() {
   top->clock  = !top->clock;
   
   top->eval(); 
-  tfp->dump(main_time);
+  #ifdef WAVE_ON
+    tfp->dump(main_time);
+  #endif
   top->clock  = !top->clock;
   main_time ++;
   top->eval(); 
@@ -134,12 +148,22 @@ extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
 
 }
 
-extern "C" void flash_read(int32_t addr, int32_t *data) { 
-  assert(0); ; 
-}
-
 static uint8_t rom_data[1024];  // 假设 ROM 最大 1KB
 static size_t rom_size = 0;
+extern "C" void flash_read(int32_t addr, int32_t *data) { 
+  *data = flash_read((paddr_t)(addr),4);
+  /*
+  FILE *fp = fopen("/home/jx/ysyx-workbench/npc/char-test.bin", "rb");
+  if (!fp) {
+    printf("error\n");
+}
+    rom_size = fread(rom_data, 1, sizeof(rom_data), fp);
+    fclose(fp);
+   
+    *data = *(int32_t *)(rom_data + addr);  */
+    
+}
+
 extern "C" void mrom_read(int32_t addr, int32_t *data) { 
 
   *data = mrom_read((paddr_t)(addr),4);
@@ -155,7 +179,17 @@ extern "C" void mrom_read(int32_t addr, int32_t *data) {
     */
 }
 
+extern "C" void psram_read(int32_t addr, int32_t *data) { 
+  *data = psram_read((paddr_t)(addr),4);
+  //printf("psram_read addr = %x, data = %x\n", addr, *data);
+}
 
+extern "C" void psram_write(int addr,int data,int wstrb) {
+  int shift_len = (8 - wstrb);
+  uint32_t wdata = data >> (shift_len * 4);
+  _psram_write(addr, data,wstrb/2);
+  //printf("psram_write addr = %x, data = %x\n", addr, data);
+}
 /*
 extern "C" void call(word_t pc , word_t dnpc);
 
@@ -172,33 +206,37 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
       top->clock  = !top->clock;
       //top->instr1 =inst_fetch(&s->snpc, 4);
       top->eval();
-      
-      tfp->dump(main_time);
-      main_time ++;
+      #ifdef WAVE_ON
+        tfp->dump(main_time);
+        main_time ++;
+      #endif
       top->clock  = !top->clock;
-
+      nvboard_update();
       top->eval(); 
 
-      tfp->dump(main_time);
-      main_time ++;
+      #ifdef WAVE_ON
+        tfp->dump(main_time);
+        main_time ++;
+      #endif
 
         
        *difftest = monitor_data[0];
         s->dnpc = monitor_data[2];
         s->pc = monitor_data[1];
         s->snpc = monitor_data[1] + 4;
-
+        
         s->isa.inst.val = monitor_data[3];
         //printf("pc = %08x, dnpc = %08x, snpc = %08x, isa = %08x\n",s->pc,s->dnpc,s->snpc,s->isa.inst.val);
         if(monitor_data[0]){
-        for (int i=0; i<32; i++) {
-          cpu->gpr[i] = cpu_gpr[i];
+          if(monitor_data[5]){ difftest_skip_ref();}
+          for (int i=0; i<32; i++) {
+            cpu->gpr[i] = cpu_gpr[i];
+          }
+          for (int i=0; i<4; i++) {
+            cpu->csr[i] = cpu_csr[i];
+          }
         }
-        for (int i=0; i<4; i++) {
-          cpu->csr[i] = cpu_csr[i];
-        }
-        }
-      if(monitor_data[5]){difftest_skip_ref();}
+      
       if(monitor_data[4])  { 
         npc_trap(NPC_END , monitor_data[1], cpu_gpr[10]);
         return ;
@@ -208,11 +246,12 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
 
 
 void delete_module() {
-
+  nvboard_quit();
   //end_sim(); 
-  tfp->close();
-
-delete tfp;
+  #ifdef WAVE_ON
+    tfp->close();
+    delete tfp;
+  #endif
   top->final();
 
   // Destory model
