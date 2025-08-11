@@ -139,6 +139,16 @@ extern char _ssbl_SA [];
 extern char _ssbl_MA [];
 extern char _ssbl_end [];
 
+extern char _data_extra_start_VMA [] __attribute__((weak));
+extern char _data_extra_end_VMA [] __attribute__((weak));
+extern char _data_extra_start_LMA [] __attribute__((weak));
+extern char _data_extra_end_LMA [] __attribute__((weak));
+extern char _bss_extra_start [] __attribute__((weak));
+extern char _bss_extra_end [] __attribute__((weak));
+extern char __am_apps_bss_start [] __attribute__((weak));
+extern char __am_apps_bss_end [] __attribute__((weak));
+
+
 
 void _bootloader (void)__attribute__((section(".entry")));
 void _bootloader (void) {
@@ -162,8 +172,10 @@ void _bootloader_2 (void) {
     _memcpy1(_rodata_SA, _rodata_MA, (_rodata_end - _rodata_SA));
     
     // 3. 复制初始化数据段到SRAM
+    if(_data_extra_start_VMA != 0){
+        _memcpy1(_data_extra_start_VMA, _data_extra_start_LMA, (_data_extra_end_VMA - _data_extra_start_VMA));
+    }
     _memcpy1(_data_SA, _data_MA, (_data_end - _data_SA));
-    
     // 5. 设置堆栈指针（指向PSRAM中的栈顶）
     //asm volatile("mv sp, %0" : : "r" (_stack_top));
     
@@ -177,6 +189,7 @@ void _bootloader_2 (void) {
 void _trm_init() {
   //printf_ysyx();
   init_uart(115200);
+  putch('J');
   //_memcpy(&_sdata, &_sidata, &_edata - &_sdata);
   int ret = main(mainargs);
   halt(ret);
