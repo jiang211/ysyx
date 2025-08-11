@@ -53,9 +53,8 @@ word_t psram_read(paddr_t addr, int len) {
 }
 
 void _psram_write(paddr_t addr,word_t data,int len) {
-    if(addr >= 0x4000 && addr <= 0x4000){printf("psram_write addr = %08x, wdata = %08x\n", addr, data);}
+    
     host_write(guest_to_host_psram(addr), len, data);
-    if(addr >= 0x4000 && addr <= 0x4000){printf("psram_write in = %08x, now_data = %08x\n", addr, host_read(guest_to_host_psram(addr), 4));}
 }
 
 static void pmem_write(paddr_t addr, int len, word_t data) {

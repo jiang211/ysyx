@@ -48,8 +48,9 @@ module alu(
                     zero = 1'b0;
                 end
             4'b0010: begin
-                    alu_out = opdata1 << opdata2;
+                    alu_out = opdata1 << opdata2[4:0];
                     zero = 1'b0;
+                    //$write("alu_out is %08x,opdata1 is %08x,opdata2 is %08x\n",alu_out,opdata1,opdata2);
                 end
             4'b0011: begin
                 if(branch)

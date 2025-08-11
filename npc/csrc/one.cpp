@@ -181,15 +181,13 @@ extern "C" void mrom_read(int32_t addr, int32_t *data) {
 
 extern "C" void psram_read(int32_t addr, int32_t *data) { 
   *data = psram_read((paddr_t)(addr),4);
-  if(addr >= 0x4000 && addr <= 0x4000){printf("psram_read addr = %x, data = %x\n", addr, *data);}
   //printf("psram_read addr = %x, data = %x\n", addr, *data);
 }
 
 extern "C" void psram_write(int addr,int data,int wstrb) {
   int shift_len = (8 - wstrb);
   uint32_t wdata = data >> (shift_len * 4);
-  //if(addr >= 0x28 && addr <= 0x28){printf("psram_write addr = %x, data = %x\n", addr, data);}
-  _psram_write(addr, wdata,wstrb/2);
+  _psram_write(addr, data,wstrb/2);
   //printf("psram_write addr = %x, data = %x\n", addr, data);
 }
 /*
