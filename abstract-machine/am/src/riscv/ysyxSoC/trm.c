@@ -166,6 +166,7 @@ void _bootloader (void) {
 
 void _bootloader_2 (void) __attribute__((section(".ssbl")));
 void _bootloader_2 (void) {
+    
     _memcpy1(_text_SA, _text_MA, (_text_end - _text_SA));
     
     // 2. 复制只读数据段到SRAM

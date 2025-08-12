@@ -88,34 +88,23 @@ module vga_top_apb (
     end
   end
 
-  localparam VGA_STATE_WIDTH = 2;
-  reg [VGA_STATE_WIDTH-1:0] vga_apb_state;
-  localparam [VGA_STATE_WIDTH-1:0] VGA_APB_IDLE = 'd0;
-  localparam [VGA_STATE_WIDTH-1:0] VGA_APB_WRITE = 'd1;
-
-  assign in_pready  = (vga_apb_state == VGA_APB_WRITE) ? 1'b1 : 1'b0;
+  reg ready;
+  assign in_pready  = (ready) ? 1'b1 : 1'b0;
   assign in_prdata  = 'd0;
   assign in_pslverr = 1'b0;
 
-  always @(posedge clock) begin
+  always@(posedge clock) begin
     if (reset) begin
-      vga_apb_state <= VGA_APB_IDLE;
+      ready <= 1'b0;
     end else begin
-      case (vga_apb_state)
-        VGA_APB_IDLE: begin
-          if (in_psel && in_pwrite) begin
-            vga_apb_state <= VGA_APB_WRITE;
-          end
-        end
-        VGA_APB_WRITE: begin
-          vga_apb_state <= VGA_APB_IDLE;
-        end
-        default: begin
-          vga_apb_state <= VGA_APB_IDLE;
-        end
-      endcase
+      if (in_psel && in_pwrite) begin
+        ready <= 1'b1;
+      end else begin
+        ready <= 1'b0;
+      end
     end
   end
+
 
   always @(posedge clock or posedge reset) begin
     if (reset) begin
