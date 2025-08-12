@@ -20,7 +20,7 @@ extern char _pmem_start;
 #define PMEM_SIZE (128 * 1024 * 1024)
 #define PMEM_END  ((uintptr_t)&_pmem_start + PMEM_SIZE)
 
-Area heap = RANGE(&_heap_start, PMEM_END);
+Area heap = RANGE(&_heap_start, &_psram_end);
 #ifndef MAINARGS
 #define MAINARGS ""
 #endif
@@ -139,6 +139,16 @@ extern char _ssbl_SA [];
 extern char _ssbl_MA [];
 extern char _ssbl_end [];
 
+extern char _data_extra_start_VMA [] __attribute__((weak));
+extern char _data_extra_end_VMA [] __attribute__((weak));
+extern char _data_extra_start_LMA [] __attribute__((weak));
+extern char _data_extra_end_LMA [] __attribute__((weak));
+extern char _bss_extra_start [] __attribute__((weak));
+extern char _bss_extra_end [] __attribute__((weak));
+extern char __am_apps_bss_start [] __attribute__((weak));
+extern char __am_apps_bss_end [] __attribute__((weak));
+
+
 
 void _bootloader (void)__attribute__((section(".entry")));
 void _bootloader (void) {
@@ -156,14 +166,17 @@ void _bootloader (void) {
 
 void _bootloader_2 (void) __attribute__((section(".ssbl")));
 void _bootloader_2 (void) {
+    
     _memcpy1(_text_SA, _text_MA, (_text_end - _text_SA));
     
     // 2. 复制只读数据段到SRAM
     _memcpy1(_rodata_SA, _rodata_MA, (_rodata_end - _rodata_SA));
     
     // 3. 复制初始化数据段到SRAM
+    if(_data_extra_start_VMA != 0){
+        _memcpy1(_data_extra_start_VMA, _data_extra_start_LMA, (_data_extra_end_VMA - _data_extra_start_VMA));
+    }
     _memcpy1(_data_SA, _data_MA, (_data_end - _data_SA));
-    
     // 5. 设置堆栈指针（指向PSRAM中的栈顶）
     //asm volatile("mv sp, %0" : : "r" (_stack_top));
     
@@ -177,6 +190,7 @@ void _bootloader_2 (void) {
 void _trm_init() {
   //printf_ysyx();
   init_uart(115200);
+  putch('J');
   //_memcpy(&_sdata, &_sidata, &_edata - &_sdata);
   int ret = main(mainargs);
   halt(ret);

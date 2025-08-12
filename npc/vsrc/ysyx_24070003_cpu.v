@@ -82,12 +82,12 @@ assign io_master_awaddr = AXI4_MASTER_AWADDR;
 assign io_master_rready = AXI4_MASTER_RREADY;
 assign io_master_awid = 'd0;//AXI4_MASTER_AWID;
 assign io_master_awlen = 'd0;//AXI4_MASTER_AWLEN;
-assign io_master_awsize = 'd0;//AXI4_MASTER_AWSIZE;
+assign io_master_awsize = LSU_AXI4_wsize;//AXI4_MASTER_AWSIZE;
 assign io_master_awburst = 2'd01;//AXI4_MASTER_AWBURST;
 assign io_master_wvalid = AXI4_MASTER_WVALID;
 assign io_master_wdata = AXI4_MASTER_WDATA;
 assign io_master_wstrb = AXI4_MASTER_WSTRB;
-assign io_master_wlast = 'd0;//AXI4_MASTER_WLAST;
+assign io_master_wlast = LSU_AXI_wlast;//AXI4_MASTER_WLAST;
 assign io_master_bready = AXI4_MASTER_BREADY;
 assign io_master_arvalid = AXI4_MASTER_ARVALID;
 assign io_master_araddr = AXI4_MASTER_ARADDR;
@@ -592,6 +592,8 @@ wire LSU_WBU_skip;
 wire LSU_ARREADY;
 wire [31:0] LSU_RDATA;
 wire LSU_RVALID;
+wire LSU_AXI_wlast;
+wire [2:0] LSU_AXI4_wsize;
 assign LSU_RDATA = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RDATA : LSU_AXI4_RDATA;
 assign LSU_RVALID = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RVALID : LSU_AXI4_RVALID;
 assign LSU_ARREADY = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_ARREADY : LSU_AXI4_ARREADY;
@@ -663,7 +665,9 @@ lsu my_lsu(
     .LSU_AXI4_WVALID  (LSU_AXI4_WVALID),
     .LSU_AXI4_WREADY  (LSU_AXI4_WREADY),
     .LSU_AXI4_BVALID  (LSU_AXI4_BVALID),
-    .LSU_AXI4_BREADY  (LSU_AXI4_BREADY)
+    .LSU_AXI4_BREADY  (LSU_AXI4_BREADY),
+    .LSU_AXI_wlast    (LSU_AXI_wlast),
+    .LSU_AXI4_wsize   (LSU_AXI4_wsize)
 );
 
 
