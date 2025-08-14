@@ -5,12 +5,13 @@ NVBOARD_HOME ?= $(HOME)/ysyx-workbench/nvboard
 
 VERILATOR = verilator
 
+#VERILATOR_FLAGS += -O3 --x-assign fast --x-initial fast 
 VERILATOR_FLAGS += -O3 --x-assign fast --x-initial fast 
 VERILATOR_FLAGS += -Wall
 VERILATOR_FLAGS += --cc 
 VERILATOR_FLAGS += --MMD
-VERILATOR_FLAGS += --coverage
-VERILATOR_FLAGS += --assert
+#VERILATOR_FLAGS += --coverage
+#VERILATOR_FLAGS += --assert
 VERILATOR_FLAGS += --build
 VERILATOR_FLAGS += --trace-fst
 VERILATOR_FLAGS += -I$(YSYXSOC)/perip/uart16550/rtl
@@ -26,7 +27,9 @@ VERILATOR_FLAGS += --Wno-DECLFILENAME
 VERILATOR_FLAGS += --Wno-DEFPARAM
 VERILATOR_FLAGS += --Wno-PINCONNECTEMPTY
 VERILATOR_FLAGS += --Wno-SYNCASYNCNET
+VERILATOR_FLAGS += --Wno-WIDTHEXPAND
 VERILATOR_FLAGS += --autoflush
+#VERILATOR_FLAGS += --debug --gdbbt
 
 YSYXSOC ?= $(HOME)/ysyx-workbench/ysyxSoC  # 默认路径，按需修改
 WORK_DIR = $(shell pwd)

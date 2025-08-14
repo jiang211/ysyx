@@ -50,8 +50,18 @@ module idu(
     output reg IDU_EXU_C_type        ,
     //output reg IDU_EXU_STALL         ,
     output reg [31:0] IDU_EXU_PC  ,
-    output reg [31:0] IDU_EXU_dnpc
+    output reg [31:0] IDU_EXU_dnpc,
+    output reg [63:0] calcu_type_count,
+    output reg [63:0] Jump_type_count,
+    output reg [63:0] LOAD_type_count,
+    output reg [63:0] STORE_type_count,
+    output reg [63:0] C_type_count
 );
+// reg [63:0] calcu_type_count;
+// reg [63:0] Jump_type_count;
+// reg [63:0] LOAD_type_count;
+// reg [63:0] STORE_type_count;
+// reg [63:0] C_type_count;
 
 reg [31:0]instr;
 wire    [31:0]    immI_num ;
@@ -232,8 +242,18 @@ begin
     //IDU_EXU_STALL               <=        1'b0;
     IDU_EXU_PC                  <=        32'b0;
     IDU_EXU_dnpc                <=        32'b0;
+    calcu_type_count               <=        64'b0;
+    Jump_type_count               <=        64'b0;
+    C_type_count               <=        64'b0;
+    LOAD_type_count               <=        64'b0;
+    STORE_type_count               <=        64'b0;
     end
     else if(IDU_EXU_valid && EXU_IDU_ready)begin
+        if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
+        else if(J_type || B_type) begin Jump_type_count <= Jump_type_count + 1'b1; end
+        else if(C_type) begin C_type_count <= C_type_count + 1'b1; end
+        else if(I_type_3) begin LOAD_type_count <= LOAD_type_count + 1'b1; end
+        else if(S_type) begin STORE_type_count <= STORE_type_count + 1'b1; end
    // IDU_EXU_opcode        <=        opcode   ;     
     IDU_EXU_funct3        <=        funct3   ;   
     IDU_EXU_funct7        <=        funct7[5:0]   ;

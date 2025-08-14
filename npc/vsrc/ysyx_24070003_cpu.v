@@ -82,12 +82,12 @@ assign io_master_awaddr = AXI4_MASTER_AWADDR;
 assign io_master_rready = AXI4_MASTER_RREADY;
 assign io_master_awid = 'd0;//AXI4_MASTER_AWID;
 assign io_master_awlen = 'd0;//AXI4_MASTER_AWLEN;
-assign io_master_awsize = 'd0;//AXI4_MASTER_AWSIZE;
+assign io_master_awsize = LSU_AXI4_wsize;//AXI4_MASTER_AWSIZE;
 assign io_master_awburst = 2'd01;//AXI4_MASTER_AWBURST;
 assign io_master_wvalid = AXI4_MASTER_WVALID;
 assign io_master_wdata = AXI4_MASTER_WDATA;
 assign io_master_wstrb = AXI4_MASTER_WSTRB;
-assign io_master_wlast = 'd0;//AXI4_MASTER_WLAST;
+assign io_master_wlast = LSU_AXI_wlast;//AXI4_MASTER_WLAST;
 assign io_master_bready = AXI4_MASTER_BREADY;
 assign io_master_arvalid = AXI4_MASTER_ARVALID;
 assign io_master_araddr = AXI4_MASTER_ARADDR;
@@ -174,6 +174,10 @@ wire [31:0] IFU_IDU_PC;
 wire [31:0] IFU_IDU_dnpc;
 wire [31:0] IFU_AXI4_rdata,IFU_AXI4_araddr;
 wire IFU_AXI4_arvalid,IFU_AXI4_arready,IFU_AXI4_rvalid,IFU_AXI4_rready;
+
+
+
+
 ifu my_ifu(
     .WBU_IFU_JUMP  (EXU_IFU_JUMP),
     .IFU_IDU_valid  (IFU_IDU_valid), 
@@ -207,7 +211,9 @@ ifu my_ifu(
     .IFU_AXI4_arready(IFU_AXI4_arready),
     .IFU_AXI4_rdata(IFU_AXI4_rdata),
     .IFU_AXI4_rvalid(IFU_AXI4_rvalid),
-    .IFU_AXI4_rready(IFU_AXI4_rready)
+    .IFU_AXI4_rready(IFU_AXI4_rready),
+    .ifu_count      (ifu_count),
+    .ifu_during_count (ifu_during_count)
 );
 
 wire AXI4_SRAM_ARVALID,AXI4_SRAM_ARREADY,AXI4_SRAM_RVALID,AXI4_SRAM_RREADY;
@@ -483,7 +489,12 @@ idu my_idu(
     .IDU_EXU_C_type         (IDU_EXU_C_type    ),
     //.IDU_EXU_STALL          (IDU_EXU_STALL),
     .IDU_EXU_PC             (IDU_EXU_PC),
-    .IDU_EXU_dnpc           (IDU_EXU_dnpc)
+    .IDU_EXU_dnpc           (IDU_EXU_dnpc),
+    .calcu_type_count       (calcu_type_count),
+    .Jump_type_count        (Jump_type_count),
+    .LOAD_type_count        (LOAD_type_count),
+    .STORE_type_count       (STORE_type_count),
+    .C_type_count           (C_type_count)
 );  
 
 
@@ -592,6 +603,8 @@ wire LSU_WBU_skip;
 wire LSU_ARREADY;
 wire [31:0] LSU_RDATA;
 wire LSU_RVALID;
+wire LSU_AXI_wlast;
+wire [2:0] LSU_AXI4_wsize;
 assign LSU_RDATA = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RDATA : LSU_AXI4_RDATA;
 assign LSU_RVALID = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RVALID : LSU_AXI4_RVALID;
 assign LSU_ARREADY = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_ARREADY : LSU_AXI4_ARREADY;
@@ -663,7 +676,11 @@ lsu my_lsu(
     .LSU_AXI4_WVALID  (LSU_AXI4_WVALID),
     .LSU_AXI4_WREADY  (LSU_AXI4_WREADY),
     .LSU_AXI4_BVALID  (LSU_AXI4_BVALID),
-    .LSU_AXI4_BREADY  (LSU_AXI4_BREADY)
+    .LSU_AXI4_BREADY  (LSU_AXI4_BREADY),
+    .LSU_AXI_wlast    (LSU_AXI_wlast),
+    .LSU_AXI4_wsize   (LSU_AXI4_wsize),
+    .lsu_count       (lsu_count),
+    .lsu_during_count  (lsu_during_count)
 );
 
 
@@ -791,7 +808,20 @@ always @(posedge clock ) begin
         ref_skip <= WBU_TOP_skip;
     end
 end
-
+reg [63:0] lsu_count,ifu_count,calcu_type_count,Jump_type_count,LOAD_type_count,STORE_type_count,C_type_count,lsu_during_count,ifu_during_count;
+always @(posedge clock ) begin
+    if(IDU_EXU_ebreak) begin
+        $display("lsu_count = %010d\n",lsu_count);
+        $display("ifu_count = %010d\n",ifu_count);
+        $display("calcu_type_count = %010d\n",calcu_type_count);
+        $display("Jump_type_count = %010d\n",Jump_type_count);
+        $display("LOAD_type_count = %010d\n",LOAD_type_count);
+        $display("STORE_type_count = %010d\n",STORE_type_count);
+        $display("C_type_count = %010d\n",C_type_count);
+        $display("lsu_average_count = %010d\n",lsu_during_count/lsu_count);
+        $display("ifu_average_count = %010d\n",ifu_during_count/ifu_count);
+    end
+end
 import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
 reg [31:0] dpi_monitor_data[0:5];
 // 初始化时绑定指针

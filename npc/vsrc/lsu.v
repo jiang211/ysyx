@@ -78,8 +78,12 @@ module lsu(
     
     // 写响应通道
     input                       LSU_AXI4_BVALID,
-    output reg                  LSU_AXI4_BREADY
-    //input  [1:0]                LSU_AXI4_BRESP
+    output reg                  LSU_AXI4_BREADY,
+    output reg                  LSU_AXI_wlast,
+    output reg [2:0]            LSU_AXI4_wsize,
+    output reg [63:0]           lsu_count,
+    output reg [63:0]           lsu_during_count
+      //input  [1:0]                LSU_AXI4_BRESP
 );
 
 parameter  IDLE = 0,
@@ -91,7 +95,7 @@ parameter  IDLE = 0,
             WRITE_DATA = 6;
 reg [2:0] state;
 
-
+    //reg [63:0] lsu_count;
     reg LSU_REN;
     //wire [3:0]  wlen;
     //wire [31:0] addr;
@@ -127,7 +131,16 @@ reg [2:0] state;
     assign  LSU_WLEN = ( {4{EXU_LSU_sb}} & 4'b1 )  |
                    ( {4{EXU_LSU_sh}} & 4'b11 )  |
                    ( {4{EXU_LSU_sw}} & 4'b1111 ) ;
-    
+    wire [2:0] awsize;
+
+    assign  awsize = ( {3{EXU_LSU_sb}} & 3'b0 )  |
+                   ( {3{EXU_LSU_sh}} & 3'b01 )  |
+                   ( {3{EXU_LSU_sw}} & 3'b10 ) ;
+    // always @(posedge clk) begin
+    //     if(EXU_LSU_wen) begin
+    //     $write("lsu_wstrb = %04b,EXU_LSU_result = %08x\n",lsu_wstrb,EXU_LSU_result);
+    //     end
+    // end
     assign lsu_wstrb = ((EXU_LSU_result[1:0] & 2'b11) == 2'b00) ? (LSU_WLEN << 2'd0) :
                        ((EXU_LSU_result[1:0] & 2'b11) == 2'b01) ? (LSU_WLEN << 2'd1) :
                        ((EXU_LSU_result[1:0] & 2'b11) == 2'b10) ? (LSU_WLEN << 2'd2) :
@@ -167,7 +180,7 @@ always @(posedge clk) begin
 
         LSU_WBU_valid <= 1'b0;
 
-
+        LSU_AXI_wlast <= 1'b0;
         rd <=  5'd0;
         result <=  32'd0;
         reg_en <=  1'b0;
@@ -188,10 +201,13 @@ always @(posedge clk) begin
         pc <=  32'd0;
         dnpc <=  32'd0;
         skip <=  1'b0;
+        lsu_count <=  63'd0;
+        lsu_during_count <= 64'd0;
     end
     else begin
         case (state)
             IDLE: begin
+                LSU_AXI_wlast <= 1'b0;
                 if(LSU_WBU_ready && LSU_WBU_valid) begin
                     LSU_WBU_valid <= 1'b0;
                 end
@@ -233,6 +249,7 @@ always @(posedge clk) begin
                     LSU_AXI4_WSTRB <= lsu_wstrb;
                     LSU_AXI4_AWVALID <= 1'b1;
                     LSU_AXI4_WVALID <= 1'b1;
+                    LSU_AXI4_wsize <= awsize;
                     state <= START;
                 end else if ((EXU_LSU_ren )) begin
                     LSU_AXI4_ARADDR <= EXU_LSU_result;
@@ -242,16 +259,22 @@ always @(posedge clk) begin
             end
             START: begin
                 if(LSU_AXI4_AWVALID && LSU_AXI4_AWREADY && LSU_AXI4_WVALID && LSU_AXI4_WREADY) begin
+                            lsu_during_count <= lsu_during_count + 1'b1;
+                            lsu_count <= lsu_count + 1'b1;
+                            LSU_AXI_wlast <= 1'b0;
                             state <= WRITE_DATA;
                             LSU_AXI4_AWVALID <= 1'b0;
                             LSU_AXI4_WVALID <= 1'b0;
                 end else if(LSU_AXI4_AWVALID && LSU_AXI4_AWREADY ) begin
+                            LSU_AXI_wlast <= 1'b1;
                             state <= WRITE_WIRE_1;
                             LSU_AXI4_AWVALID <= 1'b0;
                 end else if(LSU_AXI4_WVALID && LSU_AXI4_WREADY ) begin
+                            LSU_AXI_wlast <= 1'b0;
                             state <= WRITE_WIRE_2;
                             LSU_AXI4_WVALID <= 1'b0;
                 end else if(LSU_AXI4_ARVALID && LSU_AXI4_ARREADY) begin
+                            lsu_during_count <= lsu_during_count + 1'b1;
                             LSU_AXI4_RREADY <= 1'b1;
                             state <= READ_START;
                             LSU_AXI4_ARVALID <= 1'b0;
@@ -264,12 +287,15 @@ always @(posedge clk) begin
                 // 发送读地址
                 
                 if (LSU_AXI4_RREADY && LSU_AXI4_RVALID) begin
+                    lsu_count <= lsu_count + 1'b1;
+                    LSU_AXI_wlast <= 1'b1;
                     LSU_AXI4_RREADY <= 1'b0;
                     LSU_WBU_valid <= 1'b1;
                     LSU_RDATA <= LSU_AXI4_RDATA;
                     state <= IDLE;
                 end
                 else begin
+                    lsu_during_count <= lsu_during_count + 1'b1;
                     LSU_WBU_valid <= 1'b0;
                     state <= READ_START;
                 end
@@ -280,6 +306,8 @@ always @(posedge clk) begin
                 // 发送写地址
                 
                 if(LSU_AXI4_WVALID && LSU_AXI4_WREADY ) begin
+                    lsu_count <= lsu_count + 1'b1;
+                    LSU_AXI_wlast <= 1'b0;
                     state <= WRITE_WIRE_2;
                     LSU_AXI4_WVALID <= 1'b0;
                     state <= WRITE_DATA;
@@ -302,6 +330,7 @@ always @(posedge clk) begin
             
             WRITE_DATA: begin   
                 LSU_AXI4_BREADY <= 1'b1;
+                LSU_AXI_wlast <= 1'b0;
                 if(LSU_AXI4_BVALID && LSU_AXI4_BREADY) begin
                     LSU_WBU_valid <= 1'b1;
                     LSU_AXI4_BREADY <= 1'b0;
@@ -310,6 +339,7 @@ always @(posedge clk) begin
                 else begin
                     LSU_WBU_valid <= 1'b0;
                     state <= WRITE_DATA;
+                    lsu_during_count <= lsu_during_count + 1'b1;
                 end
             end
             

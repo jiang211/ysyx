@@ -35,7 +35,9 @@ module ifu(
     input             IFU_AXI4_arready,
     input  [31:0]     IFU_AXI4_rdata,
     input             IFU_AXI4_rvalid,
-    output reg        IFU_AXI4_rready
+    output reg        IFU_AXI4_rready,
+    output reg [63:0] ifu_count,
+    output reg [63:0] ifu_during_count
 );
 reg [31:0] pc;
 //wire [31:0] d_pc;
@@ -61,6 +63,7 @@ localparam IDLE        = 2'b00;
 localparam READ  = 2'b01;
 reg [1:0] state;
 
+//reg [63:0] ifu_count;
 
 wire [31:0] dnpc;
 assign dnpc = (WBU_IFU_JUMP)? WBU_IFU_pc :pc + 4;
@@ -87,7 +90,8 @@ always @(posedge clk) begin
         IFU_AXI4_arvalid <= 1'b0;
         IFU_AXI4_rready <= 1'b0;
         instr <= 32'h0;
-        
+        ifu_count <= 64'h0;
+        ifu_during_count <= 64'h0;
     end
     else begin
         // State Machine
@@ -104,6 +108,7 @@ always @(posedge clk) begin
                     IFU_AXI4_arvalid <= 1'b1;
                 end
                 if(IFU_AXI4_arvalid && IFU_AXI4_arready) begin
+                    ifu_during_count <= ifu_during_count + 1'b1;
                     IFU_AXI4_rready <= 1'b1;
                     IFU_AXI4_arvalid <= 1'b0;
                     state <= READ;
@@ -119,12 +124,14 @@ always @(posedge clk) begin
             READ: begin
                 IFU_AXI4_rready <= 1'b1;
                 if (IFU_AXI4_rready && IFU_AXI4_rvalid) begin
+                    ifu_count <= ifu_count + 1'b1;
                     IFU_IDU_valid <= 1'b1;
                     instr <= IFU_AXI4_rdata;
                     IFU_AXI4_rready <= 1'b0;
                     state <= IDLE;
                 end
                 else begin
+                    ifu_during_count <= ifu_during_count + 1'b1;
                     IFU_IDU_valid <= 1'b0;
                     instr <= instr;
                     state <= READ;
