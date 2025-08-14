@@ -193,9 +193,6 @@ always @(posedge sck) begin
   if(state == READ_WAIT && receive_count == 4'd6) begin//读取数据
     if(cmd == 8'heb)begin
       psram_read({8'b0,addr}, rdata);
-      if(addr >= 24'hef60 && addr <= 24'hefff)begin
-        $write("read in psram addr: %08h,data : %08h \n",addr,rdata);
-      end
     end
     else begin
       $write("read in psram error,error cmd : %08h\n",cmd);
@@ -207,9 +204,6 @@ always @(posedge ce_n) begin
   if(state == WRITE_DATA) begin//读取数据
     if(cmd == 8'h38)begin
       psram_write({8'b0,addr}, wdata,{28'b0,receive_count});
-      if(addr >= 24'hef60 && addr <= 24'hefff)begin
-        $write("write in psram addr: %08h,data : %08h \n",addr,wdata);
-      end
       //$write("write in psram addr: %08h,data : %08h \n",addr,wdata);
     end
     else begin

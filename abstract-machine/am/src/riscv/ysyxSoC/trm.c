@@ -190,7 +190,6 @@ void _bootloader_2 (void) {
 void _trm_init() {
   //printf_ysyx();
   init_uart(115200);
-  putch('J');
   //_memcpy(&_sdata, &_sidata, &_edata - &_sdata);
   int ret = main(mainargs);
   halt(ret);

@@ -41,8 +41,8 @@ module uart #(
     //reg [DATA_WIDTH-1:0] mem [0:2**ADDR_WIDTH-1];
 
 
-import "DPI-C" function void vpmem_read(input int raddr,input byte ren,output int rdata);
-import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
+// import "DPI-C" function void vpmem_read(input int raddr,input byte ren,output int rdata);
+// import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
 
 /*
     always @(posedge CLK) begin

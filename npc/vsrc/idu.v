@@ -11,14 +11,12 @@ module idu(
     input               EXU_IDU_ready,          // 从执行单元(EXU)到IDU的就绪信号
     output reg          IDU_EXU_valid,          // IDU到EXU的有效信号
     //output reg[6:0] IDU_EXU_opcode,
-    output reg[2:0] IDU_EXU_funct3,
-    output reg[5:0] IDU_EXU_funct7,
     output reg[4:0] IDU_EXU_rd,
     output reg[4:0] IDU_EXU_rs1,
     output reg[4:0] IDU_EXU_rs2,
     output reg[2:0] IDU_EXU_csr_rst,
     output reg[31:0]IDU_EXU_imm,
-    output reg [1:0]IDU_EXU_alu_op ,       
+    output reg [3:0]IDU_EXU_alu_op ,       
     output reg IDU_EXU_u_alu_type    ,
     output reg IDU_EXU_mul_high      ,
     output reg IDU_EXU_alu_src1      ,
@@ -50,8 +48,18 @@ module idu(
     output reg IDU_EXU_C_type        ,
     //output reg IDU_EXU_STALL         ,
     output reg [31:0] IDU_EXU_PC  ,
-    output reg [31:0] IDU_EXU_dnpc
+    output reg [31:0] IDU_EXU_dnpc,
+    output reg [63:0] calcu_type_count,
+    output reg [63:0] Jump_type_count,
+    output reg [63:0] LOAD_type_count,
+    output reg [63:0] STORE_type_count,
+    output reg [63:0] C_type_count
 );
+// reg [63:0] calcu_type_count;
+// reg [63:0] Jump_type_count;
+// reg [63:0] LOAD_type_count;
+// reg [63:0] STORE_type_count;
+// reg [63:0] C_type_count;
 
 reg [31:0]instr;
 wire    [31:0]    immI_num ;
@@ -166,6 +174,14 @@ assign alu_op = (R_type) ? 2'b10 :
                 (B_type) ? 2'b01 :
                 (S_type | U_type | I_type_3 | J_type) ? 2'b00 :
                 2'b11;
+wire [3:0] aluop;
+exuop_ctrl my_exuop_crtl(
+    .funct3         (funct3),
+    .funct7         (funct7[5:0]),
+    .alu_op         (alu_op),
+    .aluOp          (aluop)
+);
+
 //wire pcsrc = (branch /*& zero*/) | jump | ecall | mret;
 
 always@(posedge clk) begin
@@ -191,15 +207,13 @@ always@(posedge clk)
 begin 
    if((rst_n ))begin
    // IDU_EXU_opcode        <=        7'b0;     
-    IDU_EXU_funct3        <=        3'b0;   
-    IDU_EXU_funct7        <=        6'b0;
     IDU_EXU_rd            <=        5'b0;
     IDU_EXU_rs1           <=        5'b0;  
     IDU_EXU_rs2           <=        5'b0;
     IDU_EXU_csr_rst       <=        3'b0;    
     IDU_EXU_imm           <=        32'b0;
 
-    IDU_EXU_alu_op              <=        2'b0;     
+    IDU_EXU_alu_op              <=        4'b0;     
     IDU_EXU_u_alu_type          <=        1'b0;   
     IDU_EXU_mul_high            <=        1'b0;
     IDU_EXU_alu_src1            <=        1'b0;
@@ -232,17 +246,25 @@ begin
     //IDU_EXU_STALL               <=        1'b0;
     IDU_EXU_PC                  <=        32'b0;
     IDU_EXU_dnpc                <=        32'b0;
+    calcu_type_count               <=        64'b0;
+    Jump_type_count               <=        64'b0;
+    C_type_count               <=        64'b0;
+    LOAD_type_count               <=        64'b0;
+    STORE_type_count               <=        64'b0;
     end
     else if(IDU_EXU_valid && EXU_IDU_ready)begin
+        if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
+        else if(J_type || B_type) begin Jump_type_count <= Jump_type_count + 1'b1; end
+        else if(C_type) begin C_type_count <= C_type_count + 1'b1; end
+        else if(I_type_3) begin LOAD_type_count <= LOAD_type_count + 1'b1; end
+        else if(S_type) begin STORE_type_count <= STORE_type_count + 1'b1; end
    // IDU_EXU_opcode        <=        opcode   ;     
-    IDU_EXU_funct3        <=        funct3   ;   
-    IDU_EXU_funct7        <=        funct7[5:0]   ;
     IDU_EXU_rd            <=        rd       ;
     IDU_EXU_rs1           <=        rs1      ;  
     IDU_EXU_rs2           <=        rs2      ;
     IDU_EXU_csr_rst       <=        csr_rst  ;    
     IDU_EXU_imm           <=        imm      ;
-    IDU_EXU_alu_op              <=        alu_op;     
+    IDU_EXU_alu_op              <=        aluop;     
     IDU_EXU_u_alu_type          <=        u_alu_type;   
     IDU_EXU_mul_high            <=        mul_high     ;
     IDU_EXU_alu_src1            <=        alu_src1     ;
@@ -277,15 +299,13 @@ begin
     IDU_EXU_dnpc                <=        IFU_IDU_dnpc;
     end
     else begin
-        IDU_EXU_funct3        <=        3'b0;   
-    IDU_EXU_funct7        <=        6'b0;
     IDU_EXU_rd            <=        5'b0;
     IDU_EXU_rs1           <=        5'b0;  
     IDU_EXU_rs2           <=        5'b0;
     IDU_EXU_csr_rst       <=        3'b0;    
     IDU_EXU_imm           <=        32'b0;
 
-    IDU_EXU_alu_op              <=        2'b0;     
+    IDU_EXU_alu_op              <=        4'b0;     
     IDU_EXU_u_alu_type          <=        1'b0;   
     IDU_EXU_mul_high            <=        1'b0;
     IDU_EXU_alu_src1            <=        1'b0;
