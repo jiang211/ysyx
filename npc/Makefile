@@ -127,7 +127,7 @@ gdb : $(BIN)
 
 run: $(BIN)
 	@echo "YSYXSOC = $(YSYXSOC)"
-	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
+	$(call git_commit, "run npc") # DO NOT REMOVE THIS LINE!!!
 	@$(BIN) $(NPC_FLAGS) 2>&1 | tee $(SIM_LOG)
 	
 
@@ -141,12 +141,12 @@ FACE_FILE = /home/jx/ysyx-workbench/yosys-sta/result/ysyx_24070003_cpu/synth_sta
 # 初始化性能记录文件（首次运行时创建表头）
 init-perf:
 	@echo "创建性能记录文件..."
-	@echo "| 测试时间 | Commit | 说明 | 周期数 | 指令数 | IPC | 综合频率 | 综合面积 | LSU计数 | IFU计数 | 计算类指令 | 跳转指令 | 加载指令 | 存储指令 | C类指令 | LSU平均 | IFU平均 | 加载平均 | 存储平均 |" > ${PERF_FILE}
-	@echo "|----------|--------|------|--------|--------|-----|------|------|---------|---------|------------|----------|----------|----------|--------|---------|---------|----------|----------|" >> ${PERF_FILE}
+	@echo "| 测试时间 | Commit | 说明 | 周期数 | 指令数 | IPC | 综合频率 | 综合面积 | LSU计数 | IFU计数 | 计算类指令 | 跳转指令 | 加载指令 | 存储指令 | C类指令 | LSU平均 | IFU平均 | 加载平均 | 存储平均 |ICACHE命中率 | ICACHE丢失率 | total_access| access_time| miss_penalty|" > ${PERF_FILE}
+	@echo "|----------|--------|------|--------|--------|-----|------|------|---------|---------|------------|----------|----------|----------|--------|---------|---------|----------|----------|----------|----------|----------|----------|----------|" >> ${PERF_FILE}
 
 perf: 
 	@echo "记录性能数据..."
-	@bash perf.sh $(SIM_LOG) $(PERF_FILE) $(TIME_FILE) $(FACE_FILE)
+	@bash tool/perf.sh $(SIM_LOG) $(PERF_FILE) $(TIME_FILE) $(FACE_FILE)
 	@echo "记录已添加到 $(PERF_FILE)"
 	@tail -n1 $(PERF_FILE)
 
