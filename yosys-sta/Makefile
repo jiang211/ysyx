@@ -10,7 +10,7 @@ export CLK_FREQ_MHZ ?= 5000
 export CLK_PORT_NAME ?= clock
 PDK = nangate45
 
-RESULT_DIR = $(O)/$(DESIGN)-$(CLK_FREQ_MHZ)MHz
+RESULT_DIR = $(O)/$(DESIGN)
 SCRIPT_DIR = $(PROJ_PATH)/scripts
 NETLIST_SYN_V   = $(RESULT_DIR)/$(DESIGN).netlist.syn.v
 NETLIST_FIXED_V = $(RESULT_DIR)/$(DESIGN).netlist.fixed.v
