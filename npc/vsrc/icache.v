@@ -29,7 +29,7 @@ parameter TAG_BITS = 26;       // 32 - (2+4) = 26位标签
 
 
 reg [TAG_BITS-1:0] tags [0:NUM_BLOCKS-1];  // 标签存储
-reg [31:0] data [0:NUM_BLOCKS-1];           // 数据存储
+reg [BLOCK_SIZE * 8-1:0] data [0:NUM_BLOCKS-1];           // 数据存储
 reg valid [0:NUM_BLOCKS-1];                 // 有效位
 
 typedef enum logic [1:0] {

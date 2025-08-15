@@ -5,12 +5,47 @@
 #include <math.h>
 
 // 缓存配置参数 (与 Verilog 代码匹配)
-#define BLOCK_SIZE 4
-#define NUM_BLOCKS 16
-#define OFFSET_BITS 2
-#define INDEX_BITS 4
-#define TAG_BITS 26
+// #define BLOCK_SIZE 4
+// #define NUM_BLOCKS 16
+// #define OFFSET_BITS 2
+// #define INDEX_BITS 4
+// #define TAG_BITS 26
+// 访问统计:
+//   总访问次数: 266647888
+//   命中次数: 202922212
+//   缺失次数: 63725676
+//   命中率: 76.10%
 
+// 性能估算:
+//   总缺失时间 (TMT): 5098054080 周期
+// #define BLOCK_SIZE 8
+// #define NUM_BLOCKS 16
+// #define OFFSET_BITS 3
+// #define INDEX_BITS 4
+// #define TAG_BITS 25
+// 访问统计:
+//   总访问次数: 266647888
+//   命中次数: 246526407
+//   缺失次数: 20121481
+//   命中率: 92.45%
+
+// 性能估算:
+//   总缺失时间 (TMT): 3219436960 周期
+
+#define BLOCK_SIZE 16
+#define NUM_BLOCKS 16
+#define OFFSET_BITS 4
+#define INDEX_BITS 4
+#define TAG_BITS 24
+
+// 访问统计:
+//   总访问次数: 266647888
+//   命中次数: 260894573
+//   缺失次数: 5753315
+//   命中率: 97.84%
+
+// 性能估算:
+//   总缺失时间 (TMT): 1841060800 周期
 // 缓存块结构
 typedef struct {
     int valid;          // 有效位
@@ -80,7 +115,7 @@ void load_binary_trace(CacheSim* sim, const char* filename) {
     fseek(file, 0, SEEK_SET);
     
     // 计算记录数 (每8字节一条记录)
-    long num_entries = file_size / 8;
+    long num_entries = file_size / 4;
     printf("文件大小: %ld 字节, 记录数: %ld\n", file_size, num_entries);
     
     uint32_t pc;
@@ -96,9 +131,9 @@ void load_binary_trace(CacheSim* sim, const char* filename) {
         cache_access(sim, pc);
         
         // 每100万条记录显示进度
-        if (i % 1000000 == 0 && i > 0) {
-            printf("已处理 %ld 万条记录...\n", i / 1000000);
-        }
+        // if (i % 1000000 == 0 && i > 0) {
+        //     printf("已处理 %ld 万条记录...\n", i / 1000000);
+        // }
     }
     
     fclose(file);
@@ -147,7 +182,7 @@ int main(int argc, char* argv[]) {
     printf("  命中率: %.2f%%\n", (double)sim.hit_count / sim.total_access * 100);
     
     // 计算总缺失时间 (TMT)
-    uint64_t avg_miss_penalty = 10; // 假设平均缺失代价为 10 周期
+    uint64_t avg_miss_penalty = 320; // 假设平均缺失代价为 80 周期
     uint64_t tmt = sim.miss_count * avg_miss_penalty;
     printf("\n性能估算:\n");
     printf("  总缺失时间 (TMT): %lu 周期\n", tmt);
