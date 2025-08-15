@@ -241,10 +241,11 @@ static FILE *trace_fd = NULL;
 void init_bincache(const char *cache_bin) {
   trace_fd = stdout;
   if (cache_bin != NULL) {
-    FILE *fp = fopen(cache_bin, "w");
+    FILE *fp = fopen(cache_bin, "wb");
     Assert(fp, "Can not open '%s'", cache_bin);
     trace_fd = fp;
   }
+  Log("cache bin is written to %s", cache_bin ? cache_bin : "stdout");
 }
 static void exec_once(Decode *s, vaddr_t pc) {
   s->pc = pc;
