@@ -97,7 +97,7 @@ static uint8_t sram[8*1024] PG_ALIGN = {};
 static uint8_t flash[16*1024*1024] PG_ALIGN = {};
 static uint8_t psram[4*1024*1024] PG_ALIGN = {};
 static uint8_t sdram[64*1024*1024] PG_ALIGN = {};
-
+static uint8_t uart[8*1024] PG_ALIGN = {};
 
 static void out_of_bound(paddr_t addr) {
   printf("1\n");
@@ -117,7 +117,7 @@ uint8_t* guest_to_host(paddr_t paddr) {
   } else if(paddr >= 0xa0000000 && paddr <= 0xbfffffff) {
     return sdram + paddr - 0xa0000000;
   } else if(paddr >= 0x10000000 && paddr <= 0x10000fff){
-    return 0;
+    return uart + paddr - 0x10000000;
   } else if(paddr >= 0x02000000 && paddr <= 0x0200ffff){
     return 0;
   } else {
