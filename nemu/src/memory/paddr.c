@@ -131,6 +131,9 @@ paddr_t host_to_guest(uint8_t *haddr) { return 0; }
 
 static word_t pmem_read(paddr_t addr, int len) {
   if(addr == 0x10000005){return 0xffffffff;}
+  else if(addr >= 0x02000000 && addr <= 0x0200ffff){
+    return 0;
+  }
   word_t ret = host_read(guest_to_host(addr), len);
   return ret;
 }
