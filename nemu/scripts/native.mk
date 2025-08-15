@@ -27,7 +27,7 @@ $(BINARY):: compile_git
 override ARGS ?= --log=$(BUILD_DIR)/n-log.txt
 override ARGS += $(ARGS_DIFF)
 
-override ARGS ?= --cache=$(BUILD_DIR)/cache.bin
+override ARGS ?= --cache=$(BUILD_DIR)/cache.txt
 
 # Command to execute NEMU
 IMG ?=
