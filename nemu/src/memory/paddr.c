@@ -115,6 +115,10 @@ uint8_t* guest_to_host(paddr_t paddr) {
     return psram + paddr - 0x80000000;
   } else if(paddr >= 0xa0000000 && paddr <= 0xbfffffff) {
     return sdram + paddr - 0xa0000000;
+  } else if(paddr >= 0x10000000 && paddr <= 0x10000fff){
+    return 0;
+  } else if(paddr >= 0x02000000 && paddr <= 0x0200ffff){
+    return 0;
   } else {
     out_of_bound(paddr);
     assert(0);
