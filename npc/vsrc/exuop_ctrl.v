@@ -1,5 +1,5 @@
 //`include "defines.v"
-module alu_ctrl(
+module exuop_ctrl(
     input [2:0]  funct3,
     input [5:0]  funct7,
     input [1:0]  alu_op,

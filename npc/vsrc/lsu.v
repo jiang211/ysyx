@@ -82,7 +82,9 @@ module lsu(
     output reg                  LSU_AXI_wlast,
     output reg [2:0]            LSU_AXI4_wsize,
     output reg [63:0]           lsu_count,
-    output reg [63:0]           lsu_during_count
+    output reg [63:0]           lsu_during_count,
+    output reg [63:0]           lsu_load_count,
+    output reg [63:0]           lsu_store_count
       //input  [1:0]                LSU_AXI4_BRESP
 );
 
@@ -203,6 +205,8 @@ always @(posedge clk) begin
         skip <=  1'b0;
         lsu_count <=  63'd0;
         lsu_during_count <= 64'd0;
+        lsu_load_count <= 64'd0;
+        lsu_store_count <= 64'd0;
     end
     else begin
         case (state)
@@ -260,6 +264,7 @@ always @(posedge clk) begin
             START: begin
                 if(LSU_AXI4_AWVALID && LSU_AXI4_AWREADY && LSU_AXI4_WVALID && LSU_AXI4_WREADY) begin
                             lsu_during_count <= lsu_during_count + 1'b1;
+                            lsu_store_count <= lsu_store_count + 1'b1;
                             lsu_count <= lsu_count + 1'b1;
                             LSU_AXI_wlast <= 1'b0;
                             state <= WRITE_DATA;
@@ -274,6 +279,7 @@ always @(posedge clk) begin
                             state <= WRITE_WIRE_2;
                             LSU_AXI4_WVALID <= 1'b0;
                 end else if(LSU_AXI4_ARVALID && LSU_AXI4_ARREADY) begin
+                            lsu_load_count <= lsu_load_count + 1'b1;
                             lsu_during_count <= lsu_during_count + 1'b1;
                             LSU_AXI4_RREADY <= 1'b1;
                             state <= READ_START;
@@ -296,6 +302,7 @@ always @(posedge clk) begin
                 end
                 else begin
                     lsu_during_count <= lsu_during_count + 1'b1;
+                    lsu_load_count <= lsu_load_count + 1'b1;
                     LSU_WBU_valid <= 1'b0;
                     state <= READ_START;
                 end
@@ -340,6 +347,7 @@ always @(posedge clk) begin
                     LSU_WBU_valid <= 1'b0;
                     state <= WRITE_DATA;
                     lsu_during_count <= lsu_during_count + 1'b1;
+                    lsu_store_count <= lsu_store_count + 1'b1;
                 end
             end
             

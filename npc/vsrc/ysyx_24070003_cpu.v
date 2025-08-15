@@ -145,7 +145,7 @@ wire mem_read;
 wire mem_write;
 wire reg_write;
 
-wire [1:0] alu_op;
+wire [3:0] alu_op;
 
 wire     u_alu_type;
 wire     mul_high;
@@ -216,6 +216,29 @@ ifu my_ifu(
     .ifu_during_count (ifu_during_count)
 );
 
+wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr;
+wire ICACHE_AXI4_arvalid,ICACHE_AXI4_arready,ICACHE_AXI4_rvalid,ICACHE_AXI4_rready;
+icache  my_icache(
+    .clock                   (clock),
+    .reset                   (reset),
+    .IFU_AXI4_araddr         (IFU_AXI4_araddr),
+    .IFU_AXI4_arvalid        (IFU_AXI4_arvalid),
+    .IFU_AXI4_arready        (IFU_AXI4_arready),
+    .IFU_AXI4_rdata          (IFU_AXI4_rdata),
+    .IFU_AXI4_rvalid         (IFU_AXI4_rvalid),
+    .IFU_AXI4_rready         (IFU_AXI4_rready),
+
+    .ICACHE_AXI4_araddr      (ICACHE_AXI4_araddr),
+    .ICACHE_AXI4_arvalid     (ICACHE_AXI4_arvalid),
+    .ICACHE_AXI4_arready     (ICACHE_AXI4_arready),
+    .ICACHE_AXI4_rdata       (ICACHE_AXI4_rdata),
+    .ICACHE_AXI4_rvalid      (ICACHE_AXI4_rvalid),
+    .ICACHE_AXI4_rready      (ICACHE_AXI4_rready),
+    .ICACHE_hit_count        (ICACHE_hit_count),
+    .ICACHE_miss_count       (ICACHE_miss_count),
+    .total_access            (total_access)
+);
+
 wire AXI4_SRAM_ARVALID,AXI4_SRAM_ARREADY,AXI4_SRAM_RVALID,AXI4_SRAM_RREADY;
 wire AXI4_SRAM_AWVALID,AXI4_SRAM_AWREADY,AXI4_SRAM_WVALID,AXI4_SRAM_WREADY,AXI4_SRAM_BVALID,AXI4_SRAM_BREADY;
 wire [31:0] AXI4_SRAM_ARADDR,AXI4_SRAM_RDATA,AXI4_SRAM_AWADDR,AXI4_SRAM_WDATA;
@@ -235,13 +258,13 @@ axi_arbiter my_axi_arbiter(
     .rstn                   (reset),   
     
     // IFU 接口 (指令获取)
-    .ifu_araddr             (IFU_AXI4_araddr),
-    .ifu_arvalid            (IFU_AXI4_arvalid),
-    .ifu_arready             (IFU_AXI4_arready),
+    .ifu_araddr             (ICACHE_AXI4_araddr),
+    .ifu_arvalid            (ICACHE_AXI4_arvalid),
+    .ifu_arready             (ICACHE_AXI4_arready),
     
-    .ifu_rdata              (IFU_AXI4_rdata),            
-    .ifu_rvalid               (IFU_AXI4_rvalid)  ,
-    .ifu_rready             (IFU_AXI4_rready),
+    .ifu_rdata              (ICACHE_AXI4_rdata),            
+    .ifu_rvalid               (ICACHE_AXI4_rvalid)  ,
+    .ifu_rready             (ICACHE_AXI4_rready),
     
     // LSU 接口 (加载/存储)
     .lsu_araddr              (LSU_AXI4_ARADDR)   ,
@@ -450,8 +473,6 @@ idu my_idu(
     .IDU_EXU_valid          (IDU_EXU_valid),
     .INSTR          (instr      ),
    // .IDU_EXU_opcode         (opcode     ),
-    .IDU_EXU_funct3         (funct3     ),
-    .IDU_EXU_funct7         (funct7     ),
     .IDU_EXU_rd             (rd         ),
     .IDU_EXU_rs1            (rs1        ),
     .IDU_EXU_rs2            (rs2        ),
@@ -554,8 +575,6 @@ exu my_exu(
     
     .EXU_LSU_alu_out        (alu_out    ),
     //.EXU_IFU_zero           (EXU_IFU_zero       ),
-    .funct3         (funct3),
-    .funct7         (funct7[5:0]),
     .alu_op         (alu_op),
     .EXU_LSU_rd(EXU_LSU_rd),
     .EXU_LSU_ren(EXU_LSU_ren),
@@ -680,7 +699,9 @@ lsu my_lsu(
     .LSU_AXI_wlast    (LSU_AXI_wlast),
     .LSU_AXI4_wsize   (LSU_AXI4_wsize),
     .lsu_count       (lsu_count),
-    .lsu_during_count  (lsu_during_count)
+    .lsu_during_count  (lsu_during_count),
+    .lsu_load_count   (lsu_load_count),
+    .lsu_store_count  (lsu_store_count)
 );
 
 
@@ -808,18 +829,33 @@ always @(posedge clock ) begin
         ref_skip <= WBU_TOP_skip;
     end
 end
-reg [63:0] lsu_count,ifu_count,calcu_type_count,Jump_type_count,LOAD_type_count,STORE_type_count,C_type_count,lsu_during_count,ifu_during_count;
+reg [63:0] lsu_count,ifu_count,calcu_type_count,Jump_type_count,LOAD_type_count,STORE_type_count,C_type_count,lsu_during_count,ifu_during_count,lsu_load_count,lsu_store_count,total_count;
+reg [63:0] ICACHE_hit_count,ICACHE_miss_count,total_access;
+always @(posedge clock ) begin
+    if(reset) begin
+        total_count <= 0;
+    end else begin
+        total_count <= total_count + 1;
+    end
+end
 always @(posedge clock ) begin
     if(IDU_EXU_ebreak) begin
-        $display("lsu_count = %010d\n",lsu_count);
-        $display("ifu_count = %010d\n",ifu_count);
-        $display("calcu_type_count = %010d\n",calcu_type_count);
-        $display("Jump_type_count = %010d\n",Jump_type_count);
-        $display("LOAD_type_count = %010d\n",LOAD_type_count);
-        $display("STORE_type_count = %010d\n",STORE_type_count);
-        $display("C_type_count = %010d\n",C_type_count);
-        $display("lsu_average_count = %010d\n",lsu_during_count/lsu_count);
-        $display("ifu_average_count = %010d\n",ifu_during_count/ifu_count);
+        $display("total_count               = %040d\n",total_count);
+        $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
+        $display("lsu_count                 = %040d\n",lsu_count);
+        $display("ifu_count                 = %040d\n",ifu_count);
+        $display("calcu_type_count          = %040d\n",calcu_type_count);
+        $display("Jump_type_count           = %040d\n",Jump_type_count);
+        $display("LOAD_type_count           = %040d\n",LOAD_type_count);
+        $display("STORE_type_count          = %040d\n",STORE_type_count);
+        $display("C_type_count              = %040d\n",C_type_count);
+        $display("lsu_average_count         = %040d\n",lsu_during_count/lsu_count);
+        $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
+        $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
+        $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
+        $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
+        $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
+        $display("total_access              = %040d\n",total_access);
     end
 end
 import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);

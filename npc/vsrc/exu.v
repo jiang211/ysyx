@@ -44,9 +44,7 @@ module exu(
     
     output  [31:0] EXU_LSU_alu_out,
     //output  EXU_IFU_zero,
-    input [2:0]  funct3,
-    input [5:0]  funct7,
-    input [1:0]  alu_op,
+    input [3:0]  alu_op,
     input [4:0] IDU_EXU_rd,
     output[4:0] EXU_LSU_rd,
     output reg EXU_LSU_ren,
@@ -84,12 +82,6 @@ wire [31:0] csr_in;
 assign csr_in = ( {32{IDU_EXU_csw}} & (rs1_data)) |
                 ( {32{IDU_EXU_csc}} & (rs1_data &csr_data)) |
                 ( {32{IDU_EXU_css}} & (csr_data | rs1_data)) ;
-alu_ctrl my_alu_crtl(
-    .funct3         (funct3),
-    .funct7         (funct7[5:0]),
-    .alu_op         (alu_op),
-    .aluOp          (aluop)
-);
 
 alu my_alu(
     .rs1_data       (rs1_data   ),
@@ -103,7 +95,7 @@ alu my_alu(
     .u_alu_type     (u_alu_type ),
     .mul_high       (mul_high   ),
     .U_type_1       (U_type_1   ),
-    .alu_crtl       (aluop      ),
+    .alu_crtl       (alu_op      ),
     .alu_out        (alu_out    ),
     .zero           (zero       )
 );
@@ -126,8 +118,12 @@ always @(posedge clk) begin
     end
 end
 
-wire [31:0] pc_jump = (IDU_EXU_ecall || IDU_EXU_mret) ? csr_data : (IDU_EXU_jal) ? pc_data + imm_data :
-                      (IDU_EXU_jalr) ? rs1_data + imm_data : (zero) ? alu_out : pc_data + 4;
+wire [31:0] next_pc_seq = pc_data + 4;
+wire [31:0] next_pc_jal = pc_data + imm_data;
+wire [31:0] next_pc_jalr = rs1_data + imm_data;
+
+wire [31:0] pc_jump = (IDU_EXU_ecall || IDU_EXU_mret) ? csr_data : (IDU_EXU_jal) ? next_pc_jal :
+                      (IDU_EXU_jalr) ? next_pc_jalr : (zero) ? next_pc_jal : pc_data + 4;
 
 //always @(posedge clk) begin EXU_IFU_STALL_done <= IDU_EXU_STALL; end
 
