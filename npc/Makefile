@@ -120,7 +120,7 @@ all : default
 wave :  ./build/ysyxSoCFull
 	gtkwave *.fst
 
-
+-include $(NEMU_HOME)/../Makefile
 
 gdb : $(BIN)
 	@gdb --args $(BIN) $(NPC_FLAGS) 
