@@ -146,7 +146,7 @@ init-perf:
 
 perf: 
 	@echo "记录性能数据..."
-	@bash perf.sh $(SIM_LOG) $(PERF_FILE) $(TIME_FILE) $(FACE_FILE)
+	@bash tool/perf.sh $(SIM_LOG) $(PERF_FILE) $(TIME_FILE) $(FACE_FILE)
 	@echo "记录已添加到 $(PERF_FILE)"
 	@tail -n1 $(PERF_FILE)
 
