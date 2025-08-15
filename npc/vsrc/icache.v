@@ -16,7 +16,9 @@ module icache(
     output reg        ICACHE_AXI4_rready,
     output reg [63:0] ICACHE_hit_count,
     output reg [63:0] ICACHE_miss_count,
-    output reg [63:0] total_access
+    output reg [63:0] total_access,
+    output reg [63:0] access_time,
+    output reg [63:0] miss_penalty
 );
 
 parameter BLOCK_SIZE = 4;      // 4字节块大小
@@ -60,6 +62,8 @@ always @(posedge clock) begin
         saved_tag <= 0;
         ICACHE_hit_count <= 0;
         ICACHE_miss_count <= 0;
+        access_time <= 0;
+        miss_penalty <= 0;
         for (i = 0; i < NUM_BLOCKS; i = i + 1) begin
             valid[i] <= 0;  // 复位时所有块无效
         end
@@ -69,7 +73,9 @@ always @(posedge clock) begin
                 IFU_AXI4_arready <= 1'b1;
                 IFU_AXI4_rvalid <= 1'b0;
                 if (IFU_AXI4_arvalid && IFU_AXI4_arready) begin
-                    total_access <= total_access + 1;
+                    access_time <= access_time + 1'b1;
+                    total_access <= total_access + 1'b1;
+                    miss_penalty <= miss_penalty + 1'b1;
                     IFU_AXI4_arready <= 1'b0;
                     saved_addr <= IFU_AXI4_araddr;
                     saved_index <= current_index;
@@ -81,6 +87,7 @@ always @(posedge clock) begin
             CHECK_CACHE: begin
                 // 检查是否命中：有效且标签匹配
                 if (valid[saved_index] && (tags[saved_index] == saved_tag)) begin
+                    access_time <= access_time + 1'b1;
                     // 命中：直接返回数据
                     IFU_AXI4_rdata <= data[saved_index];
                     IFU_AXI4_rvalid <= 1'b1;
@@ -88,6 +95,7 @@ always @(posedge clock) begin
                     ICACHE_hit_count <= ICACHE_hit_count + 1;
                 end else begin
                     // 未命中：启动内存读取
+                    miss_penalty <= miss_penalty + 1'b1;
                     ICACHE_AXI4_arvalid <= 1'b1;
                     ICACHE_AXI4_araddr <= saved_addr; // 对齐地址
                     if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
@@ -104,6 +112,7 @@ always @(posedge clock) begin
             
             AXI_READ: begin
                 ICACHE_AXI4_rready <= 1'b1;
+                miss_penalty <= miss_penalty + 1'b1;
                 if (ICACHE_AXI4_rvalid && ICACHE_AXI4_rready) begin
                     ICACHE_AXI4_rready <= 1'b0;
                     // 更新缓存
@@ -120,6 +129,8 @@ always @(posedge clock) begin
             end
             
             SEND_DATA: begin
+                access_time <= access_time + 1'b1;
+                miss_penalty <= miss_penalty + 1'b1;
                 if (IFU_AXI4_rvalid && IFU_AXI4_rready) begin
                     // IFU接收数据，完成本次请求
                     IFU_AXI4_rvalid <= 1'b0;
