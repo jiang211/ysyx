@@ -84,18 +84,11 @@ void load_binary_trace(CacheSim* sim, const char* filename) {
     printf("文件大小: %ld 字节, 记录数: %ld\n", file_size, num_entries);
     
     uint32_t pc;
-    uint32_t inst; // 指令内容（不使用）
     
     for (long i = 0; i < num_entries; i++) {
         // 读取 PC 地址 (4字节)
         if (fread(&pc, sizeof(pc), 1, file) != 1) {
             perror("读取 PC 地址失败");
-            break;
-        }
-        
-        // 读取指令内容 (4字节，不使用)
-        if (fread(&inst, sizeof(inst), 1, file) != 1) {
-            perror("读取指令内容失败");
             break;
         }
         
