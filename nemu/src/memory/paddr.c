@@ -100,6 +100,7 @@ static uint8_t sdram[64*1024*1024] PG_ALIGN = {};
 
 
 static void out_of_bound(paddr_t addr) {
+  printf("1\n");
   panic("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
       addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
 }
