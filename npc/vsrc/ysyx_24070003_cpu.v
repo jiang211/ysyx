@@ -236,7 +236,9 @@ icache  my_icache(
     .ICACHE_AXI4_rready      (ICACHE_AXI4_rready),
     .ICACHE_hit_count        (ICACHE_hit_count),
     .ICACHE_miss_count       (ICACHE_miss_count),
-    .total_access            (total_access)
+    .total_access            (total_access),
+    .access_time             (access_time),
+    .miss_penalty            (miss_penalty)
 );
 
 wire AXI4_SRAM_ARVALID,AXI4_SRAM_ARREADY,AXI4_SRAM_RVALID,AXI4_SRAM_RREADY;
@@ -830,7 +832,7 @@ always @(posedge clock ) begin
     end
 end
 reg [63:0] lsu_count,ifu_count,calcu_type_count,Jump_type_count,LOAD_type_count,STORE_type_count,C_type_count,lsu_during_count,ifu_during_count,lsu_load_count,lsu_store_count,total_count;
-reg [63:0] ICACHE_hit_count,ICACHE_miss_count,total_access;
+reg [63:0] ICACHE_hit_count,ICACHE_miss_count,total_access,access_time,miss_penalty;
 always @(posedge clock ) begin
     if(reset) begin
         total_count <= 0;
@@ -856,6 +858,8 @@ always @(posedge clock ) begin
         $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
         $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
         $display("total_access              = %040d\n",total_access);
+        $display("access_time               = %040d\n",access_time);
+        $display("miss_penalty              = %040d\n",miss_penalty);
     end
 end
 import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
