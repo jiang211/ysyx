@@ -18,6 +18,7 @@
 
 void init_rand();
 void init_log(const char *log_file);
+void init_bincache(const char *cache_bin);
 void init_mem();
 void init_difftest(char *ref_so_file, long img_size, int port);
 void init_device();
@@ -44,6 +45,7 @@ void sdb_set_batch_mode();
 static char *elf_file = NULL;
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
+static char *cache_bin = NULL;
 static char *img_file = NULL;
 static int difftest_port = 1234;
 
@@ -80,7 +82,7 @@ static int parse_args(int argc, char *argv[]) {
     {0          , 0                , NULL,  0 },
   };
   int o;
-  while ( (o = getopt_long(argc, argv, "-bhl:d:p:e:", table, NULL)) != -1) {
+  while ( (o = getopt_long(argc, argv, "-bhl:d:p:e:c:", table, NULL)) != -1) {
     switch (o) {
        
       case 'b': sdb_set_batch_mode(); break;
@@ -88,6 +90,7 @@ static int parse_args(int argc, char *argv[]) {
       case 'e':	elf_file = optarg;break;
       case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
+      case 'c': cache_bin = optarg; break;
       case 1: img_file = optarg; return 0;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
@@ -115,7 +118,8 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Open the log file. */
   init_log(log_file);
-
+  /* Initialize cache. */
+  init_bincache(cache_bin);
   /* Initialize memory. */
   init_mem();
   /* Initialize devices. */
