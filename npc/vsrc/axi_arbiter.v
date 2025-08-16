@@ -185,17 +185,17 @@ assign master_rready = (state == IFU_READ_WAIT) ? ifu_rready :
 // 写地址通道仲裁 (仅LSU)
 assign master_awaddr = lsu_awaddr;
 assign master_awvalid = lsu_awvalid;
-assign lsu_awready = (state == LSU_WRITE_START) ? master_awready : 1'b0;
+assign lsu_awready = master_awready;
 
 // 写数据通道仲裁 (仅LSU)
 assign master_wdata = lsu_wdata;
 assign master_wstrb = lsu_wstrb;
 assign master_wvalid = lsu_wvalid;
-assign lsu_wready = (state == LSU_WRITE_DATA) ? master_wready : 1'b0;
+assign lsu_wready =  master_wready ;
 
 // 写响应通道仲裁 (仅LSU)
 //assign lsu_bresp = sram_bresp;
-assign lsu_bvalid = (state == LSU_WRITE_RESP) ? master_bvalid : 1'b0;
+assign lsu_bvalid =master_bvalid ;
 assign master_bready = lsu_bready ;
 
 endmodule

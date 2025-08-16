@@ -81,7 +81,7 @@ assign io_master_awvalid = AXI4_MASTER_AWVALID;
 assign io_master_awaddr = AXI4_MASTER_AWADDR;
 assign io_master_rready = AXI4_MASTER_RREADY;
 assign io_master_awid = 'd0;//AXI4_MASTER_AWID;
-assign io_master_awlen = 8'd1;//AXI4_MASTER_AWLEN;
+assign io_master_awlen = 8'd0;//AXI4_MASTER_AWLEN;
 assign io_master_awsize = LSU_AXI4_wsize;//AXI4_MASTER_AWSIZE;
 assign io_master_awburst = 2'd01;//AXI4_MASTER_AWBURST;
 assign io_master_wvalid = AXI4_MASTER_WVALID;
@@ -92,7 +92,7 @@ assign io_master_bready = AXI4_MASTER_BREADY;
 assign io_master_arvalid = AXI4_MASTER_ARVALID;
 assign io_master_araddr = AXI4_MASTER_ARADDR;
 assign io_master_arid = 'd0;//AXI4_MASTER_ARID;
-assign io_master_arlen = 'd1;//AXI4_MASTER_ARLEN;
+assign io_master_arlen = 'd0;//AXI4_MASTER_ARLEN;
 assign io_master_arsize = 'b10;//AXI4_MASTER_ARSIZE;
 assign io_master_arburst = 2'd01;//AXI4_MASTER_ARBURST;
 
