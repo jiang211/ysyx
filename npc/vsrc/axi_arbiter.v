@@ -196,6 +196,6 @@ assign lsu_wready = (state == LSU_WRITE_DATA) ? master_wready : 1'b0;
 // 写响应通道仲裁 (仅LSU)
 //assign lsu_bresp = sram_bresp;
 assign lsu_bvalid = (state == LSU_WRITE_RESP) ? master_bvalid : 1'b0;
-assign master_bready = (state == LSU_WRITE_RESP) ? lsu_bready : 1'b0;
+assign master_bready = lsu_bready ;
 
 endmodule
