@@ -184,13 +184,13 @@ assign master_rready = (state == IFU_READ_WAIT) ? ifu_rready :
 
 // 写地址通道仲裁 (仅LSU)
 assign master_awaddr = saved_awaddr;
-assign master_awvalid = (state == LSU_WRITE_START) ? 1'b1 : 1'b0;
+assign master_awvalid = lsu_awvalid;
 assign lsu_awready = (state == LSU_WRITE_START) ? master_awready : 1'b0;
 
 // 写数据通道仲裁 (仅LSU)
 assign master_wdata = saved_wdata;
 assign master_wstrb = saved_wstrb;
-assign master_wvalid = (state == LSU_WRITE_DATA) ? 1'b1 : 1'b0;
+assign master_wvalid = lsu_wvalid;
 assign lsu_wready = (state == LSU_WRITE_DATA) ? master_wready : 1'b0;
 
 // 写响应通道仲裁 (仅LSU)
