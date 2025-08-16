@@ -141,7 +141,10 @@ always @(posedge clk ) begin
             
             // LSU写操作
             LSU_WRITE_START: begin
-                if (master_awready) begin
+                if (master_awready && master_wready) begin
+                    state <= LSU_WRITE_RESP;
+                end
+                else if (master_awready) begin
                     state <= LSU_WRITE_DATA;
                 end
             end
