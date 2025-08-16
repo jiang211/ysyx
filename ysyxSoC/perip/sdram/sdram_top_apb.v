@@ -23,13 +23,7 @@ module sdram_top_apb (
   output [ 3:0] sdram_dqm,
   inout  [31:0] sdram_dq
 );
-  always@(posedge clock) begin
-    if(in_paddr >= 32'ha000ef60 && in_paddr <= 32'ha000efff) begin
-      if(in_pwrite) begin
-      //$write("write in addr %x data %x\n", in_paddr, in_pwdata);
-      end
-    end
-  end
+
   wire sdram_dout_en;
   wire [31:0] sdram_dout;
   assign sdram_dq = sdram_dout_en ? sdram_dout : 32'bz;
