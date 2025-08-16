@@ -1,4 +1,3 @@
-/* verilator lint_off BLKSEQ */
 module axi_arbiter #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
@@ -33,6 +32,7 @@ module axi_arbiter #(
     input                   lsu_wvalid,
     output                  lsu_wready,
     
+    //output [1:0]            lsu_bresp,
     output                  lsu_bvalid,
     input                   lsu_bready,
     
@@ -54,62 +54,148 @@ module axi_arbiter #(
     output                  master_wvalid,
     input                   master_wready,
     
+    //input  [1:0]            sram_bresp,
     input                   master_bvalid,
     output                  master_bready
 );
 
-// 优先级参数
+// 仲裁状态定义
+typedef enum logic [2:0] {
+    IDLE,
+    IFU_READ_START,
+    IFU_READ_WAIT,
+    LSU_READ_START,
+    LSU_READ_WAIT,
+    LSU_WRITE_START,
+    LSU_WRITE_DATA,
+    LSU_WRITE_RESP
+} arb_state_t;
+
+arb_state_t state;
+
+// 仲裁优先级参数
 localparam PRIO_IFU = 1; // IFU优先级高于LSU
 
-// CLINT地址范围检测
+// 内部信号
+reg [ADDR_WIDTH-1:0] saved_araddr;
+reg [ADDR_WIDTH-1:0] saved_awaddr;
+reg [DATA_WIDTH-1:0] saved_wdata;
+reg [3:0]            saved_wstrb;
+
 wire clint = (lsu_araddr >= 32'h02000000 && lsu_araddr <= 32'h02000004);
+// 状态机
+always @(posedge clk ) begin
+    if (rstn) begin
+        state <= IDLE;
+        saved_araddr <= '0;
+        saved_awaddr <= '0;
+        saved_wdata <= '0;
+        saved_wstrb <= '0;
+    end else begin
+        case (state)
+            IDLE: begin
+                // 优先级处理：IFU读请求优先
+                if (PRIO_IFU && ifu_arvalid) begin
+                    saved_araddr <= ifu_araddr;
+                    state <= IFU_READ_START;
+                end
+                // LSU读请求
+                else if (lsu_arvalid && !clint) begin
+                    saved_araddr <= lsu_araddr;
+                    state <= LSU_READ_START;
+                end
+                // LSU写请求
+                else if (lsu_awvalid && lsu_wvalid) begin
+                    saved_awaddr <= lsu_awaddr;
+                    saved_wdata <= lsu_wdata;
+                    saved_wstrb <= lsu_wstrb;
+                    state <= LSU_WRITE_START;
+                end
+            end
+            
+            // IFU读操作
+            IFU_READ_START: begin
+                if (master_arready) begin
+                    state <= IFU_READ_WAIT;
+                end
+            end
+            
+            IFU_READ_WAIT: begin
+                if (master_rvalid && master_rready) begin
+                    state <= IDLE;
+                end
+            end
+            
+            // LSU读操作
+            LSU_READ_START: begin
+                if (master_arready) begin
+                    state <= LSU_READ_WAIT;
+                end
+            end
+            
+            LSU_READ_WAIT: begin
+                if (master_rvalid && master_rready) begin
+                    state <= IDLE;
+                end
+            end
+            
+            // LSU写操作
+            LSU_WRITE_START: begin
+                if (master_awready) begin
+                    state <= LSU_WRITE_DATA;
+                end
+            end
+            
+            LSU_WRITE_DATA: begin
+                if (master_wready) begin
+                    state <= LSU_WRITE_RESP;
+                end
+            end
+            
+            LSU_WRITE_RESP: begin
+                if (master_bvalid && master_bready) begin
+                    state <= IDLE;
+                end
+            end
+            
+            default: state <= IDLE;
+        endcase
+    end
+end
 
-//----------------------------------------------------------
-// 读通道仲裁 (纯组合逻辑)
-//----------------------------------------------------------
-// 读请求优先级仲裁
-wire ifu_has_priority = PRIO_IFU && ifu_arvalid;
-wire lsu_read_eligible = lsu_arvalid && !clint;
+// 读地址通道仲裁
+assign master_araddr = saved_araddr;/*(state == IFU_READ_START || state == IFU_READ_WAIT) ? saved_araddr :
+                     (state == LSU_READ_START || state == LSU_READ_WAIT) ? saved_araddr : '0;*/
 
-// 读地址选择
-wire read_selected = ifu_has_priority || lsu_read_eligible;
-wire select_ifu = ifu_has_priority;
-wire select_lsu = !select_ifu && lsu_read_eligible;
+assign master_arvalid = (state == IFU_READ_START || state == LSU_READ_START) ? 1'b1 : 1'b0;
 
-// 读地址通道
-assign master_araddr = select_ifu ? ifu_araddr : 
-                      select_lsu ? lsu_araddr : 0;
-assign master_arvalid = read_selected;
+assign ifu_arready = (state == IFU_READ_START) ? master_arready : 1'b0;
+assign lsu_arready = (state == LSU_READ_START) ? master_arready : 1'b0;
 
-assign ifu_arready = select_ifu && master_arready;
-assign lsu_arready = select_lsu && master_arready;
-
-// 读数据通道
+// 读数据通道仲裁
 assign ifu_rdata = master_rdata;
 assign lsu_rdata = master_rdata;
 
-assign ifu_rvalid = select_ifu && master_rvalid;
-assign lsu_rvalid = select_lsu && master_rvalid;
+assign ifu_rvalid = (state == IFU_READ_WAIT) ? master_rvalid : 1'b0;
+assign lsu_rvalid = (state == LSU_READ_WAIT) ? master_rvalid : 1'b0;
 
-assign master_rready = (select_ifu && ifu_rready) || 
-                      (select_lsu && lsu_rready);
+assign master_rready = (state == IFU_READ_WAIT) ? ifu_rready :
+                     (state == LSU_READ_WAIT) ? lsu_rready : 1'b0;
 
-//----------------------------------------------------------
-// 写通道仲裁 (纯组合逻辑)
-//----------------------------------------------------------
-// 写地址通道
+// 写地址通道仲裁 (仅LSU)
 assign master_awaddr = lsu_awaddr;
 assign master_awvalid = lsu_awvalid;
-assign lsu_awready = master_awready;
+assign lsu_awready = (state == LSU_WRITE_START) ? master_awready : 1'b0;
 
-// 写数据通道
+// 写数据通道仲裁 (仅LSU)
 assign master_wdata = lsu_wdata;
 assign master_wstrb = lsu_wstrb;
 assign master_wvalid = lsu_wvalid;
-assign lsu_wready = master_wready;
+assign lsu_wready = (state == LSU_WRITE_DATA) ? master_wready : 1'b0;
 
-// 写响应通道
-assign lsu_bvalid = master_bvalid;
-assign master_bready = lsu_bready;
+// 写响应通道仲裁 (仅LSU)
+//assign lsu_bresp = sram_bresp;
+assign lsu_bvalid = (state == LSU_WRITE_RESP) ? master_bvalid : 1'b0;
+assign master_bready = (state == LSU_WRITE_RESP) ? lsu_bready : 1'b0;
 
 endmodule
