@@ -89,31 +89,31 @@ function [31:0] calculate_addr_next;
     input [7:0]  axlen;
 
     reg [31:0]   mask;
-begin
-    mask = 0;
-
-    case (axtype)
-    2'd0: // AXI4_BURST_FIXED
     begin
-        calculate_addr_next = addr;
-    end
-    2'd2: // AXI4_BURST_WRAP
-    begin
-        case (axlen)
-        8'd0:      mask = 32'h03;
-        8'd1:      mask = 32'h07;
-        8'd3:      mask = 32'h0F;
-        8'd7:      mask = 32'h1F;
-        8'd15:     mask = 32'h3F;
-        default:   mask = 32'h3F;
-        endcase
+        mask = 0;
 
-        calculate_addr_next = (addr & ~mask) | ((addr + 4) & mask);
-    end
-    default: // AXI4_BURST_INCR
-        calculate_addr_next = addr + 4;
-    endcase
-end
+        case (axtype)
+            2'd0: // AXI4_BURST_FIXED
+            begin
+                calculate_addr_next = addr;
+            end
+            2'd2: // AXI4_BURST_WRAP
+            begin
+                case (axlen)
+                8'd0:      mask = 32'h03;
+                8'd1:      mask = 32'h07;
+                8'd3:      mask = 32'h0F;
+                8'd7:      mask = 32'h1F;
+                8'd15:     mask = 32'h3F;
+                default:   mask = 32'h3F;
+                endcase
+
+                calculate_addr_next = (addr & ~mask) | ((addr + 4) & mask);
+            end
+            default: // AXI4_BURST_INCR
+                calculate_addr_next = addr + 4;
+            endcase
+        end
 endfunction
 /* verilator lint_off BLKSEQ */
 //-----------------------------------------------------------------
