@@ -56,7 +56,10 @@ module axi_arbiter #(
     
     //input  [1:0]            sram_bresp,
     input                   master_bvalid,
-    output                  master_bready
+    output                  master_bready,
+
+    input   [7:0]           ICACHE_AXI4_arlen,
+    output  [7:0]           master_arlen
 );
 
 // 仲裁状态定义
@@ -169,7 +172,7 @@ end
 // 读地址通道仲裁
 assign master_araddr = saved_araddr;/*(state == IFU_READ_START || state == IFU_READ_WAIT) ? saved_araddr :
                      (state == LSU_READ_START || state == LSU_READ_WAIT) ? saved_araddr : '0;*/
-
+assign master_arlen = (state == IFU_READ_START) ? ICACHE_AXI4_arlen : 8'b0;
 assign master_arvalid = (state == IFU_READ_START || state == LSU_READ_START) ? 1'b1 : 1'b0;
 
 assign ifu_arready = (state == IFU_READ_START) ? master_arready : 1'b0;
