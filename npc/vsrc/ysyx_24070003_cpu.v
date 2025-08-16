@@ -92,7 +92,7 @@ assign io_master_bready = AXI4_MASTER_BREADY;
 assign io_master_arvalid = AXI4_MASTER_ARVALID;
 assign io_master_araddr = AXI4_MASTER_ARADDR;
 assign io_master_arid = 'd0;//AXI4_MASTER_ARID;
-assign io_master_arlen = 8'd4;//AXI4_MASTER_ARLEN;
+assign io_master_arlen = 'd0;//AXI4_MASTER_ARLEN;
 assign io_master_arsize = 'd0;//AXI4_MASTER_ARSIZE;
 assign io_master_arburst = 2'd01;//AXI4_MASTER_ARBURST;
 
