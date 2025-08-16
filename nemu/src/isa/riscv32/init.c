@@ -15,7 +15,7 @@
 
 #include <isa.h>
 #include <memory/paddr.h>
-#define YSYXSOC
+//#define YSYXSOC
 
 // this is not consistent with uint8_t
 // but it is ok since we do not access the array directly
@@ -29,10 +29,10 @@ static const uint32_t img [] = {
 
 static void restart() {
   /* Set the initial program counter. */
-  #ifndef YSYXSOC
+  //#ifndef YSYXSOC
   #ifndef CONFIG_TARGET_SHARE
   cpu.pc = RESET_VECTOR;
-  #endif
+  //#endif
   #else
   cpu.pc = 0x30000000;
   #endif
@@ -44,10 +44,10 @@ static void restart() {
 
 void init_isa() {
   /* Load built-in image. */
-  #ifndef YSYXSOC
+  //#ifndef YSYXSOC
   #ifndef CONFIG_TARGET_SHARE
   memcpy(guest_to_host(RESET_VECTOR), img, sizeof(img));
-  #endif
+  //#endif
   #else
   memcpy(guest_to_host(0x30000000), img, sizeof(img));
   #endif
