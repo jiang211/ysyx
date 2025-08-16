@@ -89,33 +89,33 @@ function [31:0] calculate_addr_next;
     input [7:0]  axlen;
 
     reg [31:0]   mask;
+begin
+    mask = 0;
+
+    case (axtype)
+    2'd0: // AXI4_BURST_FIXED
     begin
-        mask = 0;
+        calculate_addr_next = addr;
+    end
+    2'd2: // AXI4_BURST_WRAP
+    begin
+        case (axlen)
+        8'd0:      mask = 32'h03;
+        8'd1:      mask = 32'h07;
+        8'd3:      mask = 32'h0F;
+        8'd7:      mask = 32'h1F;
+        8'd15:     mask = 32'h3F;
+        default:   mask = 32'h3F;
+        endcase
 
-        case (axtype)
-            2'd0: // AXI4_BURST_FIXED
-            begin
-                calculate_addr_next = addr;
-            end
-            2'd2: // AXI4_BURST_WRAP
-            begin
-                case (axlen)
-                8'd0:      mask = 32'h03;
-                8'd1:      mask = 32'h07;
-                8'd3:      mask = 32'h0F;
-                8'd7:      mask = 32'h1F;
-                8'd15:     mask = 32'h3F;
-                default:   mask = 32'h3F;
-                endcase
-
-                calculate_addr_next = (addr & ~mask) | ((addr + 4) & mask);
-            end
-            default: // AXI4_BURST_INCR
-                calculate_addr_next = addr + 4;
-            endcase
-        end
+        calculate_addr_next = (addr & ~mask) | ((addr + 4) & mask);
+    end
+    default: // AXI4_BURST_INCR
+        calculate_addr_next = addr + 4;
+    endcase
+end
 endfunction
-/* verilator lint_off BLKSEQ */
+
 //-----------------------------------------------------------------
 // Registers / Wires
 //-----------------------------------------------------------------
@@ -171,7 +171,7 @@ begin
         if (axi_wvalid_i && axi_wready_o)
         begin
             req_wr_q      <= !axi_wlast_i;
-            req_len_q     <= axi_awlen_i ;
+            req_len_q     <= axi_awlen_i - 8'd1;
             req_id_q      <= axi_awid_i;
             req_axburst_q <= axi_awburst_i;
             req_axlen_q   <= axi_awlen_i;
