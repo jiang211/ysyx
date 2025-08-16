@@ -67,7 +67,7 @@ module sdram_32mx16 (
       Line_Address[2] <= 'd0;
       Line_Address[3] <= 'd0;
     end else if (!cs & (command == CMD_ACTIVE)) begin
-      Line_Address[ba] = a;
+      Line_Address[ba] <= a;
     end
   end
 
@@ -171,3 +171,4 @@ module sdram_32mx16 (
   end
 
 endmodule
+

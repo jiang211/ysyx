@@ -82,6 +82,7 @@ module sdram_axi_pmem
 //-------------------------------------------------------------
 // calculate_addr_next
 //-------------------------------------------------------------
+/* verilator lint_off BLKSEQ */
 function [31:0] calculate_addr_next;
     input [31:0] addr;
     input [1:0]  axtype;
@@ -114,7 +115,7 @@ begin
     endcase
 end
 endfunction
-
+/* verilator lint_off BLKSEQ */
 //-----------------------------------------------------------------
 // Registers / Wires
 //-----------------------------------------------------------------
