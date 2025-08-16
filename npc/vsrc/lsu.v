@@ -254,7 +254,6 @@ always @(posedge clk) begin
                     LSU_AXI4_AWVALID <= 1'b1;
                     LSU_AXI4_WVALID <= 1'b1;
                     LSU_AXI4_wsize <= awsize;
-                    LSU_AXI_wlast <= 1'b1;
                     state <= START;
                 end else if ((EXU_LSU_ren )) begin
                     LSU_AXI4_ARADDR <= EXU_LSU_result;
@@ -267,7 +266,7 @@ always @(posedge clk) begin
                             lsu_during_count <= lsu_during_count + 1'b1;
                             lsu_store_count <= lsu_store_count + 1'b1;
                             lsu_count <= lsu_count + 1'b1;
-                            LSU_AXI_wlast <= 1'b1;
+                            LSU_AXI_wlast <= 1'b0;
                             state <= WRITE_DATA;
                             LSU_AXI4_AWVALID <= 1'b0;
                             LSU_AXI4_WVALID <= 1'b0;
@@ -276,7 +275,7 @@ always @(posedge clk) begin
                             state <= WRITE_WIRE_1;
                             LSU_AXI4_AWVALID <= 1'b0;
                 end else if(LSU_AXI4_WVALID && LSU_AXI4_WREADY ) begin
-                            LSU_AXI_wlast <= 1'b1;
+                            LSU_AXI_wlast <= 1'b0;
                             state <= WRITE_WIRE_2;
                             LSU_AXI4_WVALID <= 1'b0;
                 end else if(LSU_AXI4_ARVALID && LSU_AXI4_ARREADY) begin
