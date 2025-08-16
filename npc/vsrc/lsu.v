@@ -253,6 +253,7 @@ always @(posedge clk) begin
                     LSU_AXI4_WSTRB <= lsu_wstrb;
                     LSU_AXI4_AWVALID <= 1'b1;
                     LSU_AXI4_WVALID <= 1'b1;
+                    LSU_AXI_wlast <= 1'b1; 
                     LSU_AXI4_wsize <= awsize;
                     state <= START;
                 end else if ((EXU_LSU_ren )) begin
