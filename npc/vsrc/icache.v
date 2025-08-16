@@ -67,6 +67,7 @@ always @(posedge clock) begin
         ICACHE_miss_count <= 0;
         access_time <= 0;
         miss_penalty <= 0;
+        ICACHE_AXI4_araddr <= 0;
         for (i = 0; i < NUM_BLOCKS; i = i + 1) begin
             valid[i] <= 0;  // 复位时所有块无效
         end
@@ -89,7 +90,7 @@ always @(posedge clock) begin
             
             CHECK_CACHE: begin
                 // 检查是否命中：有效且标签匹配
-                if (valid[saved_index] && (tags[saved_index] == saved_tag)) begin
+                if (valid[saved_index] && (tags[saved_index] == saved_tag) && is_sdram) begin
                     access_time <= access_time + 1'b1;
                     // 根据偏移选择正确的32位数据
                     case (saved_addr[3:2])
