@@ -18,7 +18,7 @@ reg [23:0] addr;
 
 //wire [3:0] wstrb;
 wire [31:0] wdata;
-wire [31:0] rdata;
+reg [31:0] rdata;
 wire [3:0] dio_input;
 wire [3:0] dio_out;
 
@@ -27,7 +27,7 @@ assign dio_input = dio;
 
 
 assign dio        = o_en ? dio_out : 4'bz;
-reg         QPI_MODE  = 1;    
+reg         QPI_MODE ;    
 always @(posedge ce_n) begin
   if(cmd == 8'h35)begin
     QPI_MODE    <= 1'b1;

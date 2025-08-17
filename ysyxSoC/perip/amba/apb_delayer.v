@@ -35,7 +35,7 @@ module apb_delayer(
   // assign in_prdata   = out_prdata;
   // assign in_pslverr  = out_pslverr;
 
-  /////////////////////////////  fmax = 784   r = 7.8 s = 32 ////////////
+  /////////////////////////////  fmax = 784   r = 7.8 s = 32  (7.8-1) * 32 ////////////
   
   
   reg [31:0] count;
