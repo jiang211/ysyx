@@ -1,6 +1,7 @@
 module icache(
     input clock,
     input reset,
+    input fence_i,
     input reg [31:0]  IFU_AXI4_araddr,
     input reg         IFU_AXI4_arvalid,
     output reg        IFU_AXI4_arready,
@@ -107,6 +108,12 @@ always @(posedge clock) begin
                 IFU_AXI4_arready <= 1'b1;
                 IFU_AXI4_rvalid <= 1'b0;
                 sdram_burst_buffer <= 128'h0;
+                if(fence_i) begin
+                    for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
+                        sdram_valid[i] <= 0;  // 复位时所有块无效
+                        flash_valid[i] <= 0;  // 复位时所有块无效
+                    end
+                end
                 if (IFU_AXI4_arvalid && IFU_AXI4_arready) begin
                     access_time <= access_time + 1'b1;
                     total_access <= total_access + 1'b1;

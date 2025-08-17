@@ -224,6 +224,7 @@ wire [7:0] AXI4_MASTER_ARLEN;
 icache  my_icache(
     .clock                   (clock),
     .reset                   (reset),
+    .fence_i                 (fence_i),
     .IFU_AXI4_araddr         (IFU_AXI4_araddr),
     .IFU_AXI4_arvalid        (IFU_AXI4_arvalid),
     .IFU_AXI4_arready        (IFU_AXI4_arready),
