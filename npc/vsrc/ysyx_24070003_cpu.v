@@ -93,7 +93,7 @@ assign io_master_arvalid = AXI4_MASTER_ARVALID;
 assign io_master_araddr = AXI4_MASTER_ARADDR;
 assign io_master_arid = 'd0;//AXI4_MASTER_ARID;
 assign io_master_arlen = AXI4_MASTER_ARLEN;//AXI4_MASTER_ARLEN;
-assign io_master_arsize = 'b10;//AXI4_MASTER_ARSIZE;
+assign io_master_arsize = AXI4_MASTER_ARSIZE;//AXI4_MASTER_ARSIZE;
 assign io_master_arburst = 2'd01;//AXI4_MASTER_ARBURST;
 
 assign AXI4_MASTER_AWREADY = io_master_awready;
@@ -257,7 +257,7 @@ wire AXI4_CLINT_ARVALID,AXI4_CLINT_ARREADY,AXI4_CLINT_RVALID,AXI4_CLINT_RREADY;
 wire AXI4_CLINT_AWVALID,AXI4_CLINT_AWREADY,AXI4_CLINT_WVALID,AXI4_CLINT_WREADY,AXI4_CLINT_BVALID,AXI4_CLINT_BREADY;
 wire [31:0] AXI4_CLINT_ARADDR,AXI4_CLINT_RDATA,AXI4_CLINT_AWADDR,AXI4_CLINT_WDATA;
 wire [3:0] AXI4_CLINT_WSTRB;
-
+wire [2:0] LSU_AXI4_ARSIZE,AXI4_MASTER_ARSIZE;
 axi_arbiter my_axi_arbiter(
     .clk                    (clock),
     .rstn                   (reset),   
@@ -292,6 +292,7 @@ axi_arbiter my_axi_arbiter(
    // .lsu_bresp               (),
     .lsu_bvalid             (LSU_AXI4_BVALID),
     .lsu_bready             (LSU_AXI4_BREADY),
+    .lsu_arsize        (LSU_AXI4_ARSIZE),
     
     .master_araddr             (AXI4_MASTER_ARADDR),
     .master_arvalid           (AXI4_MASTER_ARVALID),
@@ -315,7 +316,8 @@ axi_arbiter my_axi_arbiter(
     .master_bready             (AXI4_MASTER_BREADY),
     .ICACHE_AXI4_arlen          (ICACHE_AXI4_arlen),
     .master_arlen               (AXI4_MASTER_ARLEN),
-    .master_rlast               (io_master_rlast)
+    .master_rlast               (io_master_rlast),
+    .master_arsize              (AXI4_MASTER_ARSIZE)
 );
 
 
@@ -706,6 +708,7 @@ lsu my_lsu(
     .LSU_AXI4_BREADY  (LSU_AXI4_BREADY),
     .LSU_AXI_wlast    (LSU_AXI_wlast),
     .LSU_AXI4_wsize   (LSU_AXI4_wsize),
+    .LSU_AXI4_ARSIZE  (LSU_AXI4_ARSIZE),
     .lsu_count       (lsu_count),
     .lsu_during_count  (lsu_during_count),
     .lsu_load_count   (lsu_load_count),

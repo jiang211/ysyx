@@ -84,7 +84,8 @@ module lsu(
     output reg [63:0]           lsu_count,
     output reg [63:0]           lsu_during_count,
     output reg [63:0]           lsu_load_count,
-    output reg [63:0]           lsu_store_count
+    output reg [63:0]           lsu_store_count,
+    output reg [2:0]            LSU_AXI4_ARSIZE
       //input  [1:0]                LSU_AXI4_BRESP
 );
 
@@ -110,6 +111,7 @@ reg [2:0] state;
     wire [31:0] lsu_wdata;
     wire [31:0] lsu_rdata;
     wire [31:0] lsu_rdata_;
+    wire [2:0] lsu_arsize;
     reg skip;
     wire skip1 = (((EXU_LSU_result >= 32'h10000000) && (EXU_LSU_result < 32'h30000000)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
     wire skip2 = (((EXU_LSU_result >= 32'h02000000) && (EXU_LSU_result < 32'h0200ffff)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
@@ -138,6 +140,13 @@ reg [2:0] state;
     assign  awsize = ( {3{EXU_LSU_sb}} & 3'b0 )  |
                    ( {3{EXU_LSU_sh}} & 3'b01 )  |
                    ( {3{EXU_LSU_sw}} & 3'b10 ) ;
+
+    assign lsu_arsize = ( {3{LSU_WBU_lb}} & 3'b0) |
+                   ( {3{LSU_WBU_lh}} & 3'b01) |
+                   ( {3{LSU_WBU_lw}} & 3'b10) |
+                   ( {3{LSU_WBU_lbu}} & 3'b0) |
+                   ( {3{LSU_WBU_lhu}} & 3'b01);
+
     // always @(posedge clk) begin
     //     if(EXU_LSU_wen) begin
     //     $write("lsu_wstrb = %04b,EXU_LSU_result = %08x\n",lsu_wstrb,EXU_LSU_result);
@@ -207,6 +216,7 @@ always @(posedge clk) begin
         lsu_during_count <= 64'd0;
         lsu_load_count <= 64'd0;
         lsu_store_count <= 64'd0;
+        LSU_AXI4_ARSIZE <= 3'b0;
     end
     else begin
         case (state)
@@ -258,6 +268,7 @@ always @(posedge clk) begin
                     state <= START;
                 end else if ((EXU_LSU_ren )) begin
                     LSU_AXI4_ARADDR <= EXU_LSU_result;
+                    LSU_AXI4_ARSIZE <= lsu_arsize;
                     LSU_AXI4_ARVALID <= 1'b1;
                     state <= START;
                 end

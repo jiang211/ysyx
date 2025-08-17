@@ -35,6 +35,7 @@ module axi_arbiter #(
     //output [1:0]            lsu_bresp,
     output                  lsu_bvalid,
     input                   lsu_bready,
+    output   [2:0]          lsu_arsize,
     
     // SRAM 从设备接口
     output [ADDR_WIDTH-1:0] master_araddr,
@@ -60,7 +61,8 @@ module axi_arbiter #(
 
     input   [7:0]           ICACHE_AXI4_arlen,
     output  [7:0]           master_arlen,
-    input                   master_rlast
+    input                   master_rlast,
+    output  [2:0]           master_arsize
 );
 
 // 仲裁状态定义
@@ -182,6 +184,7 @@ assign master_araddr = saved_araddr;/*(state == IFU_READ_START || state == IFU_R
                      (state == LSU_READ_START || state == LSU_READ_WAIT) ? saved_araddr : '0;*/
 assign master_arlen = (state == IFU_READ_START) ? ICACHE_AXI4_arlen : 8'b0;
 assign master_arvalid = (state == IFU_READ_START || state == LSU_READ_START) ? 1'b1 : 1'b0;
+assign master_arsize = (state == LSU_READ_START || state == LSU_READ_WAIT) ? lsu_arsize : 3'b10;
 
 assign ifu_arready = (state == IFU_READ_START) ? master_arready : 1'b0;
 assign lsu_arready = (state == LSU_READ_START) ? master_arready : 1'b0;
