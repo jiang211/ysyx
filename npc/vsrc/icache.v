@@ -152,13 +152,6 @@ always @(posedge clock) begin
                             data[saved_index] <= burst_buffer;
                             valid[saved_index] <= 1'b1;
                             
-                        // 选择请求的数据
-                        case (saved_addr[3:2])
-                            2'b00: IFU_AXI4_rdata <= burst_buffer[31:0];
-                            2'b01: IFU_AXI4_rdata <= burst_buffer[63:32];
-                            2'b10: IFU_AXI4_rdata <= burst_buffer[95:64];
-                            2'b11: IFU_AXI4_rdata <= burst_buffer[127:96];
-                        endcase
                         
                         state <= UPDATED_CACHE;
                         ICACHE_miss_count <= ICACHE_miss_count + 1;
@@ -173,7 +166,7 @@ always @(posedge clock) begin
                         
                         miss_penalty <= miss_penalty + 1;
                         
-                        IFU_AXI4_rdata <= ICACHE_AXI4_rdata;
+                        
                             // 完成4个数据的接收
                         ICACHE_AXI4_rready <= 1'b0;
                             // 更新缓存
@@ -192,6 +185,12 @@ always @(posedge clock) begin
             end
                 
             UPDATED_CACHE : begin
+                case (saved_addr[3:2])
+                    2'b00: IFU_AXI4_rdata <= burst_buffer[31:0];
+                    2'b01: IFU_AXI4_rdata <= burst_buffer[63:32];
+                    2'b10: IFU_AXI4_rdata <= burst_buffer[95:64];
+                    2'b11: IFU_AXI4_rdata <= burst_buffer[127:96];
+                endcase
                 tags[saved_index] <= saved_tag;
                 data[saved_index] <= burst_buffer;
                 ICACHE_miss_count <= ICACHE_miss_count + 1;
