@@ -661,7 +661,6 @@ lsu my_lsu(
     .EXU_LSU_csr_rst(EXU_LSU_csr_rst),
     .EXU_LSU_ren    (EXU_LSU_ren),
     .EXU_LSU_wen    (EXU_LSU_wen),
-    .EXU_LSU_IMM    (EXU_LSU_IMM),
     //.IDU_EXU_ren(mem_read),
     //.IDU_EXU_wen(mem_write),
     .EXU_LSU_reg    (EXU_LSU_reg),
