@@ -160,7 +160,6 @@ always @(posedge clock) begin
                             2'b11: IFU_AXI4_rdata <= burst_buffer[127:96];
                         endcase
                         
-                        IFU_AXI4_rvalid <= 1'b1;
                         state <= UPDATED_CACHE;
                         ICACHE_miss_count <= ICACHE_miss_count + 1;
                     end
@@ -182,7 +181,6 @@ always @(posedge clock) begin
                         // 选择请求的数据
                         
                         
-                        IFU_AXI4_rvalid <= 1'b1;
                         state <= UPDATED_CACHE;
                         ICACHE_miss_count <= ICACHE_miss_count + 1;
                    
@@ -199,7 +197,7 @@ always @(posedge clock) begin
                 ICACHE_miss_count <= ICACHE_miss_count + 1;
                 valid[saved_index] <= 1'b1;
                 state <= SEND_DATA;
-
+                IFU_AXI4_rvalid <= 1'b1;
             end
             SEND_DATA: begin
                 access_time <= access_time + 1'b1;
