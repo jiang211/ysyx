@@ -122,7 +122,7 @@ reg [2:0] state;
                    ( {32{EXU_LSU_sw}} & rs2_data);
 
     assign lsu_rdata = LSU_RDATA >> offset;
-    assign lsu_rdata_ = ((LSU_AXI4_ARADDR >= 32'h30000000) && (LSU_AXI4_ARADDR < 32'h40000000)) ? LSU_RDATA : lsu_rdata;
+    assign lsu_rdata_ = ((LSU_AXI4_ARADDR >= 32'ha0000000) && (LSU_AXI4_ARADDR < 32'hc0000000)) ? lsu_rdata : LSU_RDATA;
     assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata_[7]}},lsu_rdata_[7:0]}) |
                    ( {32{LSU_WBU_lh}} & {{16{lsu_rdata_[15]}}, (lsu_rdata_[15:0])}) |
                    ( {32{LSU_WBU_lw}} & lsu_rdata_) |
