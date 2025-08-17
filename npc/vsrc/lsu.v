@@ -126,11 +126,11 @@ reg [2:0] state;
                        ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b11) ? (LSU_RDATA >> 32'd24) : (LSU_RDATA >> 32'd0);
 
     assign lsu_rdata_ = ((LSU_AXI4_ARADDR >= 32'h30000000) && (LSU_AXI4_ARADDR < 32'h40000000)) ? LSU_RDATA : lsu_rdata;
-    assign rdata = ( {32{LSU_WBU_lb}} & {{24{LSU_RDATA[7]}},LSU_RDATA[7:0]}) |
-                   ( {32{LSU_WBU_lh}} & {{16{LSU_RDATA[15]}}, (LSU_RDATA[15:0])}) |
-                   ( {32{LSU_WBU_lw}} & LSU_RDATA) |
-                   ( {32{LSU_WBU_lbu}} & {24'b0,LSU_RDATA[7:0]}) |
-                   ( {32{LSU_WBU_lhu}} & {16'b0,LSU_RDATA[15:0]});
+    assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata[7]}},lsu_rdata[7:0]}) |
+                   ( {32{LSU_WBU_lh}} & {{16{lsu_rdata[15]}}, (lsu_rdata[15:0])}) |
+                   ( {32{LSU_WBU_lw}} & lsu_rdata) |
+                   ( {32{LSU_WBU_lbu}} & {24'b0,lsu_rdata[7:0]}) |
+                   ( {32{LSU_WBU_lhu}} & {16'b0,lsu_rdata[15:0]});
 
     assign  LSU_WLEN = ( {4{EXU_LSU_sb}} & 4'b1 )  |
                    ( {4{EXU_LSU_sh}} & 4'b11 )  |
