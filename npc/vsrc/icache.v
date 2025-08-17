@@ -175,9 +175,7 @@ always @(posedge clock) begin
                             // 完成4个数据的接收
                         ICACHE_AXI4_rready <= 1'b0;
                             // 更新缓存
-                        tags[saved_index] <= saved_tag;
-                        data[saved_index] <= burst_buffer;
-                        valid[saved_index] <= 1'b1;
+                        
                             
                         // 选择请求的数据
                         
@@ -197,6 +195,9 @@ always @(posedge clock) begin
             SEND_DATA: begin
                 access_time <= access_time + 1'b1;
                 miss_penalty <= miss_penalty + 1'b1;
+                tags[saved_index] <= saved_tag;
+                data[saved_index] <= burst_buffer;
+                valid[saved_index] <= 1'b1;
                 if (IFU_AXI4_rvalid && IFU_AXI4_rready) begin
                     // IFU接收数据，完成本次请求
                     IFU_AXI4_rvalid <= 1'b0;
