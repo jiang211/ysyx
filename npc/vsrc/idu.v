@@ -5,6 +5,7 @@ module idu(
     //input wire EXU_IFU_flush,
     input clk,
     input rst_n,
+    output fence_i,
     //input               IFU_IDU_STALL,
     input               IFU_IDU_valid,          // 从IFU到IDU的有效信号
     output           IDU_IFU_ready,          // IDU到IFU的就绪信号
@@ -182,6 +183,8 @@ exuop_ctrl my_exuop_crtl(
     .aluOp          (aluop)
 );
 
+////////////0x0000100F//////////////0000000 00000 00000 001 00000 0001111/////////////
+assign fence_i = (instr == 32'h0000100F);
 //wire pcsrc = (branch /*& zero*/) | jump | ecall | mret;
 
 always@(posedge clk) begin

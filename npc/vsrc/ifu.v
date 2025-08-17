@@ -23,11 +23,12 @@ module ifu(
     //output reg stall,
     output  reg[31:0] IFU_dnpc,
     //output [31:0] inst_addr_o,
-    output [31:0]instr,
+    output [31:0]IFU_IDU_INSTR,
     //input  [31:0] instr_in,
     output reg [31:0] IFU_IDU_PC,
     input  EXU_LSU_valid,
 
+    input  fence_i,
 
     // AXI-Lite4 Interface
     output reg [31:0] IFU_AXI4_araddr,
@@ -40,6 +41,7 @@ module ifu(
     output reg [63:0] ifu_during_count
 );
 reg [31:0] pc;
+assign IFU_IDU_INSTR = (fence_i) ? 32'b0 : instr;
 //wire [31:0] d_pc;
 /*
 wire I_type_2 = (instr[6:0] == 7'b1100111);
@@ -70,9 +72,9 @@ assign dnpc = (WBU_IFU_JUMP)? WBU_IFU_pc :pc + 4;
 //assign inst_addr_o = pc ;
 wire [31:0] inst_addr;
 assign inst_addr   = pc;
-
+reg [31:0] instr;
 reg start,start_r;
-   
+
 always @(posedge clk) begin
     if (rstn) begin
         start <= 1'b1;

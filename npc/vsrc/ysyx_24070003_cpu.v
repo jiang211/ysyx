@@ -187,6 +187,7 @@ ifu my_ifu(
     .resp           (resp),
     .clk            (clock        ),
     .rstn           (reset       ),
+    .fence_i        (fence_i),
    //.pcsrc          (pcsrc     ),
     .WBU_IFU_pc     (EXU_IFU_pc),
     .EXU_LSU_valid  (EXU_LSU_valid),
@@ -204,7 +205,7 @@ ifu my_ifu(
     .IFU_dnpc           (IFU_IDU_dnpc       ),
    // .inst_addr_o    (inst_addr_o),
     .IFU_IDU_PC     (IFU_IDU_PC),
-    .instr          (instr),
+    .IFU_IDU_INSTR          (instr),
     //.instr_in       (instr_in),
     .IFU_AXI4_araddr(IFU_AXI4_araddr),
     .IFU_AXI4_arvalid(IFU_AXI4_arvalid),
@@ -470,11 +471,13 @@ wire [31:0] IDU_EXU_PC;
 wire IDU_EXU_lw, IDU_EXU_lh, IDU_EXU_lb, IDU_EXU_lbu, IDU_EXU_lhu, IDU_EXU_sw, IDU_EXU_sb, IDU_EXU_sh;
 wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr,IDU_EXU_C_type;
 wire [2:0] IDU_EXU_csr_rst;
+wire fence_i;
 idu my_idu(
    // .EXU_IFU_flush          (EXU_IFU_flush),
     .clk                    (clock        ),
     .IFU_IDU_PC             (IFU_IDU_PC),
     .rst_n                   (reset       ),
+    .fence_i                (fence_i     ),
     .IFU_IDU_dnpc           (IFU_IDU_dnpc       ),
    // .IFU_IDU_STALL           (IFU_IDU_STALL),
     .IFU_IDU_valid          (IFU_IDU_valid),
