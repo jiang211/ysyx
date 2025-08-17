@@ -14,6 +14,7 @@ module icache(
     input  [31:0]     ICACHE_AXI4_rdata,
     input             ICACHE_AXI4_rvalid,
     output reg        ICACHE_AXI4_rready,
+    output reg [7:0]  ICACHE_AXI4_arlen,
     output reg [63:0] ICACHE_hit_count,
     output reg [63:0] ICACHE_miss_count,
     output reg [63:0] total_access,
@@ -21,33 +22,57 @@ module icache(
     output reg [63:0] miss_penalty
 );
 
-parameter BLOCK_SIZE = 4;      // 4字节块大小
-parameter NUM_BLOCKS = 16;     // 16个缓存块
-parameter OFFSET_BITS = 2;     // 2^2 = 4字节 (块内偏移)
-parameter INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
-parameter TAG_BITS = 26;       // 32 - (2+4) = 26位标签
+parameter SDRAM_BLOCK_SIZE = 16;      // 4字节块大小
+parameter SDRAM_NUM_BLOCKS = 16;     // 16个缓存块
+parameter SDRAM_OFFSET_BITS = 4;     // 2^2 = 4字节 (块内偏移)
+parameter SDRAM_INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
+parameter SDRAM_TAG_BITS = 24;       // 32 - (2+4) = 26位标签
 
+parameter FLASH_BLOCK_SIZE = 4;      // 4字节块大小
+parameter FLASH_NUM_BLOCKS = 16;     // 16个缓存块
+parameter FLASH_OFFSET_BITS = 2;     // 2^1 = 1字节 (块内偏移)
+parameter FLASH_INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
+parameter FLASH_TAG_BITS = 26;       // 32 - (2+4) = 26位标签
 
-reg [TAG_BITS-1:0] tags [0:NUM_BLOCKS-1];  // 标签存储
-reg [31:0] data [0:NUM_BLOCKS-1];           // 数据存储
-reg valid [0:NUM_BLOCKS-1];                 // 有效位
+reg [SDRAM_TAG_BITS-1:0] sdram_tags [0:SDRAM_NUM_BLOCKS-1];  // 标签存储
+reg [SDRAM_BLOCK_SIZE * 8-1:0] sdram_data [0:SDRAM_NUM_BLOCKS-1];           // 数据存储
+reg sdram_valid [0:SDRAM_NUM_BLOCKS-1];                 // 有效位
 
-typedef enum logic [1:0] {
+reg [FLASH_TAG_BITS-1:0] flash_tags [0:FLASH_NUM_BLOCKS-1];  // 标签存储
+reg [FLASH_BLOCK_SIZE * 8-1:0] flash_data [0:FLASH_NUM_BLOCKS-1];           // 数据存储
+reg flash_valid [0:FLASH_NUM_BLOCKS-1];                 // 有效位
+
+wire is_sdram = (IFU_AXI4_araddr >= 32'ha0000000);
+typedef enum logic [2:0] {
     IDLE,        // 空闲状态
-    CHECK_CACHE, // 检查缓存
-    AXI_READ,    // 从内存读取
+    SDRAM_CHECK_CACHE, // 检查缓存
+    FLASH_CHECK_CACHE, // 检查缓存
+    AXI_READ,    // 从FLASH读取
+    UPDATED_CACHE, // 更新缓存
     SEND_DATA // 更新缓存
 } state_t;
 
-reg [1:0] state;
-reg [31:0] saved_addr;  // 保存当前请求地址
-reg [INDEX_BITS-1:0] saved_index;  // 保存当前索引
-reg [TAG_BITS-1:0] saved_tag;
 
-wire [TAG_BITS-1:0] current_tag = IFU_AXI4_araddr[31:OFFSET_BITS+INDEX_BITS];
-wire [INDEX_BITS-1:0] current_index = IFU_AXI4_araddr[OFFSET_BITS+INDEX_BITS-1:OFFSET_BITS];
-wire [OFFSET_BITS-1:0] current_offset = IFU_AXI4_araddr[OFFSET_BITS-1:0];
+state_t state;
+reg [31:0] sdram_saved_addr;  // 保存当前请求地址
+reg [SDRAM_INDEX_BITS-1:0] sdram_saved_index;  // 保存当前索引
+reg [SDRAM_TAG_BITS-1:0] sdram_saved_tag;
 
+reg [31:0] flash_saved_addr;  // 保存当前请求地址
+reg [FLASH_INDEX_BITS-1:0] flash_saved_index;  // 保存当前索引
+reg [FLASH_TAG_BITS-1:0] flash_saved_tag;
+
+reg [127:0] sdram_burst_buffer; 
+reg [31:0] flash_burst_buffer;
+wire [SDRAM_TAG_BITS-1:0] sdram_current_tag = IFU_AXI4_araddr[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
+wire [SDRAM_INDEX_BITS-1:0] sdram_current_index = IFU_AXI4_araddr[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
+wire [SDRAM_OFFSET_BITS-1:0] sdram_current_offset = IFU_AXI4_araddr[SDRAM_OFFSET_BITS-1:0];
+
+wire [FLASH_TAG_BITS-1:0] flash_current_tag = IFU_AXI4_araddr[31:FLASH_OFFSET_BITS+FLASH_INDEX_BITS];
+wire [FLASH_INDEX_BITS-1:0] flash_current_index = IFU_AXI4_araddr[FLASH_OFFSET_BITS+FLASH_INDEX_BITS-1:FLASH_OFFSET_BITS];
+wire [FLASH_OFFSET_BITS-1:0] flash_current_offset = IFU_AXI4_araddr[FLASH_OFFSET_BITS-1:0];
+
+reg [1:0] burst_count;
 integer i;
 
 
@@ -58,46 +83,73 @@ always @(posedge clock) begin
         IFU_AXI4_rvalid <= 0;
         ICACHE_AXI4_arvalid <= 0;
         ICACHE_AXI4_rready <= 0;
-        saved_addr <= 0;
-        saved_tag <= 0;
+        sdram_saved_addr <= 0;
+        flash_saved_addr <= 0;
+        sdram_saved_index <= 0;
+        flash_saved_index <= 0;
+        sdram_saved_tag <= 0;
+        flash_saved_tag <= 0;
+        ICACHE_AXI4_arlen <= 0;
         ICACHE_hit_count <= 0;
         ICACHE_miss_count <= 0;
         access_time <= 0;
         miss_penalty <= 0;
-        for (i = 0; i < NUM_BLOCKS; i = i + 1) begin
-            valid[i] <= 0;  // 复位时所有块无效
+        ICACHE_AXI4_araddr <= 0;
+        sdram_burst_buffer <= 128'h0;
+        flash_burst_buffer <= 0;
+        for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
+            sdram_valid[i] <= 0;  // 复位时所有块无效
+            flash_valid[i] <= 0;  // 复位时所有块无效
         end
     end else begin
         case (state)
             IDLE: begin
                 IFU_AXI4_arready <= 1'b1;
                 IFU_AXI4_rvalid <= 1'b0;
+                sdram_burst_buffer <= 128'h0;
                 if (IFU_AXI4_arvalid && IFU_AXI4_arready) begin
                     access_time <= access_time + 1'b1;
                     total_access <= total_access + 1'b1;
                     miss_penalty <= miss_penalty + 1'b1;
                     IFU_AXI4_arready <= 1'b0;
-                    saved_addr <= IFU_AXI4_araddr;
-                    saved_index <= current_index;
-                    saved_tag <= current_tag;
-                    state <= CHECK_CACHE;
+                    if(is_sdram) begin
+                        sdram_saved_addr <= IFU_AXI4_araddr;
+                        sdram_saved_index <= sdram_current_index;
+                        sdram_saved_tag <= sdram_current_tag;
+                        state <= SDRAM_CHECK_CACHE;
+                    end else begin
+                        flash_saved_addr <= IFU_AXI4_araddr;
+                        flash_saved_index <= flash_current_index;
+                        flash_saved_tag <= flash_current_tag;
+                        state <= FLASH_CHECK_CACHE;
+                    end
+                    
                 end
             end
             
-            CHECK_CACHE: begin
+            SDRAM_CHECK_CACHE: begin
                 // 检查是否命中：有效且标签匹配
-                if (valid[saved_index] && (tags[saved_index] == saved_tag)) begin
+                if (sdram_valid[sdram_saved_index] && (sdram_tags[sdram_saved_index] == sdram_saved_tag)) begin
                     access_time <= access_time + 1'b1;
-                    // 命中：直接返回数据
-                    IFU_AXI4_rdata <= data[saved_index];
+                    // 根据偏移选择正确的32位数据
+                    case (sdram_saved_addr[3:2])
+                        2'b00: IFU_AXI4_rdata <= sdram_data[sdram_saved_index][31:0];
+                        2'b01: IFU_AXI4_rdata <= sdram_data[sdram_saved_index][63:32];
+                        2'b10: IFU_AXI4_rdata <= sdram_data[sdram_saved_index][95:64];
+                        2'b11: IFU_AXI4_rdata <= sdram_data[sdram_saved_index][127:96];
+                    endcase
                     IFU_AXI4_rvalid <= 1'b1;
                     state <= SEND_DATA;
                     ICACHE_hit_count <= ICACHE_hit_count + 1;
                 end else begin
                     // 未命中：启动内存读取
+                   
+                    ICACHE_AXI4_arlen <= 2'b11;  // 一次读取4个数据
+                    ICACHE_AXI4_araddr <= {sdram_saved_addr[31:4], 4'b0};
+                    
                     miss_penalty <= miss_penalty + 1'b1;
                     ICACHE_AXI4_arvalid <= 1'b1;
-                    ICACHE_AXI4_araddr <= saved_addr; // 对齐地址
+                    // 地址对齐到16字节边界
                     if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
                         ICACHE_AXI4_rready <= 1'b1;
                         ICACHE_AXI4_arvalid <= 1'b0;
@@ -105,29 +157,100 @@ always @(posedge clock) begin
                         state <= AXI_READ;
                     end
                     else begin
-                        state <= CHECK_CACHE;
+                        state <= SDRAM_CHECK_CACHE;
+                    end
+                end
+            end
+                
+            FLASH_CHECK_CACHE: begin
+                // 检查是否命中：有效且标签匹配
+                if (flash_valid[flash_saved_index] && (flash_tags[flash_saved_index] == flash_saved_tag)) begin
+                    access_time <= access_time + 1'b1;
+                    // 根据偏移选择正确的32位数据
+                    IFU_AXI4_rdata <= flash_data[flash_saved_index];
+                    IFU_AXI4_rvalid <= 1'b1;
+                    state <= SEND_DATA;
+                    ICACHE_hit_count <= ICACHE_hit_count + 1;
+                end else begin
+                    // 未命中：启动内存读取
+                    ICACHE_AXI4_arlen <= 2'b00;  // 一次读取1个数据
+                    ICACHE_AXI4_araddr <= {flash_saved_addr[31:2], 2'b0};
+                    miss_penalty <= miss_penalty + 1'b1;
+                    ICACHE_AXI4_arvalid <= 1'b1;
+                    // 地址对齐到16字节边界
+                    if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
+                        ICACHE_AXI4_rready <= 1'b1;
+                        ICACHE_AXI4_arvalid <= 1'b0;
+                        ICACHE_miss_count <= ICACHE_miss_count + 1;
+                        state <= AXI_READ;
+                    end
+                    else begin
+                        state <= FLASH_CHECK_CACHE;
                     end
                 end
             end
             
-            AXI_READ: begin
-                ICACHE_AXI4_rready <= 1'b1;
-                miss_penalty <= miss_penalty + 1'b1;
-                if (ICACHE_AXI4_rvalid && ICACHE_AXI4_rready) begin
-                    ICACHE_AXI4_rready <= 1'b0;
-                    // 更新缓存
-                    tags[saved_index] <= saved_addr[31:OFFSET_BITS+INDEX_BITS];
-                    data[saved_index] <= ICACHE_AXI4_rdata;
-                    valid[saved_index] <= 1;
-                    
-                    // 返回数据给IFU
-                    IFU_AXI4_rdata <= ICACHE_AXI4_rdata;
-                    IFU_AXI4_rvalid <= 1'b1;
-                    state <= SEND_DATA;
-                end
-                // 否则保持等待状态
-            end
             
+            AXI_READ: begin
+                if (ICACHE_AXI4_rvalid && ICACHE_AXI4_rready) begin
+                    // 存储接收到的数据
+                    if(is_sdram) begin
+                        case (burst_count)
+                            2'b00: sdram_burst_buffer[31:0] <= ICACHE_AXI4_rdata;
+                            2'b01: sdram_burst_buffer[63:32] <= ICACHE_AXI4_rdata;
+                            2'b10: sdram_burst_buffer[95:64] <= ICACHE_AXI4_rdata;
+                            2'b11: sdram_burst_buffer[127:96] <= ICACHE_AXI4_rdata;
+                        endcase
+                        
+                        burst_count <= burst_count + 1;
+                        miss_penalty <= miss_penalty + 1;
+                        
+                        if (burst_count == 2'b11) begin
+                            // 完成4个数据的接收
+                            ICACHE_AXI4_rready <= 1'b0;
+                            state <= UPDATED_CACHE;
+                            ICACHE_miss_count <= ICACHE_miss_count + 1;
+                        end
+                    end else begin
+                        flash_burst_buffer <= ICACHE_AXI4_rdata;
+                        
+                        miss_penalty <= miss_penalty + 1;
+                        
+                        
+                            // 完成4个数据的接收
+                        ICACHE_AXI4_rready <= 1'b0;
+                            // 更新缓存
+                        state <= UPDATED_CACHE;
+                        ICACHE_miss_count <= ICACHE_miss_count + 1;
+                   
+                    end
+                end else begin
+                    // 等待有效数据
+                    miss_penalty <= miss_penalty + 1;
+                end
+            end
+                
+            UPDATED_CACHE : begin
+                if(is_sdram) begin
+                    case (sdram_saved_addr[3:2])
+                        2'b00: IFU_AXI4_rdata <= sdram_burst_buffer[31:0];
+                        2'b01: IFU_AXI4_rdata <= sdram_burst_buffer[63:32];
+                        2'b10: IFU_AXI4_rdata <= sdram_burst_buffer[95:64];
+                        2'b11: IFU_AXI4_rdata <= sdram_burst_buffer[127:96];
+                    endcase
+                    sdram_tags[sdram_saved_index] <= sdram_saved_tag;
+                    sdram_data[sdram_saved_index] <= sdram_burst_buffer;
+                    sdram_valid[sdram_saved_index] <= 1'b1;
+                end else begin
+                    IFU_AXI4_rdata <= flash_burst_buffer;
+                    flash_tags[flash_saved_index] <= flash_saved_tag;
+                    flash_data[flash_saved_index] <= flash_burst_buffer;
+                    flash_valid[flash_saved_index] <= 1'b1;
+                end
+                ICACHE_miss_count <= ICACHE_miss_count + 1;
+                state <= SEND_DATA;
+                IFU_AXI4_rvalid <= 1'b1;
+            end
             SEND_DATA: begin
                 access_time <= access_time + 1'b1;
                 miss_penalty <= miss_penalty + 1'b1;

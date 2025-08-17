@@ -35,7 +35,7 @@ module apb_delayer(
   // assign in_prdata   = out_prdata;
   // assign in_pslverr  = out_pslverr;
 
-  /////////////////////////////  fmax = 970   r = 9.7 s = 32 ////////////
+  /////////////////////////////  fmax = 784   r = 7.8 s = 32 ////////////
   
   
   reg [31:0] count;
@@ -51,16 +51,16 @@ module apb_delayer(
         IDLE: begin
           if(in_psel) begin
             state <= WAIT;
-            count <= count + 32'd278;
+            count <= count + 32'd217;
           end
         end
         WAIT: begin
           if(out_pready) begin
             state <= DELAY;
-            count <= (count + 32'd278) >> 5;
+            count <= (count + 32'd217) >> 5;
           end
           else begin
-            count <= count + 32'd278;
+            count <= count + 32'd217;
           end
         end
         DELAY: begin

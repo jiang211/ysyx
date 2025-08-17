@@ -81,7 +81,7 @@ assign io_master_awvalid = AXI4_MASTER_AWVALID;
 assign io_master_awaddr = AXI4_MASTER_AWADDR;
 assign io_master_rready = AXI4_MASTER_RREADY;
 assign io_master_awid = 'd0;//AXI4_MASTER_AWID;
-assign io_master_awlen = 'd0;//AXI4_MASTER_AWLEN;
+assign io_master_awlen = 8'd0;//AXI4_MASTER_AWLEN;
 assign io_master_awsize = LSU_AXI4_wsize;//AXI4_MASTER_AWSIZE;
 assign io_master_awburst = 2'd01;//AXI4_MASTER_AWBURST;
 assign io_master_wvalid = AXI4_MASTER_WVALID;
@@ -92,8 +92,8 @@ assign io_master_bready = AXI4_MASTER_BREADY;
 assign io_master_arvalid = AXI4_MASTER_ARVALID;
 assign io_master_araddr = AXI4_MASTER_ARADDR;
 assign io_master_arid = 'd0;//AXI4_MASTER_ARID;
-assign io_master_arlen = 'd0;//AXI4_MASTER_ARLEN;
-assign io_master_arsize = 'd0;//AXI4_MASTER_ARSIZE;
+assign io_master_arlen = AXI4_MASTER_ARLEN;//AXI4_MASTER_ARLEN;
+assign io_master_arsize = 'b10;//AXI4_MASTER_ARSIZE;
 assign io_master_arburst = 2'd01;//AXI4_MASTER_ARBURST;
 
 assign AXI4_MASTER_AWREADY = io_master_awready;
@@ -218,6 +218,8 @@ ifu my_ifu(
 
 wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr;
 wire ICACHE_AXI4_arvalid,ICACHE_AXI4_arready,ICACHE_AXI4_rvalid,ICACHE_AXI4_rready;
+wire [7:0] ICACHE_AXI4_arlen;
+wire [7:0] AXI4_MASTER_ARLEN;
 icache  my_icache(
     .clock                   (clock),
     .reset                   (reset),
@@ -238,7 +240,8 @@ icache  my_icache(
     .ICACHE_miss_count       (ICACHE_miss_count),
     .total_access            (total_access),
     .access_time             (access_time),
-    .miss_penalty            (miss_penalty)
+    .miss_penalty            (miss_penalty),
+    .ICACHE_AXI4_arlen       (ICACHE_AXI4_arlen)
 );
 
 wire AXI4_SRAM_ARVALID,AXI4_SRAM_ARREADY,AXI4_SRAM_RVALID,AXI4_SRAM_RREADY;
@@ -309,7 +312,10 @@ axi_arbiter my_axi_arbiter(
     
     //.sram_bresp              (),
     .master_bvalid             (AXI4_MASTER_BVALID),
-    .master_bready             (AXI4_MASTER_BREADY)
+    .master_bready             (AXI4_MASTER_BREADY),
+    .ICACHE_AXI4_arlen          (ICACHE_AXI4_arlen),
+    .master_arlen               (AXI4_MASTER_ARLEN),
+    .master_rlast               (io_master_rlast)
 );
 
 

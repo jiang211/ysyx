@@ -124,11 +124,11 @@ reg [2:0] state;
                        ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b11) ? (LSU_RDATA >> 32'd24) : (LSU_RDATA >> 32'd0);
 
     assign lsu_rdata_ = ((LSU_AXI4_ARADDR >= 32'h30000000) && (LSU_AXI4_ARADDR < 32'h40000000)) ? LSU_RDATA : lsu_rdata;
-    assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata_[7]}},lsu_rdata_[7:0]}) |
-                   ( {32{LSU_WBU_lh}} & {{16{lsu_rdata_[15]}}, (lsu_rdata_[15:0])}) |
-                   ( {32{LSU_WBU_lw}} & lsu_rdata_) |
-                   ( {32{LSU_WBU_lbu}} & {24'b0,lsu_rdata_[7:0]}) |
-                   ( {32{LSU_WBU_lhu}} & {16'b0,lsu_rdata_[15:0]});
+    assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata[7]}},lsu_rdata[7:0]}) |
+                   ( {32{LSU_WBU_lh}} & {{16{lsu_rdata[15]}}, (lsu_rdata[15:0])}) |
+                   ( {32{LSU_WBU_lw}} & lsu_rdata) |
+                   ( {32{LSU_WBU_lbu}} & {24'b0,lsu_rdata[7:0]}) |
+                   ( {32{LSU_WBU_lhu}} & {16'b0,lsu_rdata[15:0]});
 
     assign  LSU_WLEN = ( {4{EXU_LSU_sb}} & 4'b1 )  |
                    ( {4{EXU_LSU_sh}} & 4'b11 )  |
@@ -253,6 +253,7 @@ always @(posedge clk) begin
                     LSU_AXI4_WSTRB <= lsu_wstrb;
                     LSU_AXI4_AWVALID <= 1'b1;
                     LSU_AXI4_WVALID <= 1'b1;
+                    LSU_AXI_wlast <= 1'b1; 
                     LSU_AXI4_wsize <= awsize;
                     state <= START;
                 end else if ((EXU_LSU_ren )) begin
@@ -266,7 +267,7 @@ always @(posedge clk) begin
                             lsu_during_count <= lsu_during_count + 1'b1;
                             lsu_store_count <= lsu_store_count + 1'b1;
                             lsu_count <= lsu_count + 1'b1;
-                            LSU_AXI_wlast <= 1'b0;
+                            LSU_AXI_wlast <= 1'b1;
                             state <= WRITE_DATA;
                             LSU_AXI4_AWVALID <= 1'b0;
                             LSU_AXI4_WVALID <= 1'b0;
@@ -275,7 +276,7 @@ always @(posedge clk) begin
                             state <= WRITE_WIRE_1;
                             LSU_AXI4_AWVALID <= 1'b0;
                 end else if(LSU_AXI4_WVALID && LSU_AXI4_WREADY ) begin
-                            LSU_AXI_wlast <= 1'b0;
+                            LSU_AXI_wlast <= 1'b1;
                             state <= WRITE_WIRE_2;
                             LSU_AXI4_WVALID <= 1'b0;
                 end else if(LSU_AXI4_ARVALID && LSU_AXI4_ARREADY) begin
@@ -294,7 +295,6 @@ always @(posedge clk) begin
                 
                 if (LSU_AXI4_RREADY && LSU_AXI4_RVALID) begin
                     lsu_count <= lsu_count + 1'b1;
-                    LSU_AXI_wlast <= 1'b1;
                     LSU_AXI4_RREADY <= 1'b0;
                     LSU_WBU_valid <= 1'b1;
                     LSU_RDATA <= LSU_AXI4_RDATA;
@@ -314,7 +314,7 @@ always @(posedge clk) begin
                 
                 if(LSU_AXI4_WVALID && LSU_AXI4_WREADY ) begin
                     lsu_count <= lsu_count + 1'b1;
-                    LSU_AXI_wlast <= 1'b0;
+                    LSU_AXI_wlast <= 1'b1;
                     state <= WRITE_WIRE_2;
                     LSU_AXI4_WVALID <= 1'b0;
                     state <= WRITE_DATA;

@@ -56,7 +56,11 @@ module axi_arbiter #(
     
     //input  [1:0]            sram_bresp,
     input                   master_bvalid,
-    output                  master_bready
+    output                  master_bready,
+
+    input   [7:0]           ICACHE_AXI4_arlen,
+    output  [7:0]           master_arlen,
+    input                   master_rlast
 );
 
 // 仲裁状态定义
@@ -121,7 +125,7 @@ always @(posedge clk ) begin
             end
             
             IFU_READ_WAIT: begin
-                if (master_rvalid && master_rready) begin
+                if (master_rvalid && master_rready && master_rlast) begin
                     state <= IDLE;
                 end
             end
@@ -141,14 +145,24 @@ always @(posedge clk ) begin
             
             // LSU写操作
             LSU_WRITE_START: begin
-                if (master_awready) begin
+                if (master_awready && master_wready) begin
+                    state <= LSU_WRITE_RESP;
+                end
+                else if (master_awready) begin
                     state <= LSU_WRITE_DATA;
+                end
+                else if (master_bvalid && master_bready) begin
+                    state <= IDLE;
                 end
             end
             
             LSU_WRITE_DATA: begin
+                
                 if (master_wready) begin
                     state <= LSU_WRITE_RESP;
+                end
+                else if (master_bvalid && master_bready) begin
+                    state <= IDLE;
                 end
             end
             
@@ -166,7 +180,7 @@ end
 // 读地址通道仲裁
 assign master_araddr = saved_araddr;/*(state == IFU_READ_START || state == IFU_READ_WAIT) ? saved_araddr :
                      (state == LSU_READ_START || state == LSU_READ_WAIT) ? saved_araddr : '0;*/
-
+assign master_arlen = (state == IFU_READ_START) ? ICACHE_AXI4_arlen : 8'b0;
 assign master_arvalid = (state == IFU_READ_START || state == LSU_READ_START) ? 1'b1 : 1'b0;
 
 assign ifu_arready = (state == IFU_READ_START) ? master_arready : 1'b0;
@@ -176,26 +190,26 @@ assign lsu_arready = (state == LSU_READ_START) ? master_arready : 1'b0;
 assign ifu_rdata = master_rdata;
 assign lsu_rdata = master_rdata;
 
-assign ifu_rvalid = (state == IFU_READ_WAIT) ? master_rvalid : 1'b0;
+assign ifu_rvalid = (state == IFU_READ_WAIT || state == IFU_READ_WAIT) ? master_rvalid : 1'b0;
 assign lsu_rvalid = (state == LSU_READ_WAIT) ? master_rvalid : 1'b0;
 
 assign master_rready = (state == IFU_READ_WAIT) ? ifu_rready :
                      (state == LSU_READ_WAIT) ? lsu_rready : 1'b0;
 
 // 写地址通道仲裁 (仅LSU)
-assign master_awaddr = saved_awaddr;
-assign master_awvalid = (state == LSU_WRITE_START) ? 1'b1 : 1'b0;
-assign lsu_awready = (state == LSU_WRITE_START) ? master_awready : 1'b0;
+assign master_awaddr = lsu_awaddr;
+assign master_awvalid = lsu_awvalid;
+assign lsu_awready = master_awready;
 
 // 写数据通道仲裁 (仅LSU)
-assign master_wdata = saved_wdata;
-assign master_wstrb = saved_wstrb;
-assign master_wvalid = (state == LSU_WRITE_DATA) ? 1'b1 : 1'b0;
-assign lsu_wready = (state == LSU_WRITE_DATA) ? master_wready : 1'b0;
+assign master_wdata = lsu_wdata;
+assign master_wstrb = lsu_wstrb;
+assign master_wvalid = lsu_wvalid;
+assign lsu_wready =  master_wready ;
 
 // 写响应通道仲裁 (仅LSU)
 //assign lsu_bresp = sram_bresp;
-assign lsu_bvalid = (state == LSU_WRITE_RESP) ? master_bvalid : 1'b0;
-assign master_bready = (state == LSU_WRITE_RESP) ? lsu_bready : 1'b0;
+assign lsu_bvalid =master_bvalid ;
+assign master_bready = lsu_bready ;
 
 endmodule
