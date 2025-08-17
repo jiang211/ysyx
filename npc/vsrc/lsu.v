@@ -121,7 +121,10 @@ reg [2:0] state;
                    ( {32{EXU_LSU_sh}} & {16'b0,rs2_data[15:0]}) |
                    ( {32{EXU_LSU_sw}} & rs2_data);
 
-    assign lsu_rdata = (LSU_RDATA >> offset);
+    assign lsu_rdata = ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b00) ? (LSU_RDATA >> 32'd0) :
+                       ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b01) ? (LSU_RDATA >> 32'd8) :
+                       ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b10) ? (LSU_RDATA >> 32'd16) :
+                       ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b11) ? (LSU_RDATA >> 32'd24) : (LSU_RDATA >> 32'd0);
 
     assign lsu_rdata_ = ((LSU_AXI4_ARADDR >= 32'h30000000) && (LSU_AXI4_ARADDR < 32'h40000000)) ? LSU_RDATA : lsu_rdata;
     assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata[7]}},lsu_rdata[7:0]}) |
@@ -268,7 +271,7 @@ always @(posedge clk) begin
                     LSU_AXI4_wsize <= awsize;
                     state <= START;
                 end else if ((EXU_LSU_ren )) begin
-                    LSU_AXI4_ARADDR <= EXU_LSU_result;
+                    LSU_AXI4_ARADDR <= {EXU_LSU_result[31:2],2'b00};
                     LSU_AXI4_ARSIZE <= lsu_arsize;
                     LSU_AXI4_ARVALID <= 1'b1;
                     state <= START;
