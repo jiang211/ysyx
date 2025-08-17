@@ -33,14 +33,15 @@ reg [TAG_BITS-1:0] tags [0:NUM_BLOCKS-1];  // 标签存储
 reg [BLOCK_SIZE * 8-1:0] data [0:NUM_BLOCKS-1];           // 数据存储
 reg valid [0:NUM_BLOCKS-1];                 // 有效位
 wire is_sdram = (IFU_AXI4_araddr >= 32'ha0000000);
-typedef enum logic [1:0] {
+typedef enum logic [2:0] {
     IDLE,        // 空闲状态
     CHECK_CACHE, // 检查缓存
     AXI_READ,    // 从内存读取
+    UPDATED_CACHE, // 更新缓存
     SEND_DATA // 更新缓存
 } state_t;
 
-reg [1:0] state;
+reg [2:0] state;
 reg [31:0] saved_addr;  // 保存当前请求地址
 reg [INDEX_BITS-1:0] saved_index;  // 保存当前索引
 reg [TAG_BITS-1:0] saved_tag;
@@ -68,6 +69,7 @@ always @(posedge clock) begin
         access_time <= 0;
         miss_penalty <= 0;
         ICACHE_AXI4_araddr <= 0;
+        burst_buffer <= 128'h0;
         for (i = 0; i < NUM_BLOCKS; i = i + 1) begin
             valid[i] <= 0;  // 复位时所有块无效
         end
@@ -76,6 +78,7 @@ always @(posedge clock) begin
             IDLE: begin
                 IFU_AXI4_arready <= 1'b1;
                 IFU_AXI4_rvalid <= 1'b0;
+                burst_buffer <= 128'h0;
                 if (IFU_AXI4_arvalid && IFU_AXI4_arready) begin
                     access_time <= access_time + 1'b1;
                     total_access <= total_access + 1'b1;
@@ -158,7 +161,7 @@ always @(posedge clock) begin
                         endcase
                         
                         IFU_AXI4_rvalid <= 1'b1;
-                        state <= SEND_DATA;
+                        state <= UPDATED_CACHE;
                         ICACHE_miss_count <= ICACHE_miss_count + 1;
                     end
                     end else begin
@@ -175,13 +178,12 @@ always @(posedge clock) begin
                             // 完成4个数据的接收
                         ICACHE_AXI4_rready <= 1'b0;
                             // 更新缓存
-                        
                             
                         // 选择请求的数据
                         
                         
                         IFU_AXI4_rvalid <= 1'b1;
-                        state <= SEND_DATA;
+                        state <= UPDATED_CACHE;
                         ICACHE_miss_count <= ICACHE_miss_count + 1;
                    
                     end
@@ -191,13 +193,17 @@ always @(posedge clock) begin
                 end
             end
                 
-            
+            UPDATED_CACHE : begin
+                tags[saved_index] <= saved_tag;
+                data[saved_index] <= burst_buffer;
+                ICACHE_miss_count <= ICACHE_miss_count + 1;
+                valid[saved_index] <= 1'b1;
+                state <= SEND_DATA;
+
+            end
             SEND_DATA: begin
                 access_time <= access_time + 1'b1;
                 miss_penalty <= miss_penalty + 1'b1;
-                tags[saved_index] <= saved_tag;
-                data[saved_index] <= burst_buffer;
-                valid[saved_index] <= 1'b1;
                 if (IFU_AXI4_rvalid && IFU_AXI4_rready) begin
                     // IFU接收数据，完成本次请求
                     IFU_AXI4_rvalid <= 1'b0;
