@@ -314,7 +314,8 @@ axi_arbiter my_axi_arbiter(
     .master_bvalid             (AXI4_MASTER_BVALID),
     .master_bready             (AXI4_MASTER_BREADY),
     .ICACHE_AXI4_arlen          (ICACHE_AXI4_arlen),
-    .master_arlen               (AXI4_MASTER_ARLEN)
+    .master_arlen               (AXI4_MASTER_ARLEN),
+    .master_rlast               (io_master_rlast)
 );
 
 

@@ -59,7 +59,8 @@ module axi_arbiter #(
     output                  master_bready,
 
     input   [7:0]           ICACHE_AXI4_arlen,
-    output  [7:0]           master_arlen
+    output  [7:0]           master_arlen,
+    input                   master_rlast
 );
 
 // 仲裁状态定义
@@ -124,7 +125,7 @@ always @(posedge clk ) begin
             end
             
             IFU_READ_WAIT: begin
-                if (master_rvalid && master_rready) begin
+                if (master_rvalid && master_rready && master_rlast) begin
                     state <= IDLE;
                 end
             end
@@ -182,7 +183,7 @@ assign lsu_arready = (state == LSU_READ_START) ? master_arready : 1'b0;
 assign ifu_rdata = master_rdata;
 assign lsu_rdata = master_rdata;
 
-assign ifu_rvalid = (state == IFU_READ_WAIT) ? master_rvalid : 1'b0;
+assign ifu_rvalid = (state == IFU_READ_WAIT || state == IFU_READ_WAIT) ? master_rvalid : 1'b0;
 assign lsu_rvalid = (state == LSU_READ_WAIT) ? master_rvalid : 1'b0;
 
 assign master_rready = (state == IFU_READ_WAIT) ? ifu_rready :
