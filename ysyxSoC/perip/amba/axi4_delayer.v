@@ -70,12 +70,12 @@ module axi4_delayer(
   assign out_arlen = in_arlen;
   assign out_arsize = in_arsize;
   assign out_arburst = in_arburst;
-  assign out_rready = in_rready;
-  assign in_rvalid = out_rvalid;
-  assign in_rid = out_rid;
-  assign in_rdata = out_rdata;
-  assign in_rresp = out_rresp;
-  assign in_rlast = out_rlast;
+  // assign out_rready = in_rready;
+  // assign in_rvalid = out_rvalid;
+  // assign in_rid = out_rid;
+  // assign in_rdata = out_rdata;
+  // assign in_rresp = out_rresp;
+  // assign in_rlast = out_rlast;
   assign in_awready = out_awready;
   assign out_awvalid = in_awvalid;
   assign out_awid = in_awid;
@@ -88,9 +88,122 @@ module axi4_delayer(
   assign out_wdata = in_wdata;
   assign out_wstrb = in_wstrb;
   assign out_wlast = in_wlast;
-  assign out_bready = in_bready;
-  assign in_bvalid = out_bvalid;
+  // assign out_bready = in_bready;
+  // assign in_bvalid = out_bvalid;
   assign in_bid = out_bid;
   assign in_bresp = out_bresp;
 
+
+typedef enum logic [2:0] {
+    WRITE_IDLE,
+    WRITE_WAIT,
+    WRITE_DELAY
+} state_w;
+
+state_w state0;
+
+typedef enum logic [2:0] {
+    READ_IDLE,
+    READ_WAIT,
+    READ_DELAY
+} state_r;
+
+state_r state1;
+
+ /////////////////////////////  fmax = 784   r = 7.8 s = 32  (7.8-1) * 32 = 217 ////////////
+
+reg [31:0] write_count;
+reg [31:0] read_count;
+reg [31:0] rdata_cahce;
+reg [1:0]   rresp_cahce;
+reg [3:0]   rid_cahce;
+reg         rlast_cahce;
+reg         out_rvalid_reg;
+reg         out_bvalid_reg;
+  always @(posedge clock) begin
+    if (reset) begin
+        state0 <= WRITE_IDLE;
+        write_count <= 0;
+    end 
+    else begin
+        case (state0)
+            WRITE_IDLE: begin
+              if(in_awvalid | in_wvalid) begin
+                write_count <= write_count + 32'd217;
+                state0 <= WRITE_WAIT;
+              end
+            end
+            WRITE_WAIT: begin
+              if(out_bvalid) begin
+                out_bvalid_reg <= out_bvalid;
+                state0 <= WRITE_DELAY;
+                write_count <= (write_count + 32'd217) >> 5;
+              end
+              else begin
+                write_count <= write_count + 32'd217;
+              end
+            end
+            WRITE_DELAY: begin
+              if(write_count == 1) begin
+                state0 <= WRITE_IDLE;
+                write_count <= 0;
+              end
+              else begin
+                write_count <= write_count - 1'b1;
+              end
+            end
+          default: state0 <= WRITE_IDLE;
+        endcase
+    end
+  end
+
+  always @(posedge clock) begin
+    if (reset) begin
+        state1 <= READ_IDLE;
+        read_count <= 0;
+    end 
+    else begin
+        case (state1)
+            READ_IDLE: begin
+              if(in_arvalid | out_rvalid) begin
+                read_count <= read_count + 32'd217;
+                state1 <= READ_WAIT;
+              end
+            end
+            READ_WAIT: begin
+              if(out_rvalid) begin
+                out_rvalid_reg <= out_rvalid;
+                rdata_cahce <= out_rdata;
+                rresp_cahce <= out_rresp;
+                rid_cahce <= out_rid;
+                rlast_cahce <= out_rlast;
+                state1 <= READ_DELAY;
+                read_count <= (read_count + 32'd217) >> 5;
+              end
+              else begin
+                read_count <= read_count + 32'd217;
+              end
+            end
+            READ_DELAY: begin
+              if(read_count == 1) begin
+                state1 <= READ_IDLE;
+                read_count <= 0;
+              end
+              else begin
+                read_count <= read_count - 1'b1;
+              end
+            end
+          default: state1 <= READ_IDLE;
+        endcase
+    end
+  end
+
+  assign out_rready = in_rready & read_count == 1'b1;
+  assign in_rvalid = out_rvalid_reg & read_count == 1'b1;
+  assign in_rid = rid_cahce;
+  assign in_rdata = rdata_cahce;
+  assign in_rresp = rresp_cahce;
+  assign in_rlast = rlast_cahce;
+  assign out_bready = in_bready & write_count == 1'b1;
+  assign in_bvalid = out_bvalid_reg & write_count == 1'b1;
 endmodule
