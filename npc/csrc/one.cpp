@@ -48,7 +48,7 @@ void init_verilator(int argc, char** argv, char** env) {
   #ifdef WAVE_ON
     Verilated::traceEverOn(true);
     tfp = new VerilatedFstC;
-    top->trace(tfp, 0);
+    top->trace(tfp, 99);
     tfp->open("wave.fst");
   #endif
    
