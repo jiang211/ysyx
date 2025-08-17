@@ -34,6 +34,7 @@ module lsu(
     
     input           EXU_LSU_reg,
     input           EXU_LSU_ebreak,
+    input      [31:0]  EXU_LSU_IMM,
     input      [31:0] EXU_LSU_result,
     output      [31:0] LSU_WBU_DATA,
     output      [31:0] LSU_WBU_PC,
@@ -120,10 +121,7 @@ reg [2:0] state;
                    ( {32{EXU_LSU_sh}} & {16'b0,rs2_data[15:0]}) |
                    ( {32{EXU_LSU_sw}} & rs2_data);
 
-    assign lsu_rdata = ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b00) ? (LSU_RDATA >> 32'd0) :
-                       ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b01) ? (LSU_RDATA >> 32'd8) :
-                       ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b10) ? (LSU_RDATA >> 32'd16) :
-                       ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b11) ? (LSU_RDATA >> 32'd24) : (LSU_RDATA >> 32'd0);
+    assign lsu_rdata = (LSU_RDATA >> offset);
 
     assign lsu_rdata_ = ((LSU_AXI4_ARADDR >= 32'h30000000) && (LSU_AXI4_ARADDR < 32'h40000000)) ? LSU_RDATA : lsu_rdata;
     assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata[7]}},lsu_rdata[7:0]}) |
@@ -178,6 +176,7 @@ reg C_type;
 reg [2:0] csr_rst;
 reg [31:0] csr_in,pc,dnpc;
 reg lw,lh,lb,lbu,lhu,ren,wen;
+reg [1:0] offset;
 always @(posedge clk) begin
     if (rst_n) begin
         state <= IDLE;
@@ -212,6 +211,7 @@ always @(posedge clk) begin
         pc <=  32'd0;
         dnpc <=  32'd0;
         skip <=  1'b0;
+        offset <= 2'b0;
         lsu_count <=  63'd0;
         lsu_during_count <= 64'd0;
         lsu_load_count <= 64'd0;
@@ -253,6 +253,7 @@ always @(posedge clk) begin
                 wen <=  EXU_LSU_wen;
                 pc <=  EXU_LSU_PC;
                 dnpc <=  EXU_LSU_dnpc;
+                offset <= EXU_LSU_IMM[1:0];
                 skip <=  EXU_skip;
                 if((!(EXU_LSU_ren || EXU_LSU_wen))) begin
                     LSU_WBU_valid <= 1'b1;

@@ -72,7 +72,8 @@ module exu(
     output reg EXU_IFU_JUMP,
     output reg [31:0] EXU_LSU_RS2DATA,
     output reg [31:0] EXU_LSU_PC,
-    output reg [31:0] EXU_LSU_dnpc
+    output reg [31:0] EXU_LSU_dnpc,
+    output reg [31:0] EXU_LSU_IMM
     
 );
 wire [3:0]aluop;
@@ -157,6 +158,7 @@ begin
     EXU_LSU_RS2DATA           <=        32'b0;
     EXU_LSU_PC               <=        32'b0;
     EXU_LSU_dnpc               <=        32'b0;
+    EXU_LSU_IMM              <=          32'b0;
     end
     else if(LSU_EXU_ready & EXU_LSU_valid)begin
     EXU_LSU_alu_out           <=        alu_out;
@@ -186,6 +188,7 @@ begin
     EXU_LSU_RS2DATA           <=        rs2_data;
     EXU_LSU_PC               <=        pc_data;
     EXU_LSU_dnpc               <=        IDU_EXU_dnpc;
+    EXU_LSU_IMM                <=      imm_data;
     end
     else begin
     EXU_LSU_alu_out           <=        32'b0;
@@ -214,6 +217,7 @@ begin
     EXU_LSU_RS2DATA           <=        32'b0;
     EXU_LSU_PC               <=        32'b0;
     EXU_LSU_dnpc               <=        32'b0;
+    EXU_LSU_IMM                 <=        32'b0;
     end
 end
 endmodule

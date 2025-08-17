@@ -538,7 +538,7 @@ wire [2:0] EXU_LSU_csr_rst;
 wire [31:0] EXU_LSU_csr_data,EXU_LSU_csr_in;
 wire EXU_IFU_JUMP;
 wire [31:0] EXU_IFU_pc;
-wire [31:0] EXU_LSU_RS2DATA;
+wire [31:0] EXU_LSU_RS2DATA,EXU_LSU_IMM;
 exu my_exu(
     .IDU_EXU_rd(rd),
     .clk(clock),
@@ -612,7 +612,8 @@ exu my_exu(
     .EXU_IFU_JUMP       (EXU_IFU_JUMP),
     .EXU_LSU_RS2DATA    (EXU_LSU_RS2DATA),
     .EXU_LSU_PC         (EXU_LSU_PC),
-    .EXU_LSU_dnpc       (EXU_LSU_dnpc)
+    .EXU_LSU_dnpc       (EXU_LSU_dnpc),
+    .EXU_LSU_IMM         (EXU_LSU_IMM)
 );
 wire [31:0] EXU_LSU_PC,LSU_WBU_PC,PC_DATA,DNPC_DATA,EXU_LSU_dnpc,LSU_WBU_dnpc,IDU_EXU_dnpc;
 wire [31:0] LSU_WBU_DATA;
@@ -660,6 +661,7 @@ lsu my_lsu(
     .EXU_LSU_csr_rst(EXU_LSU_csr_rst),
     .EXU_LSU_ren    (EXU_LSU_ren),
     .EXU_LSU_wen    (EXU_LSU_wen),
+    .EXU_LSU_IMM    (EXU_LSU_IMM),
     //.IDU_EXU_ren(mem_read),
     //.IDU_EXU_wen(mem_write),
     .EXU_LSU_reg    (EXU_LSU_reg),
