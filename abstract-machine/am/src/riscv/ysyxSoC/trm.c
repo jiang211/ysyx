@@ -35,7 +35,7 @@ void init_uart(uint32_t rate){
 }
 
 void putch(char ch) {
-   // while(((inb(UART_BASE + UART_LS) & (0x2 << 5)) == 0x0) || ((inb(UART_BASE + UART_LS) & (0x1 << 5)) == 0x0));
+    while(((inb(UART_BASE + UART_LS) & (0x2 << 5)) == 0x0) || ((inb(UART_BASE + UART_LS) & (0x1 << 5)) == 0x0));
    // while(((*(volatile char *)(UART_BASE + UART_LS))&0x20) == 0);
   *(volatile uint8_t *)(UART_BASE + UART_TX) = ch;/*
   uint8_t TX_ISEMPTY = *(volatile char *)(UART_BASE + UART_LS);
