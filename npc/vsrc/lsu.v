@@ -141,13 +141,13 @@ reg [2:0] state;
                    ( {3{EXU_LSU_sh}} & 3'b01 )  |
                    ( {3{EXU_LSU_sw}} & 3'b10 ) ;
 
-    assign arsize = ( {3{LSU_WBU_lb}} & 3'b0) |
+    assign lsu_arsize = ( {3{LSU_WBU_lb}} & 3'b0) |
                    ( {3{LSU_WBU_lh}} & 3'b01) |
                    ( {3{LSU_WBU_lw}} & 3'b10) |
                    ( {3{LSU_WBU_lbu}} & 3'b0) |
                    ( {3{LSU_WBU_lhu}} & 3'b01);
-    wire is_sdram = ((LSU_AXI4_ARADDR >= 32'ha0000000) && (LSU_AXI4_ARADDR < 32'hc0000000));
-    assign lsu_arsize = (is_sdram) ? arsize : 3'b00;
+    // wire is_sdram = ((LSU_AXI4_ARADDR >= 32'ha0000000) && (LSU_AXI4_ARADDR < 32'hc0000000));
+    // assign lsu_arsize = (is_sdram) ? arsize : 3'b00;
     // always @(posedge clk) begin
     //     if(EXU_LSU_wen) begin
     //     $write("lsu_wstrb = %04b,EXU_LSU_result = %08x\n",lsu_wstrb,EXU_LSU_result);
