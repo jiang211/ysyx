@@ -41,7 +41,7 @@ module ifu(
     output reg [63:0] ifu_during_count
 );
 reg [31:0] pc;
-assign IFU_IDU_INSTR = (fence_i) ? 32'b0 : instr;
+assign IFU_IDU_INSTR = instr;//(fence_i) ? 32'b0 : instr;
 //wire [31:0] d_pc;
 /*
 wire I_type_2 = (instr[6:0] == 7'b1100111);
