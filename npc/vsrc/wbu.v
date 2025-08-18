@@ -96,7 +96,7 @@ always @(posedge clk) begin
         WBU_TOP_skip <= 1'b0;
     end
 end
-assign LSU_WBU_ready = ~LSU_WBU_valid;
+assign LSU_WBU_ready = 1'b1;
 
 
 endmodule
