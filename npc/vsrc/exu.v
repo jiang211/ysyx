@@ -102,7 +102,7 @@ alu my_alu(
 );
 always@(posedge clk) begin EXU_IFU_JUMP <= (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jal || IDU_EXU_jalr || zero); end
 
-assign EXU_IDU_ready = ~EXU_LSU_valid;  
+assign EXU_IDU_ready = (~EXU_LSU_valid | LSU_EXU_ready);  
 
 always @(posedge clk) begin 
     if(rstn) begin

@@ -2,8 +2,6 @@ module ifu(
     input clk,
     input rstn,
     input WBU_IFU_JUMP,
-    input WBU_IFU_valid,
-    output  WBU_IFU_ready, //IFU是否准备好接收WBU的指令
      //IDU是否准备好接收IFU的指令
     output reg IFU_IDU_valid, //IFU传递给IDU的指令是否有效
     input  IDU_IFU_ready, //IDU是否准备好接收IFU的指令
@@ -86,9 +84,21 @@ always @(posedge clk) begin
     end
 end
 always @(posedge clk) begin
+    if(rstn)begin
+        IFU_IDU_valid <= 1'b0;
+    end
+    else begin
+        if(IDU_IFU_ready && IFU_AXI4_rready && IFU_AXI4_rvalid)begin
+            IFU_IDU_valid <= 1'b1;
+        end
+        else if(IDU_IFU_ready && IFU_IDU_valid) begin
+            IFU_IDU_valid <= 1'b0;
+        end
+    end
+end
+always @(posedge clk) begin
     if (rstn) begin
         state <= IDLE;
-        IFU_IDU_valid <= 1'b0;
         IFU_AXI4_arvalid <= 1'b0;
         IFU_AXI4_rready <= 1'b0;
         instr <= 32'h0;
@@ -98,17 +108,12 @@ always @(posedge clk) begin
     else begin
         // State Machine
         
-        if(IFU_IDU_valid && IDU_IFU_ready)
-        begin
-            IFU_IDU_valid <= 1'b0;
-        end
+        
         case (state)
             IDLE: begin
                 IFU_AXI4_rready <= 1'b0;
                 IFU_AXI4_araddr <= inst_addr;
-                if((WBU_IFU_valid && WBU_IFU_ready) | start) begin
-                    IFU_AXI4_arvalid <= 1'b1;
-                end
+                IFU_AXI4_arvalid <= 1'b1;
                 if(IFU_AXI4_arvalid && IFU_AXI4_arready) begin
                     ifu_during_count <= ifu_during_count + 1'b1;
                     IFU_AXI4_rready <= 1'b1;
@@ -127,21 +132,18 @@ always @(posedge clk) begin
                 IFU_AXI4_rready <= 1'b1;
                 if (IFU_AXI4_rready && IFU_AXI4_rvalid) begin
                     ifu_count <= ifu_count + 1'b1;
-                    IFU_IDU_valid <= 1'b1;
                     instr <= IFU_AXI4_rdata;
                     IFU_AXI4_rready <= 1'b0;
                     state <= IDLE;
                 end
                 else begin
                     ifu_during_count <= ifu_during_count + 1'b1;
-                    IFU_IDU_valid <= 1'b0;
                     instr <= instr;
                     state <= READ;
                 end
             end
         default: begin
             state <= IDLE;
-            IFU_IDU_valid <= 1'b0;
             IFU_AXI4_arvalid <= 1'b0;
             IFU_AXI4_rready <= 1'b0;
             instr <= 32'h0;
@@ -165,7 +167,6 @@ begin
     pc <= pc + 32'h4;
     end
 end
-assign WBU_IFU_ready = ~IFU_IDU_valid;
 
 /*
 sram_inst inst_sram(

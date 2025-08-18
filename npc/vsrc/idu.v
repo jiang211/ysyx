@@ -193,10 +193,10 @@ always@(posedge clk) begin
     else instr <= instr;
 end
 
-//always @(*) begin IDU_IFU_ready = (EXU_IDU_ready | ~IDU_EXU_valid);  end  // 设置IDU到IFU的就绪信号
 
-//always @(posedge clk) begin IDU_EXU_valid <= (IFU_IDU_valid);  end
-assign IDU_IFU_ready =  ~IDU_EXU_valid;  // 设置IDU到IFU的就绪信号
+assign IDU_IFU_ready = (EXU_IDU_ready | ~IDU_EXU_valid);    // 设置IDU到IFU的就绪信号
+
+
 always @(posedge clk) begin
     if(rst_n) begin
         IDU_EXU_valid <= 1'b0;
