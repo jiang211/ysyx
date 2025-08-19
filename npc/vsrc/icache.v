@@ -151,7 +151,7 @@ always @(posedge clock) begin
                                 state <= AXI_READ;
                             end
                             else begin
-                                state <= SDRAM_CHECK_CACHE;
+                                state <= IDLE;
                             end
                         end
                     end else begin
@@ -179,7 +179,7 @@ always @(posedge clock) begin
                                 state <= AXI_READ;
                             end
                             else begin
-                                state <= FLASH_CHECK_CACHE;
+                                state <= IDLE;
                             end
                         end
                     end
