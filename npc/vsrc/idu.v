@@ -50,11 +50,27 @@ module idu(
     //output reg IDU_EXU_STALL         ,
     output reg [31:0] IDU_EXU_PC  ,
     output reg [31:0] IDU_EXU_dnpc,
+
+
     output reg [63:0] calcu_type_count,
     output reg [63:0] Jump_type_count,
     output reg [63:0] LOAD_type_count,
     output reg [63:0] STORE_type_count,
-    output reg [63:0] C_type_count
+    output reg [63:0] C_type_count,
+
+    input         exu_reg_write_en,
+    input  [4:0]  exu_rd_addr,
+
+    // 来自级
+    input         lsu_reg_write_en,
+    input  [4:0]  lsu_rd_addr,
+
+    // 来自
+    input         wbu_reg_write_en,
+    input  [4:0]  wbu_rd_addr,
+
+    output        stall
+
 );
 // reg [63:0] calcu_type_count;
 // reg [63:0] Jump_type_count;
@@ -169,6 +185,9 @@ wire mret   = ( instr == 32'b00110000001000000000000001110011 ) ;
 wire reg_write = !(B_type || S_type);
 wire alu_src1 = R_type | I_type_1 | I_type_3 | I_type_4 | S_type;
 wire alu_src2 = R_type;
+
+wire idu_rs1_valid = R_type | I_type | S_type | B_type;
+wire idu_rs2_valid = R_type | S_type | B_type;
 //wire mem_to_reg = (mem_read|mem_write);
 wire branch = B_type;
 assign alu_op = (R_type) ? 2'b10 :
@@ -182,7 +201,28 @@ exuop_ctrl my_exuop_crtl(
     .alu_op         (alu_op),
     .aluOp          (aluop)
 );
+raw raw_detect(
+    // 来自译码的源寄存器
+    .idu_rs1_addr               (rs1),
+    .idu_rs2_addr               (rs2),
+    .idu_rs1_valid              (idu_rs1_valid),   // 为 1 表示本指令真正读 rs1
+    .idu_rs2_valid              (idu_rs2_valid),   // 为 1 表示本指令真正读 rs2
 
+    // 来自
+    .exu_reg_write_en           (exu_reg_write_en),
+    .exu_rd_addr                (exu_rd_addr),
+
+    // 来自级
+    .lsu_reg_write_en           (lsu_reg_write_en),
+    .lsu_rd_addr                (lsu_rd_addr),
+
+    // 来自
+    .wbu_reg_write_en           (wbu_reg_write_en),
+    .wbu_rd_addr                (wbu_rd_addr),
+
+    // 输出有一个冲突就阻塞
+    .stall                      (stall)
+);
 ////////////0x0000100F//////////////0000000 00000 00000 001 00000 0001111/////////////
 assign fence_i = (instr == 32'h0000100F);
 //wire pcsrc = (branch /*& zero*/) | jump | ecall | mret;
@@ -194,13 +234,13 @@ always@(posedge clk) begin
 end
 
 
-assign IDU_IFU_ready = (EXU_IDU_ready | ~IDU_EXU_valid);    // 设置IDU到IFU的就绪信号
+assign IDU_IFU_ready = (EXU_IDU_ready | ~IDU_EXU_valid) && (~stall);    // 设置IDU到IFU的就绪信号
 
 
 always @(posedge clk) begin
     if(rst_n) begin
         IDU_EXU_valid <= 1'b0;
-    end else if(IFU_IDU_valid && IDU_IFU_ready) begin
+    end else if(IFU_IDU_valid && IDU_IFU_ready && (~stall)) begin
         IDU_EXU_valid <= 1'b1;
     end else if(EXU_IDU_ready && IDU_EXU_valid) begin
         IDU_EXU_valid <= 1'b0;

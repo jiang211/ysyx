@@ -85,9 +85,28 @@ module lsu(
     output reg [63:0]           lsu_during_count,
     output reg [63:0]           lsu_load_count,
     output reg [63:0]           lsu_store_count,
-    output reg [2:0]            LSU_AXI4_ARSIZE
+    output reg [2:0]            LSU_AXI4_ARSIZE,
+
+
+    output reg [4:0]            LSU_IDU_REG_ADDR,
+    output reg                  LSU_IDU_REG_WEN
       //input  [1:0]                LSU_AXI4_BRESP
 );
+
+always @(posedge clk) begin
+    if(rst_n) begin
+        LSU_IDU_REG_ADDR <= 5'b0;
+        LSU_IDU_REG_WEN <= 1'b0;
+    end
+    else if(EXU_LSU_valid && LSU_EXU_ready) begin
+        LSU_IDU_REG_ADDR <= EXU_LSU_rd;
+        LSU_IDU_REG_WEN <= EXU_LSU_wen;
+    end 
+    else if(LSU_WBU_valid && LSU_WBU_ready) begin
+        LSU_IDU_REG_ADDR <= 5'b0;
+        LSU_IDU_REG_WEN <= 1'b0;
+    end
+end
 
 parameter  IDLE = 0,
             CACHE_DATA = 1,

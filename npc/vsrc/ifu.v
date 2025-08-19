@@ -27,7 +27,7 @@ module ifu(
     input  EXU_LSU_valid,
 
     input  fence_i,
-
+    input  stall,
     // AXI-Lite4 Interface
     output reg [31:0] IFU_AXI4_araddr,
     output reg        IFU_AXI4_arvalid,
@@ -88,7 +88,7 @@ always @(posedge clk) begin
         IFU_IDU_valid <= 1'b0;
     end
     else begin
-        if(IDU_IFU_ready && IFU_AXI4_rready && IFU_AXI4_rvalid)begin
+        if(IDU_IFU_ready && IFU_AXI4_rready && IFU_AXI4_rvalid && (~stall))begin
             IFU_IDU_valid <= 1'b1;
         end
         else if(IDU_IFU_ready && IFU_IDU_valid) begin
