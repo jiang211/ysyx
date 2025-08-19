@@ -6,7 +6,7 @@ module ifu(
     output reg IFU_IDU_valid, //IFU传递给IDU的指令是否有效
     input  IDU_IFU_ready, //IDU是否准备好接收IFU的指令
     input [31:0]EXU_IFU_pc,
-    input  EXU_IFU_flush,
+    input       EXU_IFU_flush,
     input [1:0] resp,
     //input       EXU_IFU_STALL_done,
     //input pcsrc,
@@ -41,6 +41,24 @@ module ifu(
 );
 reg [31:0] pc;
 assign IFU_IDU_INSTR = instr;//(fence_i) ? 32'b0 : instr;
+//wire [31:0] d_pc;
+/*
+wire I_type_2 = (instr[6:0] == 7'b1100111);
+wire B_type = (instr[6:0] == 7'b1100011);
+wire J_type_1 = (instr[6:0] == 7'b1101111) || I_type_2; 
+wire ecall  = ( instr == 32'b00000000000000000000000001110011)  ;
+wire mret   = ( instr == 32'b00110000001000000000000001110011 ) ;
+wire pcsrc = (B_type /*& zero*/// | J_type_1 | ecall | mret;
+//assign d_pc = (ecall)? csr_data : (mret) ? csr_data : (jal) ? pc + imm : (jalr) ? rs1_data + imm : (zero) ? alu_out : pc + 4;
+/*
+always @(pc) begin
+    case(EXU_IFU_flush)
+        1'b0: begin dnpc <= pc + 32'h4; end
+        1'b1: begin dnpc <= EXU_IFU_pc; end
+        default: dnpc <= pc + 32'h4;
+    endcase
+end
+*/
 
 localparam IDLE        = 2'b00;
 localparam READ  = 2'b01;
@@ -49,24 +67,31 @@ reg [1:0] state;
 //reg [63:0] ifu_count;
 
 wire [31:0] dnpc;
-//assign dnpc = (WBU_IFU_JUMP)? WBU_IFU_pc :pc + 4;
+assign dnpc = (EXU_IFU_flush)? EXU_IFU_pc :pc + 4;
 //assign inst_addr_o = pc ;
 wire [31:0] inst_addr;
-assign inst_addr   = pc_d;
-reg [31:0] pc_q, pc_d;
+assign inst_addr   = pc;
 
-always @(*) begin
-    if      (rstn)            pc_d = 32'h30000000;
-    else if (EXU_IFU_flush)   pc_d = EXU_IFU_pc;
-    else if (stall)            pc_d = pc_q;              // 冻结
-    else                       pc_d = pc_q + 32'd4;      // 顺序
-end
-
+reg update_valid;
 always @(posedge clk) begin
-    if (rstn)  pc_q <= 32'h30000000;
-    else       pc_q <= pc_d;
+    update_valid <= EXU_LSU_valid;
 end
-
+always@(posedge clk)
+begin 
+   if(rstn | (resp != 2'b00))begin
+    pc<=32'h30000000 ;
+    end
+    else if(stall) begin
+    pc <= pc;
+    end
+    else if(EXU_IFU_flush)begin 
+    pc <= EXU_IFU_pc;
+    end
+    else if(update_valid)begin
+    pc <= pc + 32'h4;
+    end
+    
+end
 
 
 always@(posedge clk)
@@ -76,8 +101,8 @@ begin
         IFU_dnpc <= 32'h80000000;
     end
     else begin
-        IFU_IDU_PC <= pc_d;
-        IFU_dnpc <= pc_d;
+        IFU_IDU_PC <= inst_addr;
+        IFU_dnpc <= dnpc;
     end
 end
 reg [31:0] instr;
