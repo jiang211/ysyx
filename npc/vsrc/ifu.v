@@ -117,7 +117,7 @@ always @(posedge clk) begin
                 if(IFU_AXI4_arvalid && IFU_AXI4_arready) begin
                     ifu_during_count <= ifu_during_count + 1'b1;
                     IFU_AXI4_rready <= 1'b1;
-                    IFU_AXI4_arvalid <= 1'b0;
+                    IFU_AXI4_arvalid <= 1'b1;
                     state <= READ;
                     
                 end
