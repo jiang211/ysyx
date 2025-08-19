@@ -63,13 +63,13 @@ module exu(
     output reg EXU_LSU_sh,
     output reg [31:0] EXU_LSU_csr_data,
     output reg [31:0] EXU_LSU_csr_in,
-    output reg [31:0] EXU_IFU_pc,
+    output     [31:0] EXU_IFU_pc,
     output reg EXU_LSU_ecall,
     output reg EXU_LSU_mret,
     output reg EXU_LSU_C_type,
     output reg [2:0] EXU_LSU_csr_rst,
    // output reg EXU_IFU_STALL_done,
-    output reg EXU_IFU_JUMP,
+    output     EXU_IFU_flush,
     output reg [31:0] EXU_LSU_RS2DATA,
     output reg [31:0] EXU_LSU_PC,
     output reg [31:0] EXU_LSU_dnpc,
@@ -118,7 +118,7 @@ alu my_alu(
     .alu_out        (alu_out    ),
     .zero           (zero       )
 );
-always@(posedge clk) begin EXU_IFU_JUMP <= (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jal || IDU_EXU_jalr || zero); end
+assign EXU_IFU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jal || IDU_EXU_jalr || zero);
 
 assign EXU_IDU_ready = (~EXU_LSU_valid | LSU_EXU_ready);  
 
@@ -141,7 +141,7 @@ wire [31:0] next_pc_seq = pc_data + 4;
 wire [31:0] next_pc_jal = pc_data + imm_data;
 wire [31:0] next_pc_jalr = rs1_data + imm_data;
 
-wire [31:0] pc_jump = (IDU_EXU_ecall || IDU_EXU_mret) ? csr_data : (IDU_EXU_jal) ? next_pc_jal :
+assign EXU_IFU_pc = (IDU_EXU_ecall || IDU_EXU_mret) ? csr_data : (IDU_EXU_jal) ? next_pc_jal :
                       (IDU_EXU_jalr) ? next_pc_jalr : (zero) ? next_pc_jal : pc_data + 4;
 
 //always @(posedge clk) begin EXU_IFU_STALL_done <= IDU_EXU_STALL; end
@@ -172,7 +172,7 @@ begin
     EXU_LSU_C_type               <=        1'b0;
     EXU_LSU_csr_rst               <=        3'b0;
     EXU_LSU_csr_in               <=        32'b0;
-    EXU_IFU_pc               <=        32'b0;
+    //EXU_IFU_pc               <=        32'b0;
     EXU_LSU_RS2DATA           <=        32'b0;
     EXU_LSU_PC               <=        32'b0;
     EXU_LSU_dnpc               <=        32'b0;
@@ -202,7 +202,7 @@ begin
     EXU_LSU_C_type               <=        IDU_EXU_C_type;
     EXU_LSU_csr_rst               <=        IDU_EXU_csr_rst;
     EXU_LSU_csr_in               <=        csr_in;
-    EXU_IFU_pc               <=        pc_jump;
+    //EXU_IFU_pc               <=        pc_jump;
     EXU_LSU_RS2DATA           <=        rs2_data;
     EXU_LSU_PC               <=        pc_data;
     EXU_LSU_dnpc               <=        IDU_EXU_dnpc;
@@ -231,7 +231,7 @@ begin
     EXU_LSU_C_type               <=        1'b0;
     EXU_LSU_csr_rst               <=        3'b0;
     EXU_LSU_csr_in               <=        32'b0;
-    EXU_IFU_pc               <=        32'b0;
+    //EXU_IFU_pc               <=        32'b0;
     EXU_LSU_RS2DATA           <=        32'b0;
     EXU_LSU_PC               <=        32'b0;
     EXU_LSU_dnpc               <=        32'b0;
