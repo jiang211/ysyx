@@ -70,7 +70,7 @@ begin
     else if(EXU_IFU_flush)begin 
     pc <= EXU_IFU_pc;
     end
-    else if(update_valid)begin
+    else if(IDU_IFU_ready && IFU_IDU_valid)begin
     pc <= pc + 32'h4;
     end
     
