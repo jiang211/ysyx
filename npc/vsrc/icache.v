@@ -61,16 +61,37 @@ reg [SDRAM_TAG_BITS-1:0] sdram_saved_tag;
 reg [31:0] flash_saved_addr;  // 保存当前请求地址
 reg [FLASH_INDEX_BITS-1:0] flash_saved_index;  // 保存当前索引
 reg [FLASH_TAG_BITS-1:0] flash_saved_tag;
-
+reg [31:0] IFU_AXI4_rdata_cache;
 reg [127:0] sdram_burst_buffer; 
 reg [31:0] flash_burst_buffer;
 wire [SDRAM_TAG_BITS-1:0] sdram_current_tag = IFU_AXI4_araddr[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
 wire [SDRAM_INDEX_BITS-1:0] sdram_current_index = IFU_AXI4_araddr[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
 wire [SDRAM_OFFSET_BITS-1:0] sdram_current_offset = IFU_AXI4_araddr[SDRAM_OFFSET_BITS-1:0];
+wire        sdram_hit = sdram_valid[sdram_current_index] && (sdram_tags[sdram_current_index] == sdram_current_tag);
 
 wire [FLASH_TAG_BITS-1:0] flash_current_tag = IFU_AXI4_araddr[31:FLASH_OFFSET_BITS+FLASH_INDEX_BITS];
 wire [FLASH_INDEX_BITS-1:0] flash_current_index = IFU_AXI4_araddr[FLASH_OFFSET_BITS+FLASH_INDEX_BITS-1:FLASH_OFFSET_BITS];
 wire [FLASH_OFFSET_BITS-1:0] flash_current_offset = IFU_AXI4_araddr[FLASH_OFFSET_BITS-1:0];
+wire        flash_hit = flash_valid[flash_current_index] && (flash_tags[flash_current_index] == flash_current_tag);
+
+wire        hit      = is_sdram ? sdram_hit : flash_hit;
+
+always@(*) begin
+    if(hit && is_sdram) begin
+        case (IFU_AXI4_araddr[3:2])
+            2'b00: IFU_AXI4_rdata = sdram_data[sdram_current_index][31:0];
+            2'b01: IFU_AXI4_rdata = sdram_data[sdram_current_index][63:32];
+            2'b10: IFU_AXI4_rdata = sdram_data[sdram_current_index][95:64];
+            2'b11: IFU_AXI4_rdata = sdram_data[sdram_current_index][127:96];
+        endcase
+    end
+    else if(hit && (~is_sdram)) begin
+        IFU_AXI4_rdata = flash_data[flash_current_index];
+    end
+    else begin
+        IFU_AXI4_rdata = IFU_AXI4_rdata_cache;
+    end
+end
 
 reg [1:0] burst_count;
 integer i;
@@ -122,15 +143,9 @@ always @(posedge clock) begin
                         sdram_saved_addr <= IFU_AXI4_araddr;
                         sdram_saved_index <= sdram_current_index;
                         sdram_saved_tag <= sdram_current_tag;
-                        if (sdram_valid[sdram_current_index] && (sdram_tags[sdram_current_index] == sdram_current_tag)) begin
+                        if (hit ) begin
                             access_time <= access_time + 1'b1;
                             // 根据偏移选择正确的32位数据
-                            case (IFU_AXI4_araddr[3:2])
-                                2'b00: IFU_AXI4_rdata <= sdram_data[sdram_current_index][31:0];
-                                2'b01: IFU_AXI4_rdata <= sdram_data[sdram_current_index][63:32];
-                                2'b10: IFU_AXI4_rdata <= sdram_data[sdram_current_index][95:64];
-                                2'b11: IFU_AXI4_rdata <= sdram_data[sdram_current_index][127:96];
-                            endcase
                             IFU_AXI4_rvalid <= 1'b1;
                             state <= SEND_DATA;
                             ICACHE_hit_count <= ICACHE_hit_count + 1;
@@ -148,10 +163,10 @@ always @(posedge clock) begin
                         flash_saved_addr <= IFU_AXI4_araddr;
                         flash_saved_index <= flash_current_index;
                         flash_saved_tag <= flash_current_tag;
-                        if (flash_valid[flash_current_index] && (flash_tags[flash_current_index] == flash_current_tag)) begin
+                        if (hit) begin
                             access_time <= access_time + 1'b1;
                             // 根据偏移选择正确的32位数据
-                            IFU_AXI4_rdata <= flash_data[flash_current_index];
+                            
                             IFU_AXI4_rvalid <= 1'b1;
                             state <= SEND_DATA;
                             ICACHE_hit_count <= ICACHE_hit_count + 1;
@@ -226,16 +241,16 @@ always @(posedge clock) begin
             UPDATED_CACHE : begin
                 if(is_sdram) begin
                     case (sdram_saved_addr[3:2])
-                        2'b00: IFU_AXI4_rdata <= sdram_burst_buffer[31:0];
-                        2'b01: IFU_AXI4_rdata <= sdram_burst_buffer[63:32];
-                        2'b10: IFU_AXI4_rdata <= sdram_burst_buffer[95:64];
-                        2'b11: IFU_AXI4_rdata <= sdram_burst_buffer[127:96];
+                        2'b00: IFU_AXI4_rdata_cache <= sdram_burst_buffer[31:0];
+                        2'b01: IFU_AXI4_rdata_cache <= sdram_burst_buffer[63:32];
+                        2'b10: IFU_AXI4_rdata_cache <= sdram_burst_buffer[95:64];
+                        2'b11: IFU_AXI4_rdata_cache <= sdram_burst_buffer[127:96];
                     endcase
                     sdram_tags[sdram_saved_index] <= sdram_saved_tag;
                     sdram_data[sdram_saved_index] <= sdram_burst_buffer;
                     sdram_valid[sdram_saved_index] <= 1'b1;
                 end else begin
-                    IFU_AXI4_rdata <= flash_burst_buffer;
+                    IFU_AXI4_rdata_cache <= flash_burst_buffer;
                     flash_tags[flash_saved_index] <= flash_saved_tag;
                     flash_data[flash_saved_index] <= flash_burst_buffer;
                     flash_valid[flash_saved_index] <= 1'b1;
