@@ -46,6 +46,7 @@ reg flash_valid [0:FLASH_NUM_BLOCKS-1];                 // 有效位
 wire is_sdram = (IFU_AXI4_araddr >= 32'ha0000000);
 typedef enum logic [2:0] {
     IDLE,        // 空闲状态
+    AXI_WAIT,
     AXI_READ,    // 从FLASH读取
     UPDATED_CACHE, // 更新缓存
     SEND_DATA // 更新缓存
@@ -140,17 +141,8 @@ always @(posedge clock) begin
                             ICACHE_AXI4_araddr <= {IFU_AXI4_araddr[31:4], 4'b0};
                             
                             miss_penalty <= miss_penalty + 1'b1;
-                            ICACHE_AXI4_arvalid <= 1'b1;
-                            // 地址对齐到16字节边界
-                            if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
-                                ICACHE_AXI4_rready <= 1'b1;
-                                ICACHE_AXI4_arvalid <= 1'b0;
-                                ICACHE_miss_count <= ICACHE_miss_count + 1;
-                                state <= AXI_READ;
-                            end
-                            else begin
-                                state <= IDLE;
-                            end
+                            state <= AXI_WAIT;
+                            
                         end
                     end else begin
                         flash_saved_addr <= IFU_AXI4_araddr;
@@ -168,24 +160,28 @@ always @(posedge clock) begin
                             ICACHE_AXI4_arlen <= 2'b00;  // 一次读取1个数据
                             ICACHE_AXI4_araddr <= {IFU_AXI4_araddr[31:2], 2'b0};
                             miss_penalty <= miss_penalty + 1'b1;
-                            ICACHE_AXI4_arvalid <= 1'b1;
-                            // 地址对齐到16字节边界
-                            if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
-                                ICACHE_AXI4_rready <= 1'b1;
-                                ICACHE_AXI4_arvalid <= 1'b0;
-                                ICACHE_miss_count <= ICACHE_miss_count + 1;
-                                state <= AXI_READ;
-                            end
-                            else begin
-                                state <= IDLE;
-                            end
+                            state <= AXI_WAIT;
                         end
                     end
                     
                 end
             end
             
-            
+            AXI_WAIT: begin
+                ICACHE_AXI4_arvalid <= 1'b1;
+                            // 地址对齐到16字节边界
+                if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
+                    ICACHE_AXI4_rready <= 1'b1;
+                    ICACHE_AXI4_arvalid <= 1'b0;
+                    ICACHE_miss_count <= ICACHE_miss_count + 1;
+                    state <= AXI_READ;
+                end
+                else begin
+                    state <= AXI_WAIT;
+                end
+
+
+            end
             
             
             AXI_READ: begin
