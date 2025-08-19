@@ -113,14 +113,13 @@ always @(posedge clock) begin
                         flash_valid[i] <= 0;  // 复位时所有块无效
                     end
                 end
-                sdram_saved_addr <= IFU_AXI4_araddr;
                 if (IFU_AXI4_arvalid && IFU_AXI4_arready) begin
                     access_time <= access_time + 1'b1;
                     total_access <= total_access + 1'b1;
                     miss_penalty <= miss_penalty + 1'b1;
                     IFU_AXI4_arready <= 1'b0;
                     if(is_sdram) begin
-                        
+                        sdram_saved_addr <= IFU_AXI4_araddr;
                         sdram_saved_index <= sdram_current_index;
                         sdram_saved_tag <= sdram_current_tag;
                         if (sdram_valid[sdram_current_index] && (sdram_tags[sdram_current_index] == sdram_current_tag)) begin

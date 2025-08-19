@@ -70,7 +70,7 @@ begin
     else if(EXU_IFU_flush)begin 
     pc <= EXU_IFU_pc;
     end
-    else if(IDU_IFU_ready && IFU_IDU_valid)begin
+    else if(update_valid)begin
     pc <= pc + 32'h4;
     end
     
@@ -103,14 +103,12 @@ always @(posedge clk) begin
         end
     end
 end
-
+assign IFU_AXI4_araddr = pc;
 always @(posedge clk) begin
     if (rstn) begin
         IFU_AXI4_arvalid <= 1'b0;
-        IFU_AXI4_araddr  <= 32'h0;
     end else if (!stall && !EXU_IFU_flush) begin
         IFU_AXI4_arvalid <= 1'b1;
-        IFU_AXI4_araddr  <= inst_addr;
     end else begin
         IFU_AXI4_arvalid <= 1'b0;
     end
