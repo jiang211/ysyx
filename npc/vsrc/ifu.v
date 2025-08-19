@@ -41,24 +41,7 @@ module ifu(
 );
 reg [31:0] pc;
 assign IFU_IDU_INSTR = instr;//(fence_i) ? 32'b0 : instr;
-//wire [31:0] d_pc;
-/*
-wire I_type_2 = (instr[6:0] == 7'b1100111);
-wire B_type = (instr[6:0] == 7'b1100011);
-wire J_type_1 = (instr[6:0] == 7'b1101111) || I_type_2; 
-wire ecall  = ( instr == 32'b00000000000000000000000001110011)  ;
-wire mret   = ( instr == 32'b00110000001000000000000001110011 ) ;
-wire pcsrc = (B_type /*& zero*/// | J_type_1 | ecall | mret;
-//assign d_pc = (ecall)? csr_data : (mret) ? csr_data : (jal) ? pc + imm : (jalr) ? rs1_data + imm : (zero) ? alu_out : pc + 4;
-/*
-always @(pc) begin
-    case(EXU_IFU_flush)
-        1'b0: begin dnpc <= pc + 32'h4; end
-        1'b1: begin dnpc <= EXU_IFU_pc; end
-        default: dnpc <= pc + 32'h4;
-    endcase
-end
-*/
+
 
 localparam IDLE        = 2'b00;
 localparam READ  = 2'b01;
@@ -120,61 +103,81 @@ always @(posedge clk) begin
         end
     end
 end
+
 always @(posedge clk) begin
     if (rstn) begin
-        state <= IDLE;
         IFU_AXI4_arvalid <= 1'b0;
-        IFU_AXI4_rready <= 1'b0;
-        instr <= 32'h0;
-        ifu_count <= 64'h0;
-        ifu_during_count <= 64'h0;
-    end
-    else begin
-        // State Machine
-        
-        
-        case (state)
-            IDLE: begin
-                IFU_AXI4_rready <= 1'b0;
-                IFU_AXI4_araddr <= inst_addr;
-                IFU_AXI4_arvalid <= 1'b1;
-                if(IFU_AXI4_arvalid && IFU_AXI4_arready) begin
-                    ifu_during_count <= ifu_during_count + 1'b1;
-                    IFU_AXI4_rready <= 1'b1;
-                    IFU_AXI4_arvalid <= 1'b1;
-                    state <= READ;
-                    
-                end
-                else begin
-                    state <= IDLE;
-                    
-                    
-                end
-            end
-
-            READ: begin
-                IFU_AXI4_rready <= 1'b1;
-                if (IFU_AXI4_rready && IFU_AXI4_rvalid) begin
-                    ifu_count <= ifu_count + 1'b1;
-                    instr <= IFU_AXI4_rdata;
-                    IFU_AXI4_rready <= 1'b0;
-                    state <= IDLE;
-                end
-                else begin
-                    ifu_during_count <= ifu_during_count + 1'b1;
-                    instr <= instr;
-                    state <= READ;
-                end
-            end
-        default: begin
-            state <= IDLE;
-            IFU_AXI4_arvalid <= 1'b0;
-            IFU_AXI4_rready <= 1'b0;
-            instr <= 32'h0;
-        end   
-        endcase
+        IFU_AXI4_araddr  <= 32'h0;
+    end else if (!stall && !EXU_IFU_flush) begin
+        IFU_AXI4_arvalid <= 1'b1;
+        IFU_AXI4_araddr  <= inst_addr;
+    end else begin
+        IFU_AXI4_arvalid <= 1'b0;
     end
 end
+
+always @(posedge clk) begin
+    if (rstn) begin
+        instr <= 32'h0;
+        IFU_IDU_PC   <= 32'h0;
+    end else if (IFU_AXI4_rvalid && IFU_AXI4_rready) begin
+        instr <= IFU_AXI4_rdata;
+        IFU_IDU_PC   <= IFU_AXI4_araddr;   // 早就发出的地址
+    end
+end
+
+assign IFU_AXI4_rready = !IFU_IDU_valid || IDU_IFU_ready;
+
+// always @(posedge clk) begin
+//     if (rstn) begin
+//         state <= IDLE;
+//         IFU_AXI4_rready <= 1'b0;
+//         instr <= 32'h0;
+//         ifu_count <= 64'h0;
+//         ifu_during_count <= 64'h0;
+//     end
+//     else begin
+//         // State Machine
+        
+        
+//         case (state)
+//             IDLE: begin
+//                 IFU_AXI4_rready <= 1'b0;
+//                 if(IFU_AXI4_arvalid && IFU_AXI4_arready) begin
+//                     ifu_during_count <= ifu_during_count + 1'b1;
+//                     IFU_AXI4_rready <= 1'b1;
+//                     state <= READ;
+                    
+//                 end
+//                 else begin
+//                     state <= IDLE;
+                    
+                    
+//                 end
+//             end
+
+//             READ: begin
+//                 IFU_AXI4_rready <= 1'b1;
+//                 if (IFU_AXI4_rready && IFU_AXI4_rvalid) begin
+//                     ifu_count <= ifu_count + 1'b1;
+//                     instr <= IFU_AXI4_rdata;
+//                     IFU_AXI4_rready <= 1'b0;
+//                     state <= IDLE;
+//                 end
+//                 else begin
+//                     ifu_during_count <= ifu_during_count + 1'b1;
+//                     instr <= instr;
+//                     state <= READ;
+//                 end
+//             end
+//         default: begin
+//             state <= IDLE;
+//             IFU_AXI4_rready <= 1'b0;
+//             instr <= 32'h0;
+//         end   
+//         endcase
+//     end
+// end
 
 /*
 sram_inst inst_sram(
