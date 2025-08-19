@@ -46,8 +46,6 @@ reg flash_valid [0:FLASH_NUM_BLOCKS-1];                 // 有效位
 wire is_sdram = (IFU_AXI4_araddr >= 32'ha0000000);
 typedef enum logic [2:0] {
     IDLE,        // 空闲状态
-    SDRAM_CHECK_CACHE, // 检查缓存
-    FLASH_CHECK_CACHE, // 检查缓存
     AXI_READ,    // 从FLASH读取
     UPDATED_CACHE, // 更新缓存
     SEND_DATA // 更新缓存
