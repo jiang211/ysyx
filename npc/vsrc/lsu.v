@@ -247,28 +247,6 @@ always@(posedge clk) begin
         dnpc <=  EXU_LSU_dnpc;
         skip <=  EXU_skip;
     end
-    else begin
-        rd <=  5'd0;
-        result <=  32'd0;
-        reg_en <=  1'b0;
-        ebreak <=  1'b0;
-        csr_data <=  32'd0;
-        ecall <=  1'b0;
-        mret <=  1'b0;
-        C_type <=  1'b0;
-        csr_rst <=  3'b0;
-        csr_in <=  32'd0;
-        lw <=  1'b0;
-        lh <=  1'b0;
-        lb <=  1'b0;
-        lbu <=  1'b0;
-        lhu <=  1'b0;
-        ren <=  1'b0;
-        wen <=  1'b0;
-        pc <=  32'd0;
-        dnpc <=  32'd0;
-        skip <=  1'b0;
-    end
 end
 
 
