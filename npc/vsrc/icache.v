@@ -173,8 +173,7 @@ always @(posedge clock) begin
             end
             
             AXI_WAIT: begin
-                if(flush_r) begin state <= IDLE; end
-                else begin
+                if(flush_r) state <= IDLE;
                 ICACHE_AXI4_arvalid <= 1'b1;
                             // 地址对齐到16字节边界
                 if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
@@ -186,7 +185,7 @@ always @(posedge clock) begin
                 else begin
                     state <= AXI_WAIT;
                 end
-                end
+
 
             end
             
