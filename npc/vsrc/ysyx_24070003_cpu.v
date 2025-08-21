@@ -787,7 +787,7 @@ wire [4:0] WBU_IDU_REG_ADDR;
 //wire WBU_IFU_JUMP;
 wbu my_wbu(
     .clk                (clock),
-    .LSU_WBU_dnpc       (IFU_IDU_dnpc),
+    .LSU_WBU_dnpc       (LSU_WBU_dnpc),
     .LSU_WBU_skip       (LSU_WBU_skip),
     //.LSU_WBU_pc         (LSU_WBU_pc),
     //.WBU_IFU_pc         (WBU_IFU_pc),

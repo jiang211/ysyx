@@ -81,8 +81,8 @@ begin
         IFU_dnpc <= 32'h80000000;
     end
     else begin
-        IFU_IDU_PC <= inst_addr;
-        IFU_dnpc <= inst_addr;
+        IFU_IDU_PC <= pc;
+        IFU_dnpc <= dnpc;
     end
 end
 reg [31:0] instr;
