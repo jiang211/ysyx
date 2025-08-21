@@ -80,7 +80,6 @@ typedef enum logic [2:0] {
 arb_state_t state;
 
 // 仲裁优先级参数
-localparam PRIO_IFU = 1; // IFU优先级高于LSU
 
 // 内部信号
 reg [ADDR_WIDTH-1:0] saved_araddr;
@@ -101,14 +100,13 @@ always @(posedge clk ) begin
         case (state)
             IDLE: begin
                 // 优先级处理：IFU读请求优先
-                if (PRIO_IFU && ifu_arvalid) begin
-                    saved_araddr <= ifu_araddr;
-                    state <= IFU_READ_START;
-                end
-                // LSU读请求
-                else if (lsu_arvalid && !clint) begin
+                if (lsu_arvalid && !clint) begin
                     saved_araddr <= lsu_araddr;
                     state <= LSU_READ_START;
+                end
+                else if (ifu_arvalid) begin
+                    saved_araddr <= ifu_araddr;
+                    state <= IFU_READ_START;
                 end
                 // LSU写请求
                 else if (lsu_awvalid && lsu_wvalid) begin
