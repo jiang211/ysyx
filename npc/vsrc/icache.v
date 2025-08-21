@@ -23,6 +23,10 @@ module icache(
     output reg [63:0] access_time,
     output reg [63:0] miss_penalty
 );
+reg flush_r;
+always@(posedge clock)begin
+    flush_r <= flush;
+end
 
 parameter SDRAM_BLOCK_SIZE = 16;      // 4字节块大小
 parameter SDRAM_NUM_BLOCKS = 16;     // 16个缓存块
@@ -169,7 +173,7 @@ always @(posedge clock) begin
             end
             
             AXI_WAIT: begin
-                if(flush) state <= IDLE;
+                if(flush_r) state <= IDLE;
                 ICACHE_AXI4_arvalid <= 1'b1;
                             // 地址对齐到16字节边界
                 if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
@@ -187,7 +191,7 @@ always @(posedge clock) begin
             
             
             AXI_READ: begin
-                if(flush) state <= IDLE;
+                if(flush_r) state <= IDLE;
                 if (ICACHE_AXI4_rvalid && ICACHE_AXI4_rready) begin
                     // 存储接收到的数据
                     if(is_sdram) begin
