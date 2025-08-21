@@ -78,7 +78,7 @@ module idu(
 // reg [63:0] STORE_type_count;
 // reg [63:0] C_type_count;
 
-reg [31:0]instr;
+// reg [31:0]instr;
 wire    [31:0]    immI_num ;
 wire    [31:0]    immS_num ;
 wire    [31:0]    immB_num ;
@@ -102,9 +102,9 @@ wire B_type;
 wire C_type;
 wire I_type_1 = (opcode == 7'b0010011);
 
-assign funct3 = (R_type || I_type || S_type || B_type|| C_type) ? instr[14:12] : 3'b0;
-assign funct7 = (R_type || I_type_1) ? instr[31:25] : 7'b0;
-assign opcode = instr[6:0];
+assign funct3 = (R_type || I_type || S_type || B_type|| C_type) ? INSTR[14:12] : 3'b0;
+assign funct7 = (R_type || I_type_1) ? INSTR[31:25] : 7'b0;
+assign opcode = INSTR[6:0];
 assign I_type = (opcode == 7'b0010011 || opcode == 7'b1100111 || opcode == 7'b0000011 || opcode == 7'b1010011);
 assign R_type = (opcode == 7'b0110011);
 assign S_type = (opcode == 7'b0100011);
@@ -113,22 +113,22 @@ assign B_type = (opcode == 7'b1100011);
 assign J_type = (opcode == 7'b1101111 || opcode == 7'b1011111);
 assign C_type = (opcode == 7'b1110011);
 
-assign  immI_num = { {21{instr[31]}}, instr[30:20] };
-assign  immS_num = { {21{instr[31]}}, instr[30:25], instr[11:7] };
-assign  immB_num = { {20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0 };
-assign  immU_num = { instr[31], instr[30:12], 12'b0 };
-assign  immJ_num = { {12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0 };
-assign  immC_num =   (instr[31:20] == 'h341) ? 3'd0 :
-                    (instr[31:20] == 'h300) ? 3'd1 :
-                    (instr[31:20] == 'h342) ? 3'd2 :
-                    (instr[31:20] == 'h305) ? 3'd3 : 
-                    (instr[31:20] == 'hf11) ? 3'd4 :
-                    (instr[31:20] == 'hf12) ? 3'd5 :3'd0;
-assign rs2 = (R_type || S_type || B_type) ? instr[24:20] :5'b0;
+assign  immI_num = { {21{INSTR[31]}}, INSTR[30:20] };
+assign  immS_num = { {21{INSTR[31]}}, INSTR[30:25], INSTR[11:7] };
+assign  immB_num = { {20{INSTR[31]}}, INSTR[7], INSTR[30:25], INSTR[11:8], 1'b0 };
+assign  immU_num = { INSTR[31], INSTR[30:12], 12'b0 };
+assign  immJ_num = { {12{INSTR[31]}}, INSTR[19:12], INSTR[20], INSTR[30:21], 1'b0 };
+assign  immC_num =   (INSTR[31:20] == 'h341) ? 3'd0 :
+                    (INSTR[31:20] == 'h300) ? 3'd1 :
+                    (INSTR[31:20] == 'h342) ? 3'd2 :
+                    (INSTR[31:20] == 'h305) ? 3'd3 : 
+                    (INSTR[31:20] == 'hf11) ? 3'd4 :
+                    (INSTR[31:20] == 'hf12) ? 3'd5 :3'd0;
+assign rs2 = (R_type || S_type || B_type) ? INSTR[24:20] :5'b0;
 assign csr_rst = (C_type) ? immC_num : 3'd0;
-assign rs1 = (R_type || S_type || B_type || I_type || C_type) ? instr[19:15] : 5'b0;
+assign rs1 = (R_type || S_type || B_type || I_type || C_type) ? INSTR[19:15] : 5'b0;
 
-assign rd = (R_type || I_type || U_type || J_type || C_type) ? instr[11:7] : 5'b0;
+assign rd = (R_type || I_type || U_type || J_type || C_type) ? INSTR[11:7] : 5'b0;
 
 
 
@@ -179,9 +179,9 @@ wire mul_high = mulh | mulhu;
 //wire jump = J_type | I_type_2;
 wire mem_read = I_type_3;
 wire mem_write = S_type;
-wire  ebreak = ( instr == 32'b00000000000100000000000001110011 ) ;
-wire ecall  = ( instr == 32'b00000000000000000000000001110011)  ;
-wire mret   = ( instr == 32'b00110000001000000000000001110011 ) ;
+wire  ebreak = ( INSTR == 32'b00000000000100000000000001110011 ) ;
+wire ecall  = ( INSTR == 32'b00000000000000000000000001110011)  ;
+wire mret   = ( INSTR == 32'b00110000001000000000000001110011 ) ;
 wire reg_write = !(B_type || S_type);
 wire alu_src1 = R_type | I_type_1 | I_type_3 | I_type_4 | S_type;
 wire alu_src2 = R_type;
@@ -224,14 +224,10 @@ raw raw_detect(
     .stall                      (stall)
 );
 ////////////0x0000100F//////////////0000000 00000 00000 001 00000 0001111/////////////
-assign fence_i = (instr == 32'h0000100F);
+assign fence_i = (INSTR == 32'h0000100F);
 //wire pcsrc = (branch /*& zero*/) | jump | ecall | mret;
 
-always@(posedge clk) begin
-    if(rst_n) instr <= 32'b0;
-    else if(IFU_IDU_valid)instr <= INSTR;
-    else instr <= instr;
-end
+
 
 
 assign IDU_IFU_ready = (EXU_IDU_ready | ~IDU_EXU_valid) && (~stall);    // 设置IDU到IFU的就绪信号
