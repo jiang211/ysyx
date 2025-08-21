@@ -454,27 +454,28 @@ always @(posedge clk) begin
     end else if((LSU_EXU_ready && EXU_LSU_valid) && (~(EXU_LSU_ren || EXU_LSU_wen))) begin
         //RDATAIN <= rdata_in;
         //WDATA   <= wdata;
-        LSU_WBU_result <= result;
+        LSU_WBU_result <= EXU_LSU_result;
         LSU_REN      <= ren;
-        LSU_WBU_rd <= rd;
-        LSU_WBU_reg<= reg_en;
-        LSU_WBU_ebreak<= ebreak;
-        LSU_WBU_csr_data <= csr_data;
-        LSU_WBU_ecall <= ecall;
-        LSU_WBU_mret <= mret;
-        LSU_WBU_C_type <= C_type;
-        LSU_WBU_csr_rst <= csr_rst;
-        LSU_WBU_csr_in <= csr_in;
+        LSU_WBU_rd <= EXU_LSU_rd;
+        LSU_WBU_reg<= EXU_LSU_reg;
+        LSU_WBU_ebreak<= EXU_LSU_ebreak;
+        LSU_WBU_csr_data <= EXU_LSU_csr_data;
+        LSU_WBU_ecall <= EXU_LSU_ecall;
+        LSU_WBU_mret <= EXU_LSU_mret;
+        LSU_WBU_C_type <= EXU_LSU_C_type;
+        LSU_WBU_csr_rst <= EXU_LSU_csr_rst;
+        LSU_WBU_csr_in <= EXU_LSU_csr_in;
         //LSU_WBU_JUMP <= EXU_LSU_JUMP;
         //LSU_WBU_pc <= EXU_IFU_pc;
-        LSU_WBU_lb <= lb;
-        LSU_WBU_lh <= lh;
-        LSU_WBU_lw <= lw;
-        LSU_WBU_lbu <= lbu;
-        LSU_WBU_lhu <= lhu;
-        LSU_WBU_PC <= pc;
-        LSU_WBU_dnpc <= dnpc;
-        LSU_WBU_skip <= skip ;
+        LSU_WBU_lb <= EXU_LSU_lb;
+        LSU_WBU_lh <= EXU_LSU_lh;
+        LSU_WBU_lw <= EXU_LSU_lw;
+        LSU_WBU_lbu <= EXU_LSU_lbu;
+        LSU_WBU_lhu <= EXU_LSU_lhu;
+        LSU_WBU_PC <= EXU_LSU_lhu;
+        LSU_WBU_dnpc <= EXU_LSU_dnpc;
+        LSU_WBU_skip <= EXU_skip ;
+
     end else if((LSU_AXI4_RREADY && LSU_AXI4_RVALID) || (LSU_AXI4_BVALID && LSU_AXI4_BREADY)) begin
         //RDATAIN <= rdata_in;
         //WDATA   <= wdata;
