@@ -295,7 +295,7 @@ begin
     LOAD_type_count               <=        64'b0;
     STORE_type_count               <=        64'b0;
     end
-    else if(IDU_EXU_valid && EXU_IDU_ready)begin
+    else if(IFU_IDU_valid && IDU_IFU_ready)begin
         if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
         else if(J_type || B_type) begin Jump_type_count <= Jump_type_count + 1'b1; end
         else if(C_type) begin C_type_count <= C_type_count + 1'b1; end

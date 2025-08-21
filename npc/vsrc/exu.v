@@ -178,7 +178,7 @@ begin
     EXU_LSU_dnpc               <=        32'b0;
     EXU_LSU_IMM              <=          32'b0;
     end
-    else if(LSU_EXU_ready & EXU_LSU_valid)begin
+    else if(IDU_EXU_valid & EXU_IDU_ready)begin
     EXU_LSU_alu_out           <=        alu_out;
     //EXU_IFU_zero              <=        zero;
     EXU_LSU_rd                <=        IDU_EXU_rd;
