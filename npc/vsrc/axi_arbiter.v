@@ -180,7 +180,7 @@ end
 // 读地址通道仲裁
 assign master_araddr = saved_araddr;/*(state == IFU_READ_START || state == IFU_READ_WAIT) ? saved_araddr :
                      (state == LSU_READ_START || state == LSU_READ_WAIT) ? saved_araddr : '0;*/
-assign master_arlen = (state == IFU_READ_START) ? ICACHE_AXI4_arlen : 8'b0;
+assign master_arlen = (state == IFU_READ_START || state == IFU_READ_WAIT) ? ICACHE_AXI4_arlen : 8'b0;
 assign master_arvalid = (state == IFU_READ_START || state == LSU_READ_START) ? 1'b1 : 1'b0;
 assign master_arsize = (state == LSU_READ_START || state == LSU_READ_WAIT) ? lsu_arsize : 3'b10;
 
