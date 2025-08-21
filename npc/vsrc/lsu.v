@@ -296,12 +296,8 @@ always @(posedge clk) begin
         case (state)
             IDLE: begin
                 LSU_AXI_wlast <= 1'b0;
-                if(LSU_WBU_ready && LSU_WBU_valid) begin
-                    LSU_WBU_valid <= 1'b0;
-                end
                 
                 if((!(EXU_LSU_ren || EXU_LSU_wen))) begin
-                    LSU_WBU_valid <= 1'b1;
                     state <= IDLE;
                 end else if (EXU_LSU_wen  ) begin
                     LSU_AXI4_AWADDR <= EXU_LSU_result;
@@ -355,14 +351,12 @@ always @(posedge clk) begin
                 if (LSU_AXI4_RREADY && LSU_AXI4_RVALID) begin
                     lsu_count <= lsu_count + 1'b1;
                     LSU_AXI4_RREADY <= 1'b0;
-                    LSU_WBU_valid <= 1'b1;
                     LSU_RDATA <= LSU_AXI4_RDATA;
                     state <= IDLE;
                 end
                 else begin
                     lsu_during_count <= lsu_during_count + 1'b1;
                     lsu_load_count <= lsu_load_count + 1'b1;
-                    LSU_WBU_valid <= 1'b0;
                     state <= READ_START;
                 end
             end
@@ -398,12 +392,10 @@ always @(posedge clk) begin
                 LSU_AXI4_BREADY <= 1'b1;
                 LSU_AXI_wlast <= 1'b0;
                 if(LSU_AXI4_BVALID && LSU_AXI4_BREADY) begin
-                    LSU_WBU_valid <= 1'b1;
                     LSU_AXI4_BREADY <= 1'b0;
                     state <= IDLE;  
                 end
                 else begin
-                    LSU_WBU_valid <= 1'b0;
                     state <= WRITE_DATA;
                     lsu_during_count <= lsu_during_count + 1'b1;
                     lsu_store_count <= lsu_store_count + 1'b1;
@@ -412,6 +404,21 @@ always @(posedge clk) begin
             
             default: state <= IDLE;
         endcase
+    end
+end
+
+always @(posedge clk) begin
+    if(rst_n) begin
+        LSU_WBU_valid <= 1'b0;
+    end
+    else if((LSU_AXI4_RREADY && LSU_AXI4_RVALID) || (LSU_AXI4_BVALID && LSU_AXI4_BREADY)) begin
+        LSU_WBU_valid <= 1'b1;
+    end
+    else if((LSU_EXU_ready && EXU_LSU_valid) && (~(EXU_LSU_ren || EXU_LSU_wen))) begin
+        LSU_WBU_valid <= 1'b1;
+    end
+    else begin
+        LSU_WBU_valid <= 1'b0;
     end
 end
 
