@@ -92,7 +92,7 @@ always @(posedge clk) begin
         IFU_IDU_valid <= 1'b0;
     end
     else begin
-        if(IDU_IFU_ready && IFU_AXI4_rready && IFU_AXI4_rvalid && (~stall))begin
+        if(IFU_AXI4_rready && IFU_AXI4_rvalid && (~stall))begin
             IFU_IDU_valid <= 1'b1;
         end
         else if(IDU_IFU_ready && IFU_IDU_valid) begin
