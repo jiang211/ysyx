@@ -230,7 +230,7 @@ assign fence_i = (INSTR == 32'h0000100F);
 
 
 
-assign IDU_IFU_ready = (EXU_IDU_ready | ~IDU_EXU_valid) && (~stall);    // 设置IDU到IFU的就绪信号
+assign IDU_IFU_ready = EXU_IDU_ready  && (~stall);    // 设置IDU到IFU的就绪信号
 
 
 always @(posedge clk) begin

@@ -120,7 +120,7 @@ alu my_alu(
 );
 assign EXU_IFU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jal || IDU_EXU_jalr || zero);
 
-assign EXU_IDU_ready = (~EXU_LSU_valid | LSU_EXU_ready);  
+assign EXU_IDU_ready = LSU_EXU_ready;  
 
 always @(posedge clk) begin 
     if(rstn) begin
