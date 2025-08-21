@@ -118,7 +118,7 @@ alu my_alu(
     .alu_out        (alu_out    ),
     .zero           (zero       )
 );
-assign EXU_IFU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jal || IDU_EXU_jalr || zero);
+assign EXU_IFU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jal || IDU_EXU_jalr || zero) && (IDU_EXU_valid && EXU_IDU_ready);
 
 assign EXU_IDU_ready = LSU_EXU_ready;  
 
