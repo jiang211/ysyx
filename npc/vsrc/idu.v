@@ -232,16 +232,19 @@ assign fence_i = (INSTR == 32'h0000100F);
 
 assign IDU_IFU_ready = EXU_IDU_ready  && (~stall);    // 设置IDU到IFU的就绪信号
 
-
+reg idu_exu_valid;
 always @(posedge clk) begin
     if(rst_n) begin
-        IDU_EXU_valid <= 1'b0;
-    end else if(IFU_IDU_valid && IDU_IFU_ready && (~stall)) begin
-        IDU_EXU_valid <= 1'b1;
+        idu_exu_valid <= 1'b0;
+    end else if(IFU_IDU_valid && IDU_IFU_ready ) begin
+        idu_exu_valid <= 1'b1;
     end else if(EXU_IDU_ready && IDU_EXU_valid) begin
-        IDU_EXU_valid <= 1'b0;
+        idu_exu_valid <= 1'b0;
     end
 end
+
+assign IDU_EXU_valid = idu_exu_valid & (~stall);
+
 always@(posedge clk)
 begin 
    if((rst_n ))begin
