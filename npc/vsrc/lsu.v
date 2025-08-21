@@ -528,7 +528,7 @@ always @(posedge clk) begin
 end
 
 
-assign LSU_EXU_ready = ((state == IDLE) && (~LSU_WBU_valid));
+assign LSU_EXU_ready = ((state == IDLE) );
 /*
 sram_data data_sram(
     .CLK(clk),
