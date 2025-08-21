@@ -136,7 +136,7 @@ always @(posedge clock) begin
                                 2'b10: IFU_AXI4_rdata <= sdram_data[sdram_current_index][95:64];
                                 2'b11: IFU_AXI4_rdata <= sdram_data[sdram_current_index][127:96];
                             endcase
-                            IFU_AXI4_rvalid <= 1'b1;
+                            IFU_AXI4_rvalid <= (1'b1 && (~flush));
                             state <= SEND_DATA;
                             ICACHE_hit_count <= ICACHE_hit_count + 1;
                         end else begin
@@ -157,7 +157,7 @@ always @(posedge clock) begin
                             access_time <= access_time + 1'b1;
                             // 根据偏移选择正确的32位数据
                             IFU_AXI4_rdata <= flash_data[flash_current_index];
-                            IFU_AXI4_rvalid <= 1'b1;
+                            IFU_AXI4_rvalid <= (1'b1 && (~flush));
                             state <= SEND_DATA;
                             ICACHE_hit_count <= ICACHE_hit_count + 1;
                         end else begin
