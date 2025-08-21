@@ -863,7 +863,7 @@ always @(posedge clock ) begin
         TO_top_dnpc <= 32'h00000000;
         ref_skip <= 1'b0;
     end else begin
-        WBU_IFU_valid_cache <= (WBU_IFU_valid);
+        WBU_IFU_valid_cache <= (LSU_WBU_valid);
         difftest_valid <= WBU_IFU_valid_cache;
         TO_top_pc <= PC_DATA;
         TO_top_dnpc <= DNPC_DATA;

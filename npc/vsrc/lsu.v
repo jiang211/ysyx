@@ -472,7 +472,7 @@ always @(posedge clk) begin
         LSU_WBU_lw <= EXU_LSU_lw;
         LSU_WBU_lbu <= EXU_LSU_lbu;
         LSU_WBU_lhu <= EXU_LSU_lhu;
-        LSU_WBU_PC <= EXU_LSU_lhu;
+        LSU_WBU_PC <= EXU_LSU_PC;
         LSU_WBU_dnpc <= EXU_LSU_dnpc;
         LSU_WBU_skip <= EXU_skip ;
 
