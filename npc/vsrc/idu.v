@@ -294,6 +294,47 @@ begin
     LOAD_type_count               <=        64'b0;
     STORE_type_count               <=        64'b0;
     end
+    else if(stall)begin
+   // IDU_EXU_opcode        <=        opcode   ;     
+    IDU_EXU_rd            <=        IDU_EXU_rd           ;
+    IDU_EXU_rs1           <=        IDU_EXU_rs1         ;
+    IDU_EXU_rs2           <=        IDU_EXU_rs2         ;
+    IDU_EXU_csr_rst       <=        IDU_EXU_csr_rst     ;
+    IDU_EXU_imm           <=        IDU_EXU_imm         ;
+    IDU_EXU_alu_op              <=  IDU_EXU_alu_op      ;
+    IDU_EXU_u_alu_type          <=  IDU_EXU_u_alu_type  ;
+    IDU_EXU_mul_high            <=  IDU_EXU_mul_high    ;
+    IDU_EXU_alu_src1            <=  IDU_EXU_alu_src1    ;
+    IDU_EXU_alu_src2            <=  IDU_EXU_alu_src2    ;
+    IDU_EXU_branch              <=  IDU_EXU_branch      ;
+   // IDU_EXU_mem_to_reg          <=/ IDU_EXU_mem_to_reg    
+    IDU_EXU_mem_read            <=  IDU_EXU_mem_read    ;
+    IDU_EXU_mem_write           <=  IDU_EXU_mem_write      ;
+    IDU_EXU_reg_write           <=  IDU_EXU_reg_write    ;
+    IDU_EXU_jal                 <=  IDU_EXU_jal         ;
+    IDU_EXU_jalr                <=  IDU_EXU_jalr        ;
+    IDU_EXU_lw                  <=  IDU_EXU_lw          ;
+    IDU_EXU_lh                  <=  IDU_EXU_lh          ;
+    IDU_EXU_lb                  <=  IDU_EXU_lb          ;
+    IDU_EXU_lbu                 <=  IDU_EXU_lbu         ;
+    IDU_EXU_lhu                 <=  IDU_EXU_lhu         ;
+    IDU_EXU_sw                  <=  IDU_EXU_sw          ;
+    IDU_EXU_sb                  <=  IDU_EXU_sb          ;
+    IDU_EXU_sh                  <=  IDU_EXU_sh        ;  
+    IDU_EXU_csw                 <=  IDU_EXU_csw       ;  
+    IDU_EXU_csc                 <=  IDU_EXU_csc       ;  
+    IDU_EXU_css                 <=  IDU_EXU_css       ;  
+    IDU_EXU_ebreak              <=  IDU_EXU_ebreak    ;  
+    IDU_EXU_ecall               <=  IDU_EXU_ecall     ;  
+    IDU_EXU_mret                <=  IDU_EXU_mret      ;  
+    IDU_EXU_U_type_1            <=  IDU_EXU_U_type_1  ;  
+    IDU_EXU_J_type_1            <=  IDU_EXU_J_type_1  ;  
+    //IDU_EXU_pcsrc               <=//IDU_EXU_pcsrc   ;  
+    IDU_EXU_C_type              <=  IDU_EXU_C_type    ;  
+    //IDU_EXU_STALL               <=//IDU_EXU_STALL   ;  
+    IDU_EXU_PC                  <=  IDU_EXU_PC        ;  
+    IDU_EXU_dnpc                <=  IDU_EXU_dnpc      ;  
+    end
     else if(IFU_IDU_valid && IDU_IFU_ready)begin
         if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
         else if(J_type || B_type) begin Jump_type_count <= Jump_type_count + 1'b1; end
