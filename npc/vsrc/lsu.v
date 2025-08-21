@@ -433,7 +433,7 @@ always @(posedge clk) begin
         //RDATAIN <= rdata_in;
         //WDATA   <= wdata;
         LSU_WBU_result <= EXU_LSU_result;
-        LSU_REN      <= ren;
+        LSU_REN      <= 1'b0;
         LSU_WBU_rd <= EXU_LSU_rd;
         LSU_WBU_reg<= EXU_LSU_reg;
         LSU_WBU_ebreak<= EXU_LSU_ebreak;
