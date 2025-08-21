@@ -82,7 +82,7 @@ begin
     end
     else begin
         IFU_IDU_PC <= inst_addr;
-        IFU_dnpc <= dnpc;
+        IFU_dnpc <= inst_addr;
     end
 end
 reg [31:0] instr;
