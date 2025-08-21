@@ -2,6 +2,7 @@ module icache(
     input clock,
     input reset,
     input fence_i,
+    input flush,
     input reg [31:0]  IFU_AXI4_araddr,
     input reg         IFU_AXI4_arvalid,
     output reg        IFU_AXI4_arready,
@@ -168,6 +169,7 @@ always @(posedge clock) begin
             end
             
             AXI_WAIT: begin
+                if(flush) state <= IDLE;
                 ICACHE_AXI4_arvalid <= 1'b1;
                             // 地址对齐到16字节边界
                 if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
@@ -185,6 +187,7 @@ always @(posedge clock) begin
             
             
             AXI_READ: begin
+                if(flush) state <= IDLE;
                 if (ICACHE_AXI4_rvalid && ICACHE_AXI4_rready) begin
                     // 存储接收到的数据
                     if(is_sdram) begin

@@ -225,6 +225,7 @@ icache  my_icache(
     .clock                   (clock),
     .reset                   (reset),
     .fence_i                 (fence_i),
+    .flush                   (EXU_IFU_flush),
     .IFU_AXI4_araddr         (IFU_AXI4_araddr),
     .IFU_AXI4_arvalid        (IFU_AXI4_arvalid),
     .IFU_AXI4_arready        (IFU_AXI4_arready),
