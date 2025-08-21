@@ -253,6 +253,8 @@ always @(posedge clock) begin
                 IFU_AXI4_rvalid <= 1'b1;
             end
             SEND_DATA: begin
+                if(flush_r) begin state <= IDLE; end
+                else begin
                 access_time <= access_time + 1'b1;
                 miss_penalty <= miss_penalty + 1'b1;
                 if (IFU_AXI4_rvalid && IFU_AXI4_rready) begin
@@ -260,6 +262,7 @@ always @(posedge clock) begin
                     IFU_AXI4_rvalid <= 1'b0;
                     state <= IDLE;
                 end
+            end
             end
             default: state <= IDLE;
         endcase
