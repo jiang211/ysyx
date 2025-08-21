@@ -145,7 +145,7 @@ static void pmem_write(paddr_t addr, int len, word_t data) {
   
   //if(addr >= 0xa000ef60 && addr <= 0xa000efff){printf("nemu: sdram_write addr = %x, data = %x\n", addr,data);}
   //if(addr >= 0x80004000 && addr <= 0x80004000){printf("nemu: psram_write addr = %x, data = %x\n", addr,data);}
-  // Log("MTRACE: Write Memory Address: 0x%x, len: %d, data: 0x%x", addr, len, data);
+   Log("MTRACE: Write Memory Address: 0x%x, len: %d, data: 0x%x", addr, len, data);
   host_write(guest_to_host(addr), len, data);
 }
 
