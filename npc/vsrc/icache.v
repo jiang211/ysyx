@@ -29,11 +29,11 @@ parameter SDRAM_OFFSET_BITS = 4;     // 2^2 = 4字节 (块内偏移)
 parameter SDRAM_INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
 parameter SDRAM_TAG_BITS = 24;       // 32 - (2+4) = 26位标签
 
-parameter FLASH_BLOCK_SIZE = 4;      // 4字节块大小
+parameter FLASH_BLOCK_SIZE = 16;      // 4字节块大小
 parameter FLASH_NUM_BLOCKS = 16;     // 16个缓存块
-parameter FLASH_OFFSET_BITS = 2;     // 2^1 = 1字节 (块内偏移)
+parameter FLASH_OFFSET_BITS = 4;     // 2^1 = 1字节 (块内偏移)
 parameter FLASH_INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
-parameter FLASH_TAG_BITS = 26;       // 32 - (2+4) = 26位标签
+parameter FLASH_TAG_BITS = 24;       // 32 - (2+4) = 26位标签
 
 reg [SDRAM_TAG_BITS-1:0] sdram_tags [0:SDRAM_NUM_BLOCKS-1];  // 标签存储
 reg [SDRAM_BLOCK_SIZE * 8-1:0] sdram_data [0:SDRAM_NUM_BLOCKS-1];           // 数据存储
@@ -63,7 +63,7 @@ reg [FLASH_INDEX_BITS-1:0] flash_saved_index;  // 保存当前索引
 reg [FLASH_TAG_BITS-1:0] flash_saved_tag;
 
 reg [127:0] sdram_burst_buffer; 
-reg [31:0] flash_burst_buffer;
+reg [127:0] flash_burst_buffer;
 wire [SDRAM_TAG_BITS-1:0] sdram_current_tag = IFU_AXI4_araddr[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
 wire [SDRAM_INDEX_BITS-1:0] sdram_current_index = IFU_AXI4_araddr[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
 wire [SDRAM_OFFSET_BITS-1:0] sdram_current_offset = IFU_AXI4_araddr[SDRAM_OFFSET_BITS-1:0];
@@ -151,14 +151,19 @@ always @(posedge clock) begin
                         if (flash_valid[flash_current_index] && (flash_tags[flash_current_index] == flash_current_tag)) begin
                             access_time <= access_time + 1'b1;
                             // 根据偏移选择正确的32位数据
-                            IFU_AXI4_rdata <= flash_data[flash_current_index];
+                            case (IFU_AXI4_araddr[3:2])
+                                2'b00: IFU_AXI4_rdata <= flash_data[flash_current_index][31:0];
+                                2'b01: IFU_AXI4_rdata <= flash_data[flash_current_index][63:32];
+                                2'b10: IFU_AXI4_rdata <= flash_data[flash_current_index][95:64];
+                                2'b11: IFU_AXI4_rdata <= flash_data[flash_current_index][127:96];
+                            endcase
                             IFU_AXI4_rvalid <= 1'b1;
                             state <= SEND_DATA;
                             ICACHE_hit_count <= ICACHE_hit_count + 1;
                         end else begin
                             // 未命中：启动内存读取
-                            ICACHE_AXI4_arlen <= 2'b00;  // 一次读取1个数据
-                            ICACHE_AXI4_araddr <= {IFU_AXI4_araddr[31:2], 2'b0};
+                            ICACHE_AXI4_arlen <= 2'b11;  // 一次读取1个数据
+                            ICACHE_AXI4_araddr <= {IFU_AXI4_araddr[31:4], 4'b0};
                             miss_penalty <= miss_penalty + 1'b1;
                             state <= AXI_WAIT;
                         end
@@ -205,7 +210,12 @@ always @(posedge clock) begin
                             ICACHE_miss_count <= ICACHE_miss_count + 1;
                         end
                     end else begin
-                        flash_burst_buffer <= ICACHE_AXI4_rdata;
+                        case (burst_count)
+                            2'b00: flash_burst_buffer[31:0] <= ICACHE_AXI4_rdata;
+                            2'b01: flash_burst_buffer[63:32] <= ICACHE_AXI4_rdata;
+                            2'b10: flash_burst_buffer[95:64] <= ICACHE_AXI4_rdata;
+                            2'b11: flash_burst_buffer[127:96] <= ICACHE_AXI4_rdata;
+                        endcase
                         
                         miss_penalty <= miss_penalty + 1;
                         
@@ -235,7 +245,12 @@ always @(posedge clock) begin
                     sdram_data[sdram_saved_index] <= sdram_burst_buffer;
                     sdram_valid[sdram_saved_index] <= 1'b1;
                 end else begin
-                    IFU_AXI4_rdata <= flash_burst_buffer;
+                    case (sdram_saved_addr[3:2])
+                        2'b00: IFU_AXI4_rdata <= flash_burst_buffer[31:0];
+                        2'b01: IFU_AXI4_rdata <= flash_burst_buffer[63:32];
+                        2'b10: IFU_AXI4_rdata <= flash_burst_buffer[95:64];
+                        2'b11: IFU_AXI4_rdata <= flash_burst_buffer[127:96];
+                    endcase
                     flash_tags[flash_saved_index] <= flash_saved_tag;
                     flash_data[flash_saved_index] <= flash_burst_buffer;
                     flash_valid[flash_saved_index] <= 1'b1;

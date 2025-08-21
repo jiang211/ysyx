@@ -55,10 +55,7 @@ assign dnpc = (EXU_IFU_flush)? EXU_IFU_pc :pc + 4;
 wire [31:0] inst_addr;
 assign inst_addr   = pc;
 
-reg update_valid;
-always @(posedge clk) begin
-    update_valid <= EXU_LSU_valid;
-end
+
 always@(posedge clk)
 begin 
    if(rstn | (resp != 2'b00))begin
@@ -70,7 +67,7 @@ begin
     else if(EXU_IFU_flush)begin 
     pc <= EXU_IFU_pc;
     end
-    else if(update_valid)begin
+    else if(IDU_IFU_ready && IFU_IDU_valid)begin
     pc <= pc + 32'h4;
     end
     
