@@ -75,15 +75,25 @@ module exu(
     output reg [31:0] EXU_LSU_dnpc,
     output reg [31:0] EXU_LSU_IMM,
 
-    output  [4:0]  EXU_IDU_REG_ADDR,
-    output         EXU_IDU_REG_WEN
+    output reg [4:0]  EXU_IDU_REG_ADDR,
+    output reg        EXU_IDU_REG_WEN
     
 );
 
-
-assign EXU_IDU_REG_ADDR = IDU_EXU_rd;
-assign EXU_IDU_REG_WEN = IDU_EXU_reg;
-    
+always@(posedge clk) begin
+    if(rstn) begin
+        EXU_IDU_REG_ADDR <= 5'b0;
+        EXU_IDU_REG_WEN <= 1'b0;
+    end
+    else if(IDU_EXU_valid && EXU_IDU_ready) begin
+        EXU_IDU_REG_ADDR <= IDU_EXU_rd;
+        EXU_IDU_REG_WEN <= IDU_EXU_reg;
+    end
+    else if(LSU_EXU_ready && EXU_LSU_valid) begin
+        EXU_IDU_REG_ADDR <= 5'b0;
+        EXU_IDU_REG_WEN <= 1'b0;
+    end
+end
 wire [3:0]aluop;
 wire zero;
 wire [31:0] alu_out;

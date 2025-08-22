@@ -201,12 +201,28 @@ exuop_ctrl my_exuop_crtl(
     .alu_op         (alu_op),
     .aluOp          (aluop)
 );
+
+
+///////////////////////////
+reg IDU_RS2_valid, IDU_RS1_valid;
+always@(posedge clk)
+begin
+    if(rst_n) begin
+        IDU_RS1_valid <= 1'b0;
+        IDU_RS2_valid <= 1'b0;
+    end
+    else begin
+        IDU_RS1_valid <= idu_rs1_valid;
+        IDU_RS2_valid <= idu_rs2_valid;
+    end
+end
+//////////////////////////
 raw raw_detect(
     // 来自译码的源寄存器
-    .idu_rs1_addr               (rs1),
-    .idu_rs2_addr               (rs2),
-    .idu_rs1_valid              (idu_rs1_valid),   // 为 1 表示本指令真正读 rs1
-    .idu_rs2_valid              (idu_rs2_valid),   // 为 1 表示本指令真正读 rs2
+    .idu_rs1_addr               (IDU_EXU_rs1),
+    .idu_rs2_addr               (IDU_EXU_rs2),
+    .idu_rs1_valid              (IDU_RS1_valid),   // 为 1 表示本指令真正读 rs1
+    .idu_rs2_valid              (IDU_RS2_valid),   // 为 1 表示本指令真正读 rs2
 
     // 来自
     .exu_reg_write_en           (exu_reg_write_en),
