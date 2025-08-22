@@ -274,7 +274,7 @@ end
 
 assign ICACHE_AXI4_rready = 1'b1;
 assign ICACHE_AXI4_arlen = (is_sdram_reg2) ? 2'b11 : 2'b00;  // 一次读取4个数据或1个数据
-assign ICACHE_AXI4_araddr = (is_sdram_reg2) ? {pc_reg2[31:4], 4'b0} : {pc_reg2[31:2], 2'b0};  // 地址对齐到16字节边界
+//assign ICACHE_AXI4_araddr = (is_sdram_reg2) ? {pc_reg2[31:4], 4'b0} : {pc_reg2[31:2], 2'b0};  // 地址对齐到16字节边界
 
 always @(posedge clock)begin
     if(reset) begin
@@ -340,12 +340,14 @@ end
 always @(posedge clock) begin
     if(reset)begin
         ICACHE_AXI4_arvalid <= 0;
+        ICACHE_AXI4_araddr <= 0;
     end
     else if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid)begin
         ICACHE_AXI4_arvalid <= 1'b0;
     end
     else  if(state == IDLE && (!hit_reg2))begin
         ICACHE_AXI4_arvalid <= 1'b1;
+        ICACHE_AXI4_araddr <= (is_sdram_reg2) ? {pc_reg2[31:4], 4'b0} : {pc_reg2[31:2], 2'b0}; 
     end
     
 end
