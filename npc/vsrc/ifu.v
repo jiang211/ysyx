@@ -66,11 +66,9 @@ end
 always@(posedge clk)
 begin
     if(rstn)begin
-        IFU_IDU_PC <= 32'h80000000;
         IFU_dnpc <= 32'h80000000;
     end
     else begin
-        IFU_IDU_PC <= pc;
         IFU_dnpc <= dnpc;
     end
 end
