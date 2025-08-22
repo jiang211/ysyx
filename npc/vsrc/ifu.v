@@ -8,18 +8,6 @@ module ifu(
     input [31:0]EXU_IFU_pc,
     input       EXU_IFU_flush,
     input [1:0] resp,
-    //input       EXU_IFU_STALL_done,
-    //input pcsrc,
-    //input [31:0] imm,
-    //input [31:0] rs1_data,
-    //input [31:0] alu_out,
-    //input zero,
-    //input jalr,
-    //input jal,
-    //input ecall,
-    //input mret,
-    //input [31:0] csr_data,
-    //output reg stall,
     output  reg[31:0] IFU_dnpc,
     //output [31:0] inst_addr_o,
     output [31:0]IFU_IDU_INSTR,
@@ -36,6 +24,7 @@ module ifu(
     input  [31:0]     IFU_AXI4_rdata,
     input             IFU_AXI4_rvalid,
     output reg        IFU_AXI4_rready,
+    input  [31:0]     ICACHE_IFU_raddr,
     output reg [63:0] ifu_count,
     output reg [63:0] ifu_during_count
 );
@@ -117,7 +106,7 @@ always @(posedge clk) begin
         IFU_IDU_PC   <= 32'h0;
     end else if (IFU_AXI4_rvalid && IFU_AXI4_rready) begin
         instr <= IFU_AXI4_rdata;
-        IFU_IDU_PC   <= IFU_AXI4_araddr;   // 早就发出的地址
+        IFU_IDU_PC   <= ICACHE_IFU_raddr;   // 早就发出的地址
     end
 end
 
