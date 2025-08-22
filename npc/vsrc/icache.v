@@ -33,21 +33,13 @@ parameter SDRAM_OFFSET_BITS = 4;     // 2^2 = 4字节 (块内偏移)
 parameter SDRAM_INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
 parameter SDRAM_TAG_BITS = 24;       // 32 - (2+4) = 26位标签
 
-parameter FLASH_BLOCK_SIZE = 4;      // 4字节块大小
-parameter FLASH_NUM_BLOCKS = 16;     // 16个缓存块
-parameter FLASH_OFFSET_BITS = 2;     // 2^1 = 1字节 (块内偏移)
-parameter FLASH_INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
-parameter FLASH_TAG_BITS = 26;       // 32 - (2+4) = 26位标签
 
-reg [SDRAM_TAG_BITS-1:0] sdram_tags [0:SDRAM_NUM_BLOCKS-1];  // 标签存储
-reg [SDRAM_BLOCK_SIZE * 8-1:0] sdram_data [0:SDRAM_NUM_BLOCKS-1];           // 数据存储
-reg sdram_valid [0:SDRAM_NUM_BLOCKS-1];                 // 有效位
+reg [SDRAM_TAG_BITS-1:0] tags [0:SDRAM_NUM_BLOCKS-1];  // 标签存储
+reg [SDRAM_BLOCK_SIZE * 8-1:0] data [0:SDRAM_NUM_BLOCKS-1];           // 数据存储
+reg valid [0:SDRAM_NUM_BLOCKS-1];                 // 有效位
 
-reg [FLASH_TAG_BITS-1:0] flash_tags [0:FLASH_NUM_BLOCKS-1];  // 标签存储
-reg [FLASH_BLOCK_SIZE * 8-1:0] flash_data [0:FLASH_NUM_BLOCKS-1];           // 数据存储
-reg flash_valid [0:FLASH_NUM_BLOCKS-1];                 // 有效位
+              // 有效位
 
-wire is_sdram = (IFU_AXI4_araddr >= 32'ha0000000);
 typedef enum logic [2:0] {
     IDLE,        // 空闲状态
     AXI_WAIT,
@@ -58,32 +50,20 @@ typedef enum logic [2:0] {
 
 
 state_t state;
-reg [31:0] sdram_saved_addr;  // 保存当前请求地址
-reg [SDRAM_INDEX_BITS-1:0] sdram_saved_index;  // 保存当前索引
-reg [SDRAM_TAG_BITS-1:0] sdram_saved_tag;
 
-reg [31:0] flash_saved_addr;  // 保存当前请求地址
-reg [FLASH_INDEX_BITS-1:0] flash_saved_index;  // 保存当前索引
-reg [FLASH_TAG_BITS-1:0] flash_saved_tag;
 
-reg [127:0] sdram_burst_buffer; 
-reg [31:0] flash_burst_buffer;
-wire [SDRAM_TAG_BITS-1:0] sdram_current_tag = IFU_AXI4_araddr[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
-wire [SDRAM_INDEX_BITS-1:0] sdram_current_index = IFU_AXI4_araddr[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
-wire [SDRAM_OFFSET_BITS-1:0] sdram_current_offset = IFU_AXI4_araddr[SDRAM_OFFSET_BITS-1:0];
+reg [127:0] burst_buffer; 
+wire [SDRAM_TAG_BITS-1:0] current_tag = IFU_AXI4_araddr[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
+wire [SDRAM_INDEX_BITS-1:0] current_index = IFU_AXI4_araddr[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
+wire [SDRAM_OFFSET_BITS-1:0] current_offset = IFU_AXI4_araddr[SDRAM_OFFSET_BITS-1:0];
 
-wire [FLASH_TAG_BITS-1:0] flash_current_tag = IFU_AXI4_araddr[31:FLASH_OFFSET_BITS+FLASH_INDEX_BITS];
-wire [FLASH_INDEX_BITS-1:0] flash_current_index = IFU_AXI4_araddr[FLASH_OFFSET_BITS+FLASH_INDEX_BITS-1:FLASH_OFFSET_BITS];
-wire [FLASH_OFFSET_BITS-1:0] flash_current_offset = IFU_AXI4_araddr[FLASH_OFFSET_BITS-1:0];
 
-wire flash_hit = (flash_valid[flash_current_index] && (flash_tags[flash_current_index] == flash_current_tag));
-wire sdram_hit = (sdram_valid[sdram_current_index] && (sdram_tags[sdram_current_index] == sdram_current_tag));
-wire hit = (is_sdram)? sdram_hit : flash_hit;
+wire hit = (valid[current_index] && (tags[current_index] == current_tag));
+
 
 reg [1:0] burst_count;
 integer i;
 
-reg is_sdram_reg1;
 reg hit_reg1;
 reg [31:0]  pc_reg1;
 reg [SDRAM_TAG_BITS-1:0] tag_reg1;
@@ -91,7 +71,6 @@ reg [SDRAM_INDEX_BITS-1:0] index_reg1;
 reg [SDRAM_OFFSET_BITS-1:0] offset_reg1;
 reg reg1_valid;
 
-reg is_sdram_reg2;
 reg hit_reg2;
 reg [31:0] pc_reg2;
 reg [SDRAM_TAG_BITS-1:0] tag_reg2;
@@ -110,7 +89,6 @@ always @(posedge clock) begin
         index_reg1 <= 0;
         offset_reg1 <= 0;
         reg1_valid  <= 0;
-        is_sdram_reg1 <= 0;
         hit_reg1 <= 0;
     end
     else if(flush) begin
@@ -118,11 +96,10 @@ always @(posedge clock) begin
     end
     else if(!stall) begin
         hit_reg1 <= hit;
-        is_sdram_reg1 <= is_sdram;
         pc_reg1 <= IFU_AXI4_araddr;
-        tag_reg1 <= sdram_current_tag;
-        index_reg1 <= sdram_current_index;
-        offset_reg1 <= sdram_current_offset;
+        tag_reg1 <= current_tag;
+        index_reg1 <= current_index;
+        offset_reg1 <= current_offset;
         reg1_valid <= 1'b1;
     end
 end
@@ -134,7 +111,6 @@ always @(posedge clock) begin
         index_reg2 <= 0;
         offset_reg2 <= 0;
         reg2_valid  <= 0;
-        is_sdram_reg2 <= 0;
         hit_reg2 <= 0;
     end
     else if(flush) begin
@@ -142,7 +118,6 @@ always @(posedge clock) begin
     end 
     else if(!stall) begin
         hit_reg2 <= hit_reg1;
-        is_sdram_reg2 <= is_sdram_reg1;
         pc_reg2 <= pc_reg1;
         tag_reg2 <= tag_reg1;
         index_reg2 <= index_reg1;
@@ -158,30 +133,22 @@ always @(posedge clock) begin
     end
     else if(!stall) begin
         if(reg2_valid && hit_reg2 && state == IDLE) begin
-            if(is_sdram_reg2) begin
-                case (pc_reg2[3:2])
-                    2'b00: data_reg3 <= sdram_data[index_reg2][31:0];
-                    2'b01: data_reg3 <= sdram_data[index_reg2][63:32];
-                    2'b10: data_reg3 <= sdram_data[index_reg2][95:64];
-                    2'b11: data_reg3 <= sdram_data[index_reg2][127:96];
-                endcase
-            end else begin
-                data_reg3 <= flash_data[index_reg2];
-            end
+            case (pc_reg2[3:2])
+                2'b00: data_reg3 <= data[index_reg2][31:0];
+                2'b01: data_reg3 <= data[index_reg2][63:32];
+                2'b10: data_reg3 <= data[index_reg2][95:64];
+                2'b11: data_reg3 <= data[index_reg2][127:96];
+            endcase
             addr_reg3 <= pc_reg2;
         end
     end
     else if(state == UPDATED_CACHE)begin
-        if(is_sdram_reg2) begin
-            case (pc_reg2[3:2])
-                2'b00: data_reg3 <= sdram_burst_buffer[31:0];
-                2'b01: data_reg3 <= sdram_burst_buffer[63:32];
-                2'b10: data_reg3 <= sdram_burst_buffer[95:64];
-                2'b11: data_reg3 <= sdram_burst_buffer[127:96];
-            endcase
-        end else begin
-            data_reg3 <= flash_burst_buffer;
-        end
+        case (pc_reg2[3:2])
+            2'b00: data_reg3 <= burst_buffer[31:0];
+            2'b01: data_reg3 <= burst_buffer[63:32];
+            2'b10: data_reg3 <= burst_buffer[95:64];
+            2'b11: data_reg3 <= burst_buffer[127:96];
+        endcase
         addr_reg3 <= pc_reg2;
     end
 end
@@ -273,67 +240,49 @@ always @(posedge clock) begin
 end
 
 assign ICACHE_AXI4_rready = 1'b1;
-assign ICACHE_AXI4_arlen = (is_sdram_reg2) ? 2'b11 : 2'b11;  // 一次读取4个数据或1个数据
+assign ICACHE_AXI4_arlen = 2'b11;  // 一次读取4个数据
 //assign ICACHE_AXI4_araddr = (is_sdram_reg2) ? {pc_reg2[31:4], 4'b0} : {pc_reg2[31:2], 2'b0};  // 地址对齐到16字节边界
 
 always @(posedge clock)begin
     if(reset) begin
-        sdram_burst_buffer <= 128'h0;
-        flash_burst_buffer <= 0;
+        burst_buffer <= 128'h0;
     end 
     else if(state == AXI_READ && ICACHE_AXI4_rvalid) begin
-        if(is_sdram_reg2) begin
-            case (burst_count)
-                2'b00: sdram_burst_buffer[31:0] <= ICACHE_AXI4_rdata;
-                2'b01: sdram_burst_buffer[63:32] <= ICACHE_AXI4_rdata;
-                2'b10: sdram_burst_buffer[95:64] <= ICACHE_AXI4_rdata;
-                2'b11: sdram_burst_buffer[127:96] <= ICACHE_AXI4_rdata;
-            endcase
-            burst_count <= burst_count + 1;
-        end else begin
-            flash_burst_buffer <= ICACHE_AXI4_rdata;
-        end
-    end
+        case (burst_count)
+            2'b00: burst_buffer[31:0] <= ICACHE_AXI4_rdata;
+            2'b01: burst_buffer[63:32] <= ICACHE_AXI4_rdata;
+            2'b10: burst_buffer[95:64] <= ICACHE_AXI4_rdata;
+            2'b11: burst_buffer[127:96] <= ICACHE_AXI4_rdata;
+        endcase
+        burst_count <= burst_count + 1;
+    end 
     else if(state == IDLE) begin
         burst_count <= 2'b00;
-        flash_burst_buffer <= 0;
-        sdram_burst_buffer <= 128'h0;
+        burst_buffer <= 128'h0;
     end
 end
 
 always @(posedge clock) begin
     if(reset) begin
         for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
-            sdram_valid[i] <= 0;  // 复位时所有块无效
-            flash_valid[i] <= 0;  // 复位时所有块无效
+            valid[i] <= 0;  // 复位时所有块无效
         end
     end
     else if(fence_i) begin
         for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
-            sdram_valid[i] <= 0;  // 复位时所有块无效
-            flash_valid[i] <= 0;  // 复位时所有块无效
+            valid[i] <= 0;  // 复位时所有块无效
         end
     end
     else if(state == UPDATED_CACHE) begin
-        if(is_sdram_reg2)begin
-            sdram_valid[index_reg2] <= 1'b1;
-        end
-        else begin
-            flash_valid[index_reg2] <= 1'b1;
-        end
+        valid[index_reg2] <= 1'b1;
     end
 end
 
 always @(posedge clock) begin
     if(state == UPDATED_CACHE) begin
-        if(is_sdram_reg2)begin
-            sdram_tags[index_reg2] <= tag_reg2;
-            sdram_data[index_reg2] <= sdram_burst_buffer;
-        end
-        else begin
-            flash_tags[index_reg2] <= tag_reg2;
-            flash_data[index_reg2] <= flash_burst_buffer;
-        end
+        tags[index_reg2] <= tag_reg2;
+        data[index_reg2] <= burst_buffer;
+        
     end
 end
 
@@ -347,7 +296,7 @@ always @(posedge clock) begin
     end
     else  if(state == IDLE && (!hit_reg2) && reg2_valid)begin
         ICACHE_AXI4_arvalid <= 1'b1;
-        ICACHE_AXI4_araddr <= (is_sdram_reg2) ? {pc_reg2[31:4], 4'b0} : {pc_reg2[31:2], 2'b0}; 
+        ICACHE_AXI4_araddr <= {pc_reg2[31:4], 4'b0} ; 
     end
     
 end
