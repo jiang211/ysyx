@@ -174,13 +174,13 @@ always @(posedge clock) begin
     else if(state == UPDATED_CACHE)begin
         if(is_sdram_reg2) begin
             case (pc_reg2[3:2])
-                2'b00: data_reg3 <= sdram_data[index_reg2][31:0];
-                2'b01: data_reg3 <= sdram_data[index_reg2][63:32];
-                2'b10: data_reg3 <= sdram_data[index_reg2][95:64];
-                2'b11: data_reg3 <= sdram_data[index_reg2][127:96];
+                2'b00: data_reg3 <= sdram_burst_buffer[31:0];
+                2'b01: data_reg3 <= sdram_burst_buffer[63:32];
+                2'b10: data_reg3 <= sdram_burst_buffer[95:64];
+                2'b11: data_reg3 <= sdram_burst_buffer[127:96];
             endcase
         end else begin
-            data_reg3 <= flash_data[index_reg2];
+            data_reg3 <= flash_burst_buffer;
         end
         addr_reg3 <= pc_reg2;
     end
