@@ -54,6 +54,7 @@ state_t state;
 
 
 reg [127:0] burst_buffer; 
+reg [31:0] addr_buffer;
 wire [SDRAM_TAG_BITS-1:0] current_tag = IFU_AXI4_araddr[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
 wire [SDRAM_INDEX_BITS-1:0] current_index = IFU_AXI4_araddr[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
 wire [SDRAM_OFFSET_BITS-1:0] current_offset = IFU_AXI4_araddr[SDRAM_OFFSET_BITS-1:0];
@@ -142,13 +143,13 @@ always @(posedge clock) begin
         end
     end
     else if(state == UPDATED_CACHE)begin
-        case (pc_reg2[3:2])
+        case (addr_buffer[3:2])
             2'b00: data_reg3 <= burst_buffer[31:0];
             2'b01: data_reg3 <= burst_buffer[63:32];
             2'b10: data_reg3 <= burst_buffer[95:64];
             2'b11: data_reg3 <= burst_buffer[127:96];
         endcase
-        addr_reg3 <= pc_reg2;
+        addr_reg3 <= addr_buffer;
     end
 end
 assign ICACHE_IFU_rdata = data_reg3;
@@ -157,13 +158,13 @@ assign ICACHE_IFU_valid = data_valid;
 
 assign ICACHE_IFU_stall = stall;
 wire stall;
-assign stall = reg2_valid && (~hit_reg2);
+assign stall = (state != IDLE);
 
 always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
     end
-    else if((state == IDLE && reg2_valid && hit_reg2) || state == UPDATED_CACHE) begin
+    else if((state == IDLE && reg2_valid && hit_reg2) || (state == UPDATED_CACHE)) begin
         data_valid <= 1'b1;
     end
     else begin
@@ -180,7 +181,7 @@ always @(posedge clock) begin
     else begin
         case (state)
         IDLE: begin
-            if(reg2_valid) begin
+            if(reg2_valid && (~stall)) begin
                 if(hit_reg2)begin
                     state <= IDLE;
                 end
@@ -257,6 +258,15 @@ always @(posedge clock)begin
         burst_count <= 2'b00;
         burst_buffer <= 128'h0;
     end
+end
+
+always @(posedge clock)begin
+    if(reset) begin
+        addr_buffer <= 32'h0;
+    end 
+    else if(state == IDLE && (!hit_reg2) && reg2_valid) begin
+        addr_buffer <= pc_reg2;
+    end 
 end
 
 always @(posedge clock) begin
