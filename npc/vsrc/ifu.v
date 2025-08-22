@@ -12,7 +12,7 @@ module ifu(
     //output [31:0] inst_addr_o,
     output [31:0]IFU_IDU_INSTR,
     //input  [31:0] instr_in,
-    output reg [31:0] IFU_IDU_PC,
+    output  [31:0] IFU_IDU_PC,
     input  EXU_LSU_valid,
 
     input  fence_i,
@@ -30,7 +30,6 @@ module ifu(
     output reg [63:0] ifu_during_count
 );
 reg [31:0] pc;
-assign IFU_IDU_INSTR = instr;//(fence_i) ? 32'b0 : instr;
 
 
 localparam IDLE        = 2'b00;
@@ -88,15 +87,11 @@ always @(posedge clk) begin
     end
 end
 
-always @(posedge clk) begin
-    if (rstn) begin
-        instr <= 32'h0;
-        IFU_IDU_PC   <= 32'h0;
-    end else if (IFU_AXI4_rvalid && IFU_AXI4_rready) begin
-        instr <= IFU_AXI4_rdata;
-        IFU_IDU_PC   <= ICACHE_IFU_raddr;   // 早就发出的地址
-    end
-end
+
+
+assign IFU_IDU_INSTR = IFU_AXI4_rdata;
+assign IFU_IDU_PC   = ICACHE_IFU_raddr;   // 早就发出的地址
+
 
 assign IFU_AXI4_rready = !IFU_IDU_valid || IDU_IFU_ready;
 
