@@ -157,7 +157,7 @@ assign ICACHE_IFU_valid = data_valid;
 
 assign ICACHE_IFU_stall = stall;
 wire stall;
-assign stall = (state != IDLE);
+assign stall = reg2_valid && (~hit_reg2);
 
 always @(posedge clock) begin
     if(reset)begin
@@ -183,7 +183,7 @@ always @(posedge clock) begin
     else begin
         case (state)
         IDLE: begin
-            if(reg2_valid && (~stall)) begin
+            if(reg2_valid) begin
                 if(hit_reg2)begin
                     state <= IDLE;
                 end
