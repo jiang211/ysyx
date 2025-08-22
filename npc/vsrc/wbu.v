@@ -33,8 +33,8 @@ module wbu(
     output reg [31:0] DNPC_DATA,
     output reg WBU_TOP_skip,
     
-    output reg WBU_IDU_REG_wen,
-    output reg [4:0] WBU_IDU_REG_ADDR
+    output WBU_IDU_REG_wen,
+    output [4:0] WBU_IDU_REG_ADDR
 );
 
 //wire [4:0] csr_addr;
@@ -42,20 +42,8 @@ wire csr_en;
 
 //assign csr_addr = (LSU_WBU_ecall) ? 'd3 : (LSU_WBU_mret) ? 'd0 :LSU_WBU_csr_rst;
 
-always @(posedge clk) begin
-    if(rst_n) begin
-        WBU_IDU_REG_ADDR <= 5'b0;
-        WBU_IDU_REG_wen <= 1'b0;
-    end
-    else if(LSU_WBU_ready && LSU_WBU_valid) begin
-        WBU_IDU_REG_ADDR <= addr;
-        WBU_IDU_REG_wen <= LSU_WBU_reg;
-    end
-    else begin
-        WBU_IDU_REG_ADDR <= 5'b0;
-        WBU_IDU_REG_wen <= 1'b0;
-    end
-end
+assign WBU_IDU_REG_ADDR = addr;
+assign WBU_IDU_REG_wen = LSU_WBU_reg;
 
 assign csr_en = LSU_WBU_C_type&(~LSU_WBU_mret)&(~LSU_WBU_ecall);
 assign WBU_wen = LSU_WBU_reg;
