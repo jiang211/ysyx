@@ -273,7 +273,7 @@ always @(posedge clock) begin
 end
 
 assign ICACHE_AXI4_rready = 1'b1;
-assign ICACHE_AXI4_arlen = (is_sdram_reg2) ? 2'b11 : 2'b00;  // 一次读取4个数据或1个数据
+assign ICACHE_AXI4_arlen = (is_sdram_reg2) ? 2'b11 : 2'b11;  // 一次读取4个数据或1个数据
 //assign ICACHE_AXI4_araddr = (is_sdram_reg2) ? {pc_reg2[31:4], 4'b0} : {pc_reg2[31:2], 2'b0};  // 地址对齐到16字节边界
 
 always @(posedge clock)begin
