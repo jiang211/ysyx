@@ -71,7 +71,7 @@ reg [SDRAM_INDEX_BITS-1:0] index_reg1;
 reg [SDRAM_OFFSET_BITS-1:0] offset_reg1;
 reg reg1_valid;
 
-reg hit_reg2;
+wire hit_reg2;
 reg [31:0] pc_reg2;
 reg [SDRAM_TAG_BITS-1:0] tag_reg2;
 reg [SDRAM_INDEX_BITS-1:0] index_reg2;
@@ -82,6 +82,8 @@ reg [31:0] addr_reg3;
 reg [31:0] data_reg3;
 reg data_valid;
 
+assign hit_reg2 = (valid[index_reg2] && (tags[index_reg2] == tag_reg2));
+
 always @(posedge clock) begin
     if(reset) begin
         pc_reg1 <= 0;
@@ -89,13 +91,11 @@ always @(posedge clock) begin
         index_reg1 <= 0;
         offset_reg1 <= 0;
         reg1_valid  <= 0;
-        hit_reg1 <= 0;
     end
     else if(flush) begin
         reg1_valid <= 0;
     end
     else if(!stall) begin
-        hit_reg1 <= hit;
         pc_reg1 <= IFU_AXI4_araddr;
         tag_reg1 <= current_tag;
         index_reg1 <= current_index;
@@ -111,13 +111,11 @@ always @(posedge clock) begin
         index_reg2 <= 0;
         offset_reg2 <= 0;
         reg2_valid  <= 0;
-        hit_reg2 <= 0;
     end
     else if(flush) begin
         reg2_valid <= 0;
     end 
     else if(!stall) begin
-        hit_reg2 <= hit_reg1;
         pc_reg2 <= pc_reg1;
         tag_reg2 <= tag_reg1;
         index_reg2 <= index_reg1;
