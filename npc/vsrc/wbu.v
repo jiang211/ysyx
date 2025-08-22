@@ -43,7 +43,7 @@ wire csr_en;
 //assign csr_addr = (LSU_WBU_ecall) ? 'd3 : (LSU_WBU_mret) ? 'd0 :LSU_WBU_csr_rst;
 
 assign WBU_IDU_REG_ADDR = addr;
-assign WBU_IDU_REG_wen = LSU_WBU_reg;
+assign WBU_IDU_REG_wen = LSU_WBU_reg && LSU_WBU_valid;
 
 assign csr_en = LSU_WBU_C_type&(~LSU_WBU_mret)&(~LSU_WBU_ecall);
 assign WBU_wen = LSU_WBU_reg;

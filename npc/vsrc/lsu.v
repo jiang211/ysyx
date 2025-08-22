@@ -94,7 +94,7 @@ module lsu(
 );
 
 assign LSU_IDU_REG_ADDR = EXU_LSU_rd;
-assign LSU_IDU_REG_WEN = EXU_LSU_reg;
+assign LSU_IDU_REG_WEN = EXU_LSU_reg && LSU_EXU_ready && EXU_LSU_valid;
 
 parameter  IDLE = 0,
             CACHE_DATA = 1,
