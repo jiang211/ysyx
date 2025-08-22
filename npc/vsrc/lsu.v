@@ -100,7 +100,7 @@ always @(posedge clk) begin
     end
     else if(EXU_LSU_valid && LSU_EXU_ready) begin
         LSU_IDU_REG_ADDR <= EXU_LSU_rd;
-        LSU_IDU_REG_WEN <= EXU_LSU_wen;
+        LSU_IDU_REG_WEN <= EXU_LSU_reg;
     end 
     else if(LSU_WBU_valid && LSU_WBU_ready) begin
         LSU_IDU_REG_ADDR <= 5'b0;
