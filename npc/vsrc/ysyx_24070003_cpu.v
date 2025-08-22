@@ -886,7 +886,7 @@ always @(posedge clock ) begin
     end
 end
 always @(posedge clock ) begin
-    if(IDU_EXU_ebreak) begin
+    if(EXU_LSU_ebreak) begin
         $display("total_count               = %040d\n",total_count);
         $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
         $display("lsu_count                 = %040d\n",lsu_count);
