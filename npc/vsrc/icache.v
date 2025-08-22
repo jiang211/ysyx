@@ -129,7 +129,7 @@ always @(posedge clock) begin
         addr_reg3 <= 0;
         data_reg3 <= 0;
     end
-    else if(!stall) begin
+    else if(!stall && IFU_AXI4_rready) begin
         if(reg2_valid && hit_reg2 && state == IDLE) begin
             case (pc_reg2[3:2])
                 2'b00: data_reg3 <= data[index_reg2][31:0];
