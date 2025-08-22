@@ -75,7 +75,7 @@ begin
 end
 reg [31:0] instr;
 
-assign IFU_IDU_valid = 1'b1;
+assign IFU_IDU_valid = IFU_AXI4_rvalid;
 
 assign IFU_AXI4_araddr = pc;
 always @(posedge clk) begin
