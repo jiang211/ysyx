@@ -18,6 +18,7 @@ module icache(
     input  [31:0]     ICACHE_AXI4_rdata,
     input             ICACHE_AXI4_rvalid,
     input             ICACHE_AXI4_rlast,
+    output            ICACHE_IFU_stall,
     output            ICACHE_AXI4_rready,
     output reg [7:0]  ICACHE_AXI4_arlen,
     output reg [63:0] ICACHE_hit_count,
@@ -154,6 +155,7 @@ assign ICACHE_IFU_rdata = data_reg3;
 assign ICACHE_IFU_raddr = addr_reg3;
 assign ICACHE_IFU_valid = data_valid;
 
+assign ICACHE_IFU_stall = stall;
 wire stall;
 assign stall = (state != IDLE);
 

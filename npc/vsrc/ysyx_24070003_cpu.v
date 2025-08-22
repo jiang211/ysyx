@@ -174,7 +174,7 @@ wire [31:0] IFU_IDU_PC;
 wire [31:0] IFU_IDU_dnpc;
 wire [31:0] IFU_AXI4_rdata,IFU_AXI4_araddr;
 wire IFU_AXI4_arvalid,IFU_AXI4_arready,IFU_AXI4_rvalid,IFU_AXI4_rready;
-
+wire ICACHE_IFU_stall;
 wire EXU_IFU_flush;
 wire [31:0] ICACHE_IFU_raddr;
 
@@ -214,6 +214,7 @@ ifu my_ifu(
     .IFU_AXI4_rvalid(IFU_AXI4_rvalid),
     .IFU_AXI4_rready(IFU_AXI4_rready),
     .ICACHE_IFU_raddr(ICACHE_IFU_raddr),
+    .ICACHE_IFU_stall(ICACHE_IFU_stall),
     .ifu_count      (ifu_count),
     .ifu_during_count (ifu_during_count)
 );
@@ -237,6 +238,7 @@ icache  my_icache(
     .ICACHE_IFU_rdata       (IFU_AXI4_rdata),
     .ICACHE_IFU_raddr       (ICACHE_IFU_raddr),
     .ICACHE_IFU_valid       (IFU_AXI4_rvalid),
+    .ICACHE_IFU_stall       (ICACHE_IFU_stall),
 
     .ICACHE_AXI4_araddr      (ICACHE_AXI4_araddr),
     .ICACHE_AXI4_arvalid     (ICACHE_AXI4_arvalid),

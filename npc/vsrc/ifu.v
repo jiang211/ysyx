@@ -25,6 +25,7 @@ module ifu(
     input             IFU_AXI4_rvalid,
     output reg        IFU_AXI4_rready,
     input  [31:0]     ICACHE_IFU_raddr,
+    input             ICACHE_IFU_stall,
     output reg [63:0] ifu_count,
     output reg [63:0] ifu_during_count
 );
@@ -56,7 +57,7 @@ begin
     else if(EXU_IFU_flush)begin 
     pc <= EXU_IFU_pc;
     end
-    else if(IDU_IFU_ready && IFU_IDU_valid)begin
+    else if(IDU_IFU_ready && (~ICACHE_IFU_stall))begin
     pc <= pc + 32'h4;
     end
     
@@ -74,19 +75,8 @@ begin
 end
 reg [31:0] instr;
 
-always @(posedge clk) begin
-    if(rstn)begin
-        IFU_IDU_valid <= 1'b0;
-    end
-    else begin
-        if(IFU_AXI4_rready && IFU_AXI4_rvalid && (~stall))begin
-            IFU_IDU_valid <= 1'b1;
-        end
-        else if(IDU_IFU_ready && IFU_IDU_valid) begin
-            IFU_IDU_valid <= 1'b0;
-        end
-    end
-end
+assign IFU_IDU_valid = 1'b1;
+
 assign IFU_AXI4_araddr = pc;
 always @(posedge clk) begin
     if (rstn) begin
