@@ -345,7 +345,7 @@ always @(posedge clock) begin
     else if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid)begin
         ICACHE_AXI4_arvalid <= 1'b0;
     end
-    else  if(state == IDLE && (!hit_reg2))begin
+    else  if(state == IDLE && (!hit_reg2) && reg2_valid)begin
         ICACHE_AXI4_arvalid <= 1'b1;
         ICACHE_AXI4_araddr <= (is_sdram_reg2) ? {pc_reg2[31:4], 4'b0} : {pc_reg2[31:2], 2'b0}; 
     end
