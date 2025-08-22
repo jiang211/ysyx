@@ -236,6 +236,8 @@ reg idu_exu_valid;
 always @(posedge clk) begin
     if(rst_n) begin
         idu_exu_valid <= 1'b0;
+    end else if(stall) begin
+        idu_exu_valid <= 1'b0;
     end else if(IFU_IDU_valid && IDU_IFU_ready ) begin
         idu_exu_valid <= 1'b1;
     end else if(EXU_IDU_ready && IDU_EXU_valid) begin
@@ -243,7 +245,7 @@ always @(posedge clk) begin
     end
 end
 
-assign IDU_EXU_valid = idu_exu_valid & (~stall);
+assign IDU_EXU_valid = idu_exu_valid ;
 
 always@(posedge clk)
 begin 
