@@ -89,10 +89,6 @@ always@(posedge clk) begin
         EXU_IDU_REG_ADDR <= IDU_EXU_rd;
         EXU_IDU_REG_WEN <= IDU_EXU_reg;
     end
-    else if(LSU_EXU_ready && EXU_LSU_valid) begin
-        EXU_IDU_REG_ADDR <= 5'b0;
-        EXU_IDU_REG_WEN <= 1'b0;
-    end
 end
 wire [3:0]aluop;
 wire zero;
