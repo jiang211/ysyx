@@ -168,7 +168,7 @@ always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
     end
-    else if(IDU_IFU_STALL || LSU_IFU_stall) begin
+    else if(IDU_IFU_STALL) begin
         data_valid <= data_valid;
     end
     else if((state == IDLE && reg2_valid && hit_reg2 && (~flush)) || (state == UPDATED_CACHE)) begin
