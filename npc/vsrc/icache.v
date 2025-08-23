@@ -185,7 +185,7 @@ always @(posedge clock) begin
                 if(hit_reg2)begin
                     state <= IDLE;
                 end
-                else begin
+                else if(~flush)begin
                     state <= AXI_WAIT;
                 end
             end
