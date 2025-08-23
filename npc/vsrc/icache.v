@@ -169,6 +169,9 @@ always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
     end
+    else if(flush) begin
+        data_valid <= 0;
+    end
     else if(LSU_IFU_stall || IDU_IFU_STALL) begin
         data_valid <= data_valid;
     end
