@@ -265,7 +265,7 @@ always @(posedge clk) begin
                 
                 if((!(EXU_LSU_ren || EXU_LSU_wen))) begin
                     state <= IDLE;
-                end else if (EXU_LSU_wen  ) begin
+                end else if (EXU_LSU_wen && LSU_EXU_ready && EXU_LSU_valid ) begin
                     LSU_AXI4_AWADDR <= EXU_LSU_result;
                     LSU_AXI4_WDATA <= lsu_wdata;
                     LSU_AXI4_WSTRB <= lsu_wstrb;
@@ -274,7 +274,7 @@ always @(posedge clk) begin
                     LSU_AXI_wlast <= 1'b1; 
                     LSU_AXI4_wsize <= awsize;
                     state <= START;
-                end else if ((EXU_LSU_ren )) begin
+                end else if ((EXU_LSU_ren && LSU_EXU_ready && EXU_LSU_valid)) begin
                     LSU_AXI4_ARADDR <= EXU_LSU_result;
                     LSU_AXI4_ARSIZE <= lsu_arsize;
                     LSU_AXI4_ARVALID <= 1'b1;
