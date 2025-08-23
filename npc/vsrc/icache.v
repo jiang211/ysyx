@@ -90,6 +90,7 @@ reg data_valid;
 
 assign hit_reg2 = (valid[index_reg2] && (tags[index_reg2] == tag_reg2));
 
+wire icache_stall = stall || LSU_IFU_stall || IDU_IFU_STALL;
 always @(posedge clock) begin
     if(reset) begin
         pc_reg1 <= 0;
@@ -101,7 +102,7 @@ always @(posedge clock) begin
     else if(flush) begin
         reg1_valid <= 0;
     end
-    else if(!stall && IFU_AXI4_rready) begin
+    else if(!icache_stall && IFU_AXI4_rready) begin
         pc_reg1 <= IFU_AXI4_araddr;
         tag_reg1 <= current_tag;
         index_reg1 <= current_index;
@@ -121,7 +122,7 @@ always @(posedge clock) begin
     else if(flush) begin
         reg2_valid <= 0;
     end 
-    else if(!stall && IFU_AXI4_rready) begin
+    else if(!icache_stall && IFU_AXI4_rready) begin
         pc_reg2 <= pc_reg1;
         tag_reg2 <= tag_reg1;
         index_reg2 <= index_reg1;
@@ -135,7 +136,7 @@ always @(posedge clock) begin
         addr_reg3 <= 0;
         data_reg3 <= 0;
     end
-    else if(!stall && IFU_AXI4_rready) begin
+    else if(!icache_stall && IFU_AXI4_rready) begin
         if(reg2_valid && hit_reg2 && state == IDLE) begin
             case (pc_reg2[3:2])
                 2'b00: data_reg3 <= data[index_reg2][31:0];
@@ -160,7 +161,7 @@ assign ICACHE_IFU_rdata = data_reg3;
 assign ICACHE_IFU_raddr = addr_reg3;
 assign ICACHE_IFU_valid = data_valid && (~flush);
 
-assign ICACHE_IFU_stall = stall;
+assign ICACHE_IFU_stall = icache_stall;
 wire stall;
 assign stall = (state != IDLE);
 
@@ -168,7 +169,7 @@ always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
     end
-    else if(IDU_IFU_STALL) begin
+    else if(icache_stall) begin
         data_valid <= data_valid;
     end
     else if((state == IDLE && reg2_valid && hit_reg2 && (~flush)) || (state == UPDATED_CACHE)) begin
