@@ -93,7 +93,7 @@ assign IFU_IDU_INSTR = IFU_AXI4_rdata;
 assign IFU_IDU_PC   = ICACHE_IFU_raddr;   // 早就发出的地址
 
 
-assign IFU_AXI4_rready = !IFU_IDU_valid || IDU_IFU_ready;
+assign IFU_AXI4_rready = IDU_IFU_ready;
 
 // always @(posedge clk) begin
 //     if (rstn) begin
