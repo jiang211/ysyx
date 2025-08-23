@@ -9,6 +9,7 @@ module axi_arbiter #(
     input  [ADDR_WIDTH-1:0] ifu_araddr,
     input                   ifu_arvalid,
     output                  ifu_arready,
+    input                   flush,
     
     output [DATA_WIDTH-1:0] ifu_rdata,
     output                  ifu_rvalid,
@@ -119,13 +120,15 @@ always @(posedge clk ) begin
             
             // IFU读操作
             IFU_READ_START: begin
-                if (master_arready) begin
+                if(flush) begin state <= IDLE; end
+                else if (master_arready) begin
                     state <= IFU_READ_WAIT;
                 end
             end
             
             IFU_READ_WAIT: begin
-                if (master_rvalid && master_rready && master_rlast) begin
+                if(flush) begin state <= IDLE; end
+                else if (master_rvalid && master_rready && master_rlast) begin
                     state <= IDLE;
                 end
             end

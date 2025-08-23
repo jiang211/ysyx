@@ -278,6 +278,7 @@ axi_arbiter my_axi_arbiter(
     .rstn                   (reset),   
     
     // IFU 接口 (指令获取)
+    .flush                   (flush),
     .ifu_araddr             (ICACHE_AXI4_araddr),
     .ifu_arvalid            (ICACHE_AXI4_arvalid),
     .ifu_arready             (ICACHE_AXI4_arready),
