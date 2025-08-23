@@ -22,7 +22,7 @@ module ifu(
     output reg        IFU_AXI4_arvalid,
     input             IFU_AXI4_arready,
     input  [31:0]     IFU_AXI4_rdata,
-    input             IFU_AXI4_rvalid,
+    input             ICACHE_IFU_rvalid,
     output reg        IFU_AXI4_rready,
     input  [31:0]     ICACHE_IFU_raddr,
     input             ICACHE_IFU_stall,
@@ -74,7 +74,7 @@ begin
 end
 reg [31:0] instr;
 
-assign IFU_IDU_valid = IFU_AXI4_rvalid;
+assign IFU_IDU_valid = ICACHE_IFU_rvalid;
 
 assign IFU_AXI4_araddr = pc;
 always @(posedge clk) begin

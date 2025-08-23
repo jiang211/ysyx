@@ -8,6 +8,8 @@ module icache(
     // output reg        IFU_AXI4_rvalid,
     input             IFU_AXI4_rready,
 
+    input             IDU_IFU_STALL,
+
     output    [31:0]  ICACHE_IFU_rdata,
     output    [31:0]  ICACHE_IFU_raddr,
     output            ICACHE_IFU_valid,
@@ -163,6 +165,9 @@ assign stall = (state != IDLE);
 always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
+    end
+    else if(IDU_IFU_STALL) begin
+        data_valid <= data_valid;
     end
     else if((state == IDLE && reg2_valid && hit_reg2 && (~flush)) || (state == UPDATED_CACHE)) begin
         data_valid <= 1'b1;

@@ -211,7 +211,7 @@ ifu my_ifu(
     .IFU_AXI4_arvalid(IFU_AXI4_arvalid),
     .IFU_AXI4_arready(IFU_AXI4_arready),
     .IFU_AXI4_rdata(IFU_AXI4_rdata),
-    .IFU_AXI4_rvalid(IFU_AXI4_rvalid),
+    .ICACHE_IFU_rvalid(IFU_AXI4_rvalid),
     .IFU_AXI4_rready(IFU_AXI4_rready),
     .ICACHE_IFU_raddr(ICACHE_IFU_raddr),
     .ICACHE_IFU_stall(ICACHE_IFU_stall),
@@ -233,6 +233,8 @@ icache  my_icache(
    // .IFU_AXI4_rdata          (IFU_AXI4_rdata),
     //.IFU_AXI4_rvalid         (IFU_AXI4_rvalid),
     .IFU_AXI4_rready         (IFU_AXI4_rready),
+
+    .IDU_IFU_STALL           (stall),
 
 
     .ICACHE_IFU_rdata       (IFU_AXI4_rdata),
