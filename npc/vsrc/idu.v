@@ -2,6 +2,7 @@ module idu(
     input wire [31:0] INSTR,
     input wire [31:0] IFU_IDU_PC,
     input [31:0]IFU_IDU_dnpc,
+    input       flush,
     //input wire EXU_IFU_flush,
     input clk,
     input rst_n,
@@ -312,7 +313,7 @@ begin
     LOAD_type_count               <=        64'b0;
     STORE_type_count               <=        64'b0;
     end
-    else if(stall)begin
+    else if(stall || flush)begin
    // IDU_EXU_opcode        <=        opcode   ;     
     IDU_EXU_rd            <=        5'b0;
     IDU_EXU_rs1           <=        5'b0;  

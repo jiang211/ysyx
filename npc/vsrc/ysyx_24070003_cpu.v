@@ -175,7 +175,7 @@ wire [31:0] IFU_IDU_dnpc;
 wire [31:0] IFU_AXI4_rdata,IFU_AXI4_araddr;
 wire IFU_AXI4_arvalid,IFU_AXI4_arready,IFU_AXI4_rvalid,IFU_AXI4_rready;
 wire ICACHE_IFU_stall;
-wire EXU_IFU_flush;
+wire flush;
 wire [31:0] ICACHE_IFU_raddr;
 
 ifu my_ifu(
@@ -189,7 +189,7 @@ ifu my_ifu(
     .stall          (stall),
    //.pcsrc          (pcsrc     ),
     .EXU_IFU_pc     (EXU_IFU_pc),
-    .EXU_IFU_flush  (EXU_IFU_flush),
+    .EXU_IFU_flush  (flush),
     .EXU_LSU_valid  (EXU_LSU_valid),
     //.EXU_IFU_STALL_done (EXU_IFU_STALL_done),
     //.imm            (imm        ),
@@ -227,7 +227,7 @@ icache  my_icache(
     .clock                   (clock),
     .reset                   (reset),
     .fence_i                 (fence_i),
-    .flush                   (EXU_IFU_flush),
+    .flush                   (flush),
     .IFU_AXI4_araddr         (IFU_AXI4_araddr),
     .IFU_AXI4_arvalid        (IFU_AXI4_arvalid),
    // .IFU_AXI4_rdata          (IFU_AXI4_rdata),
@@ -487,6 +487,7 @@ idu my_idu(
     .clk                    (clock        ),
     .IFU_IDU_PC             (IFU_IDU_PC),
     .rst_n                   (reset       ),
+    .flush                   (flush       ),
     .fence_i                (fence_i     ),
     .IFU_IDU_dnpc           (IFU_IDU_dnpc       ),
    // .IFU_IDU_STALL           (IFU_IDU_STALL),
@@ -638,7 +639,7 @@ exu my_exu(
     .EXU_LSU_csr_in(EXU_LSU_csr_in),
     .EXU_IFU_pc   (EXU_IFU_pc),
     //.EXU_IFU_STALL_done  (EXU_IFU_STALL_done),
-    .EXU_IFU_flush       (EXU_IFU_flush),
+    .EXU_flush       (flush),
     .EXU_LSU_RS2DATA    (EXU_LSU_RS2DATA),
     .EXU_LSU_PC         (EXU_LSU_PC),
     .EXU_LSU_dnpc       (EXU_LSU_dnpc),

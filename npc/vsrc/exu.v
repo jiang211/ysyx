@@ -69,7 +69,7 @@ module exu(
     output reg EXU_LSU_C_type,
     output reg [2:0] EXU_LSU_csr_rst,
    // output reg EXU_IFU_STALL_done,
-    output     EXU_IFU_flush,
+    output     EXU_flush,
     output reg [31:0] EXU_LSU_RS2DATA,
     output reg [31:0] EXU_LSU_PC,
     output reg [31:0] EXU_LSU_dnpc,
@@ -106,7 +106,7 @@ alu my_alu(
     .alu_out        (alu_out    ),
     .zero           (zero       )
 );
-assign EXU_IFU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jal || IDU_EXU_jalr || zero) && (IDU_EXU_valid && EXU_IDU_ready);
+assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jal || IDU_EXU_jalr || zero) && (IDU_EXU_valid && EXU_IDU_ready);
 
 assign EXU_IDU_ready = LSU_EXU_ready;  
 
