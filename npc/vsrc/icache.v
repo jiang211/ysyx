@@ -147,7 +147,7 @@ always @(posedge clock) begin
             addr_reg3 <= pc_reg2;
         end
     end
-    else if(state == UPDATED_CACHE)begin
+    else if(!icache_stall && state == UPDATED_CACHE)begin
         case (addr_buffer[3:2])
             2'b00: data_reg3 <= burst_buffer[31:0];
             2'b01: data_reg3 <= burst_buffer[63:32];
@@ -217,7 +217,7 @@ always @(posedge clock) begin
             end
         end
         UPDATED_CACHE: begin
-            state <= IDLE;
+            if(!icache_stall ) begin state <= IDLE; end
         end
         default: begin
             state <= IDLE;
