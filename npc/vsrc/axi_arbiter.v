@@ -122,9 +122,6 @@ always @(posedge clk ) begin
                 if (master_arready) begin
                     state <= IFU_READ_WAIT;
                 end
-                else if(!ifu_arvalid) begin
-                    state <= IDLE;
-                end
             end
             
             IFU_READ_WAIT: begin
