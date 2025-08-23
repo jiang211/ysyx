@@ -192,11 +192,13 @@ always @(posedge clock) begin
     else begin
         case (state)
         IDLE: begin
-            if(reg2_valid && (~stall) && IFU_AXI4_rready && hit_reg2) begin
-                state <= IDLE;
-            end
-            else if(~flush)begin
-                state <= AXI_WAIT;
+            if(reg2_valid && (~stall) && IFU_AXI4_rready) begin
+                if(hit_reg2)begin
+                    state <= IDLE;
+                end
+                else if(~flush)begin
+                    state <= AXI_WAIT;
+                end
             end
         end
         AXI_WAIT: begin
