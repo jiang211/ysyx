@@ -217,7 +217,7 @@ always @(posedge clock) begin
             end
         end
         UPDATED_CACHE: begin
-            state <= IDLE;
+            if(!(LSU_IFU_stall || IDU_IFU_STALL)) begin state <= IDLE; end
         end
         default: begin
             state <= IDLE;
