@@ -57,6 +57,7 @@ state_t state;
 
 reg [127:0] burst_buffer; 
 reg [31:0] addr_buffer;
+reg [SDRAM_INDEX_BITS - 1:0] index_buffer;
 wire [SDRAM_TAG_BITS-1:0] current_tag = IFU_AXI4_araddr[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
 wire [SDRAM_INDEX_BITS-1:0] current_index = IFU_AXI4_araddr[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
 wire [SDRAM_OFFSET_BITS-1:0] current_offset = IFU_AXI4_araddr[SDRAM_OFFSET_BITS-1:0];
@@ -269,9 +270,11 @@ end
 
 always @(posedge clock)begin
     if(reset) begin
+        index_buffer <= 0;
         addr_buffer <= 32'h0;
     end 
     else if(state == IDLE && (!hit_reg2) && reg2_valid) begin
+        index_buffer <= index_reg2;
         addr_buffer <= pc_reg2;
     end 
 end
@@ -288,14 +291,14 @@ always @(posedge clock) begin
         end
     end
     else if(state == UPDATED_CACHE) begin
-        valid[index_reg2] <= 1'b1;
+        valid[index_buffer] <= 1'b1;
     end
 end
 
 always @(posedge clock) begin
     if(state == UPDATED_CACHE) begin
-        tags[index_reg2] <= tag_reg2;
-        data[index_reg2] <= burst_buffer;
+        tags[index_buffer] <= tag_reg2;
+        data[index_buffer] <= burst_buffer;
         
     end
 end
