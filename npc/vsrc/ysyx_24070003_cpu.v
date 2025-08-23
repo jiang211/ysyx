@@ -223,6 +223,7 @@ wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr;
 wire ICACHE_AXI4_arvalid,ICACHE_AXI4_arready,ICACHE_AXI4_rvalid,ICACHE_AXI4_rready;
 wire [7:0] ICACHE_AXI4_arlen;
 wire [7:0] AXI4_MASTER_ARLEN;
+wire LSU_IFU_stall;
 icache  my_icache(
     .clock                   (clock),
     .reset                   (reset),
@@ -235,6 +236,7 @@ icache  my_icache(
     .IFU_AXI4_rready         (IFU_AXI4_rready),
 
     .IDU_IFU_STALL           (stall),
+    .LSU_IFU_stall           (LSU_IFU_stall),
 
 
     .ICACHE_IFU_rdata       (IFU_AXI4_rdata),
@@ -724,6 +726,8 @@ lsu my_lsu(
     .LSU_WBU_csr_in (LSU_WBU_csr_in),
     .LSU_WBU_dnpc   (LSU_WBU_dnpc),
     .LSU_WBU_skip   (LSU_WBU_skip),
+
+    .LSU_IFU_stall  (LSU_IFU_stall),
     //.LSU_WLEN       (LSU_WLEN),
     //.LSU_WDATA      (LSU_WDATA),
     //.LSU_RDATA      (LSU_RDATA)

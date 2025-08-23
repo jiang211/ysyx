@@ -56,6 +56,8 @@ module lsu(
    // output    [31:0] LSU_WDATA,
     //input    [31:0] LSU_RDATA,
 
+    output      LSU_IFU_stall,
+
     output reg [32-1:0] LSU_AXI4_ARADDR,
     output reg                  LSU_AXI4_ARVALID,
     input                       LSU_AXI4_ARREADY,
@@ -187,6 +189,7 @@ reg [2:0] csr_rst;
 reg [31:0] csr_in,pc,dnpc;
 reg lw,lh,lb,lbu,lhu,ren,wen;
 
+assign LSU_IFU_stall = (state != IDLE);
 
 always@(posedge clk) begin
     if(rst_n) begin
