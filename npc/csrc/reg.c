@@ -45,13 +45,13 @@ static const char* reg_name(int idx, int width) {
 
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
   printf("ref_pc:%x,dut_pc:%x\n", ref_r->pc, cpu.pc);
-  if( difftest_check_reg( "pc", pc, ref_r->pc, cpu.pc ) == false ){return false;}
+  
   for(int i=1; i<32; i++) {
     if( difftest_check_reg( reg_name(i, 64), ref_r->pc, ref_r->gpr[check_reg_idx(i)], gpr(i) ) == false )
       return false;
   }
   //printf("ref_pc:%x,dut_pc:%x\n", ref_r->pc, cpu.pc);
-  //if( difftest_check_reg( "pc", pc, ref_r->pc, cpu.pc ) == false ){return false;}
+  if( difftest_check_reg( "pc", pc, ref_r->pc, cpu.pc ) == false ){return false;}
   return true ; 
 }
 
