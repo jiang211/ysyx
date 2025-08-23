@@ -202,8 +202,7 @@ always @(posedge clock) begin
             end
         end
         AXI_WAIT: begin
-            if(flush) begin state <= IDLE; end
-            else if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
+            if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
                 state <= AXI_READ;
             end
             else begin
@@ -211,8 +210,7 @@ always @(posedge clock) begin
             end
         end
         AXI_READ: begin
-            if(flush) begin state <= IDLE; end
-            else if(ICACHE_AXI4_rvalid && ICACHE_AXI4_rlast) begin
+            if(ICACHE_AXI4_rvalid && ICACHE_AXI4_rlast) begin
                 state <= UPDATED_CACHE;
             end
             else begin
