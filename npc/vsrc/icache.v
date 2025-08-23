@@ -217,7 +217,7 @@ always @(posedge clock) begin
             end
         end
         UPDATED_CACHE: begin
-            if(!icache_stall ) begin state <= IDLE; end
+            state <= IDLE;
         end
         default: begin
             state <= IDLE;
@@ -263,10 +263,6 @@ always @(posedge clock)begin
             2'b11: burst_buffer[127:96] <= ICACHE_AXI4_rdata;
         endcase
         burst_count <= burst_count + 1;
-    end 
-    else if(state == IDLE) begin
-        burst_count <= 2'b00;
-        burst_buffer <= 128'h0;
     end
 end
 
