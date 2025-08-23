@@ -50,11 +50,11 @@ begin
    if(rstn | (resp != 2'b00))begin
     pc<=32'h30000000 ;
     end
-    else if(stall) begin
-    pc <= pc;
-    end
     else if(EXU_IFU_flush)begin 
     pc <= EXU_IFU_pc;
+    end
+    else if(stall) begin
+    pc <= pc;
     end
     else if(IDU_IFU_ready && (~ICACHE_IFU_stall))begin
     pc <= pc + 32'h4;
