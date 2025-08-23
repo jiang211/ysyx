@@ -190,7 +190,7 @@ begin
     //EXU_IFU_pc               <=        pc_jump;
     EXU_LSU_RS2DATA           <=        rs2_data;
     EXU_LSU_PC               <=        pc_data;
-    EXU_LSU_dnpc               <=        IDU_EXU_dnpc;
+    EXU_LSU_dnpc               <=        EXU_IFU_pc;
     EXU_LSU_IMM                <=      imm_data;
     end
     else begin
