@@ -164,7 +164,7 @@ always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
     end
-    else if((state == IDLE && reg2_valid && hit_reg2) || (state == UPDATED_CACHE)) begin
+    else if((state == IDLE && reg2_valid && hit_reg2 && (~flush)) || (state == UPDATED_CACHE)) begin
         data_valid <= 1'b1;
     end
     else begin
