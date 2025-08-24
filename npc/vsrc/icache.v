@@ -189,7 +189,7 @@ always @(posedge clock) begin
     if(reset) begin
         flush_r <= 0;
     end
-    else if(state != IDLE) begin
+    else if(state != IDLE && flush) begin
         flush_r <= flush;
     end
 end
