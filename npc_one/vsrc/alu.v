@@ -24,9 +24,6 @@ module alu(
     wire unsigned [31:0] unsigned_b = b;
     wire [31:0] opdata1;
     wire [31:0] opdata2;
-    wire [63:0] mulh_result = signed_a * signed_b;
-    wire [63:0] mulhu_result = unsigned_a * unsigned_b;
-    wire [63:0] m_result = (u_alu_type) ? mulhu_result : mulh_result;
     assign opdata1 = (u_alu_type)? unsigned_a : signed_a;
     assign opdata2 = (u_alu_type)? unsigned_b : signed_b;
     /*
@@ -106,17 +103,14 @@ module alu(
             end
             4'b1001: begin
                 zero = 1'b0;
-                if(mul_high)
-                    alu_out = m_result[63:32];
-                else
-                    alu_out = opdata1 * opdata2;
+                alu_out = 32'b0;
             end
             4'b1010: begin
-                    alu_out = opdata1 / opdata2;
+                    alu_out = 32'b0;
                     zero = 1'b0;
                 end
             4'b1011: begin
-                    alu_out = opdata1 % opdata2;
+                    alu_out = 32'b0;
                     zero = 1'b0;
                 end
             4'b1100:
@@ -175,11 +169,11 @@ module alu(
                     zero = 1'b0;
                 end
             4'b1111: begin
-                    alu_out = m_result[63:32];
+                    alu_out = 32'b0;
                     zero = 1'b0;
                 end
             default: begin
-                    alu_out = m_result[31:0];
+                    alu_out = 32'b0;
                     zero = 1'b0;
                 end
         endcase
