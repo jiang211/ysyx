@@ -192,6 +192,9 @@ always @(posedge clock) begin
     else if(state != IDLE && flush) begin
         flush_r <= flush;
     end
+    else if(ICACHE_AXI4_rlast) begin
+        flush_r <= 0;
+    end
 end
 
 always @(posedge clock) begin
