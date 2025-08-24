@@ -486,6 +486,10 @@ wire IDU_EXU_lw, IDU_EXU_lh, IDU_EXU_lb, IDU_EXU_lbu, IDU_EXU_lhu, IDU_EXU_sw, I
 wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr,IDU_EXU_C_type;
 wire [2:0] IDU_EXU_csr_rst;
 wire fence_i,stall;
+wire IDU_EXU_exu_raw_rs1;
+wire IDU_EXU_exu_raw_rs2;
+wire IDU_EXU_lsu_raw_rs1;
+wire IDU_EXU_lsu_raw_rs2;
 idu my_idu(
    // .EXU_IFU_flush          (EXU_IFU_flush),
     .clk                    (clock        ),
@@ -540,6 +544,10 @@ idu my_idu(
     .IDU_EXU_PC             (IDU_EXU_PC),
     .IDU_EXU_dnpc           (IDU_EXU_dnpc),
 
+    .IDU_EXU_exu_raw_rs1    (IDU_EXU_exu_raw_rs1),
+    .IDU_EXU_exu_raw_rs2    (IDU_EXU_exu_raw_rs2),
+    .IDU_EXU_lsu_raw_rs1    (IDU_EXU_lsu_raw_rs1),
+    .IDU_EXU_lsu_raw_rs2    (IDU_EXU_lsu_raw_rs2),
 
     .calcu_type_count       (calcu_type_count),
     .Jump_type_count        (Jump_type_count),
@@ -574,6 +582,10 @@ exu my_exu(
     .IDU_EXU_rd(rd),
     .clk(clock),
     .rstn(reset),
+    .IDU_EXU_exu_raw_rs1 (IDU_EXU_exu_raw_rs1),
+    .IDU_EXU_exu_raw_rs2 (IDU_EXU_exu_raw_rs2),
+    .IDU_EXU_lsu_raw_rs1 (IDU_EXU_lsu_raw_rs1),
+    .IDU_EXU_lsu_raw_rs2 (IDU_EXU_lsu_raw_rs2),
     .IDU_EXU_dnpc   (IDU_EXU_dnpc),
     //.IDU_EXU_STALL(IDU_EXU_STALL),
     .IDU_EXU_ebreak(IDU_EXU_ebreak),
