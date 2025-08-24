@@ -26,8 +26,7 @@ module ifu(
     output reg        IFU_AXI4_rready,
     input  [31:0]     ICACHE_IFU_raddr,
     input             ICACHE_IFU_stall,
-    output reg [63:0] ifu_count,
-    output reg [63:0] ifu_during_count
+    output reg [63:0] ifu_count
 );
 reg [31:0] pc;
 
@@ -95,6 +94,14 @@ assign IFU_IDU_PC   = ICACHE_IFU_raddr;   // 早就发出的地址
 
 assign IFU_AXI4_rready = IDU_IFU_ready;
 
+always @(posedge clk) begin
+    if (rstn) begin
+        ifu_count <= 64'h0;
+    end
+    else if(IDU_IFU_ready && IFU_IDU_valid)begin
+        ifu_count <= ifu_count + 1'b1;
+    end
+end
 // always @(posedge clk) begin
 //     if (rstn) begin
 //         state <= IDLE;

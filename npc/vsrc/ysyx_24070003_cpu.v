@@ -215,8 +215,7 @@ ifu my_ifu(
     .IFU_AXI4_rready(IFU_AXI4_rready),
     .ICACHE_IFU_raddr(ICACHE_IFU_raddr),
     .ICACHE_IFU_stall(ICACHE_IFU_stall),
-    .ifu_count      (ifu_count),
-    .ifu_during_count (ifu_during_count)
+    .ifu_count      (ifu_count)
 );
 
 wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr;
@@ -256,6 +255,7 @@ icache  my_icache(
     .total_access            (total_access),
     .access_time             (access_time),
     .miss_penalty            (miss_penalty),
+    .ifu_during_count        (ifu_during_count),
     .ICACHE_AXI4_arlen       (ICACHE_AXI4_arlen)
 );
 

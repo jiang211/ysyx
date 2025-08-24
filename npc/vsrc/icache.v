@@ -28,7 +28,8 @@ module icache(
     output reg [63:0] ICACHE_miss_count,
     output reg [63:0] total_access,
     output reg [63:0] access_time,
-    output reg [63:0] miss_penalty
+    output reg [63:0] miss_penalty,
+    output reg [63:0] ifu_during_count
 );
 
 parameter SDRAM_BLOCK_SIZE = 16;      // 4字节块大小
@@ -242,23 +243,50 @@ end
 always @(posedge clock) begin
     if(reset) begin
         ICACHE_hit_count <= 0;
-        ICACHE_miss_count <= 0;
-        access_time <= 0;
-        miss_penalty <= 0;
     end
-    else if(hit_reg2)begin
+    else if(hit_reg2 && reg2_valid && (!stall) && IFU_AXI4_rready)begin
         ICACHE_hit_count <= ICACHE_hit_count + 1;
+    end
+end
+
+always @(posedge clock) begin
+    if(reset) begin
+        ICACHE_miss_count <= 0;
     end
     else if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid && state == AXI_WAIT)begin
         ICACHE_miss_count <= ICACHE_miss_count + 1;
     end
+end
+
+always @(posedge clock) begin
+    if(reset) begin
+        access_time <= 0;
+    end
     else if(state == IDLE && IFU_AXI4_arvalid) begin
         access_time <= access_time + 1'b1;
     end
-    else if((state == IDLE && IFU_AXI4_arvalid) && state == AXI_READ && state == AXI_WAIT) begin
+end
+
+always @(posedge clock) begin
+    if(reset) begin
+        miss_penalty <= 0;
+    end
+    else if(((!hit_reg2) && reg2_valid && (!stall) && IFU_AXI4_rready && state == IDLE) || state == AXI_READ || state == AXI_WAIT) begin
         miss_penalty <= miss_penalty + 1'b1;
     end
 end
+
+always @(posedge clock) begin
+    if(reset) begin
+        ifu_during_count <= 0;
+    end
+    else if((reg2_valid && (!stall) && IFU_AXI4_rready) || state == AXI_READ || state == AXI_WAIT || state == UPDATED_CACHE ) begin
+        ifu_during_count <= ifu_during_count + 1;
+    end
+end
+
+
+
 
 assign ICACHE_AXI4_rready = 1'b1;
 assign ICACHE_AXI4_arlen = 2'b11;  // 一次读取4个数据
@@ -328,6 +356,7 @@ always @(posedge clock) begin
     end
     
 end
+
 
 // always @(posedge clock) begin
 //     if (reset) begin
