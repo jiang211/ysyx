@@ -13,9 +13,6 @@ module raw (
     input         lsu_reg_write_en,
     input  [4:0]  lsu_rd_addr,
 
-    // 来自
-    input         wbu_reg_write_en,
-    input  [4:0]  wbu_rd_addr,
 
     // 输出有一个冲突就阻塞
     output        stall
@@ -36,8 +33,6 @@ module raw (
     wire rs1_raw_lsu = conflict(idu_rs1_addr, idu_rs1_valid, lsu_rd_addr, lsu_reg_write_en);
     wire rs2_raw_lsu = conflict(idu_rs2_addr, idu_rs2_valid, lsu_rd_addr, lsu_reg_write_en);
 
-    wire rs1_raw_wbu = conflict(idu_rs1_addr, idu_rs1_valid, wbu_rd_addr, wbu_reg_write_en);
-    wire rs2_raw_wbu = conflict(idu_rs2_addr, idu_rs2_valid, wbu_rd_addr, wbu_reg_write_en);
 
 
     assign stall         = rs1_raw_exu | rs2_raw_exu |

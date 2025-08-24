@@ -555,9 +555,6 @@ idu my_idu(
     .lsu_reg_write_en               (LSU_IDU_REG_WEN),          
     .lsu_rd_addr                    (LSU_IDU_REG_ADDR),
 
-    // 来自()
-    .wbu_reg_write_en               (WBU_IDU_REG_wen),
-    .wbu_rd_addr                    (WBU_IDU_REG_ADDR),
 
     .stall                    (stall)
 );  
@@ -834,9 +831,7 @@ wbu my_wbu(
     .WBU_ECALL          (WBU_ECALL),
     .PC_DATA            (PC_DATA),
     .DNPC_DATA          (DNPC_DATA),
-    .WBU_TOP_skip       (WBU_TOP_skip),
-    .WBU_IDU_REG_wen    (WBU_IDU_REG_wen),
-    .WBU_IDU_REG_ADDR   (WBU_IDU_REG_ADDR)
+    .WBU_TOP_skip       (WBU_TOP_skip)
 );
     
 

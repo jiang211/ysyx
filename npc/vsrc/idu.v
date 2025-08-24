@@ -66,9 +66,6 @@ module idu(
     input         lsu_reg_write_en,
     input  [4:0]  lsu_rd_addr,
 
-    // 来自
-    input         wbu_reg_write_en,
-    input  [4:0]  wbu_rd_addr,
 
     output        stall
 
@@ -222,9 +219,6 @@ raw raw_detect(
     .lsu_reg_write_en           (lsu_reg_write_en),
     .lsu_rd_addr                (lsu_rd_addr),
 
-    // 来自
-    .wbu_reg_write_en           (wbu_reg_write_en),
-    .wbu_rd_addr                (wbu_rd_addr),
 
     // 输出有一个冲突就阻塞
     .stall                      (stall)
