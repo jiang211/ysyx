@@ -88,6 +88,8 @@ reg [31:0] addr_reg3;
 reg [31:0] data_reg3;
 reg data_valid;
 
+reg flush_r;
+
 assign hit_reg2 = (valid[index_reg2] && (tags[index_reg2] == tag_reg2));
 
 wire icache_stall = stall || LSU_IFU_stall || IDU_IFU_STALL;
@@ -169,7 +171,7 @@ always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
     end
-    else if(flush) begin
+    else if(flush || flush_r) begin
         data_valid <= 0;
     end
     else if(LSU_IFU_stall || IDU_IFU_STALL) begin
@@ -183,7 +185,14 @@ always @(posedge clock) begin
     end
 end
 
-
+always @(posedge clock) begin
+    if(reset) begin
+        flush_r <= 0;
+    end
+    else if(state != IDLE) begin
+        flush_r <= flush;
+    end
+end
 
 always @(posedge clock) begin
     if(reset) begin
@@ -202,8 +211,7 @@ always @(posedge clock) begin
             end
         end
         AXI_WAIT: begin
-            if(flush) begin state <= IDLE; end
-            else if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
+            if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
                 state <= AXI_READ;
             end
             else begin
@@ -211,8 +219,7 @@ always @(posedge clock) begin
             end
         end
         AXI_READ: begin
-            if(flush) begin state <= IDLE; end
-            else if(ICACHE_AXI4_rvalid && ICACHE_AXI4_rlast) begin
+            if(ICACHE_AXI4_rvalid && ICACHE_AXI4_rlast) begin
                 state <= UPDATED_CACHE;
             end
             else begin
