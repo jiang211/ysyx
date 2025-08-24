@@ -187,7 +187,7 @@ wire reg_write = !(B_type || S_type);
 wire alu_src1 = R_type | I_type_1 | I_type_3 | I_type_4 | S_type;
 wire alu_src2 = R_type;
 
-wire idu_rs1_valid = R_type | I_type | S_type | B_type;
+wire idu_rs1_valid = R_type | I_type | S_type | B_type | C_type;
 wire idu_rs2_valid = R_type | S_type | B_type;
 //wire mem_to_reg = (mem_read|mem_write);
 wire branch = B_type;
@@ -205,18 +205,7 @@ exuop_ctrl my_exuop_crtl(
 
 
 ///////////////////////////
-reg IDU_RS2_valid, IDU_RS1_valid;
-always@(posedge clk)
-begin
-    if(rst_n) begin
-        IDU_RS1_valid <= 1'b0;
-        IDU_RS2_valid <= 1'b0;
-    end
-    else begin
-        IDU_RS1_valid <= idu_rs1_valid;
-        IDU_RS2_valid <= idu_rs2_valid;
-    end
-end
+
 //////////////////////////
 raw raw_detect(
     // 来自译码的源寄存器
