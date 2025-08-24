@@ -269,6 +269,15 @@ end
 
 always @(posedge clock) begin
     if(reset) begin
+        total_access <= 0;
+    end
+    else if(reg2_valid && (!stall) && IFU_AXI4_rready) begin
+        total_access <= total_access + 1'b1;
+    end
+end
+
+always @(posedge clock) begin
+    if(reset) begin
         miss_penalty <= 0;
     end
     else if(((!hit_reg2) && reg2_valid && (!stall) && IFU_AXI4_rready && state == IDLE) || state == AXI_READ || state == AXI_WAIT) begin
