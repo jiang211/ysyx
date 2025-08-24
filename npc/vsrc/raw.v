@@ -41,7 +41,7 @@ module raw (
 
 
     assign stall         = rs1_raw_exu | rs2_raw_exu |
-                           rs1_raw_lsu | rs2_raw_lsu |
-                           rs1_raw_wbu | rs2_raw_wbu ;
+                           rs1_raw_lsu | rs2_raw_lsu ;
+                            //rs1_raw_wbu | rs2_raw_wbu ;
     
 endmodule
