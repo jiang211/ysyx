@@ -95,8 +95,8 @@ wire zero;
 wire [31:0] alu_out;
 wire [31:0] csr_in;
 
-assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
-assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
+assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : rs1_data;
+assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : rs2_data;
 
 assign csr_in = ( {32{IDU_EXU_csw}} & (RS1_data)) |
                 ( {32{IDU_EXU_csc}} & (RS1_data &csr_data)) |

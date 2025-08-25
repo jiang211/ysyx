@@ -37,7 +37,7 @@ module raw (
     assign rs1_raw_lsu = conflict(idu_rs1_addr, idu_rs1_valid, lsu_rd_addr, lsu_reg_write_en);
     assign rs2_raw_lsu = conflict(idu_rs2_addr, idu_rs2_valid, lsu_rd_addr, lsu_reg_write_en);
 
-    assign stall         = (rs1_raw_lsu | rs2_raw_lsu) && lsu_ren ;
+    assign stall         = (rs1_raw_lsu | rs2_raw_lsu) ;
                             //rs1_raw_wbu | rs2_raw_wbu ;
     
 endmodule
