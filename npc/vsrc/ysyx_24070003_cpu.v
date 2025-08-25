@@ -558,6 +558,7 @@ idu my_idu(
 
     .exu_reg_write_en               (EXU_IDU_REG_WEN),
     .exu_rd_addr                    (EXU_IDU_REG_ADDR),
+    .exu_ren                        (EXU_IDU_REN),
 
     // 来自级()
     .lsu_reg_write_en               (LSU_IDU_REG_WEN),          
@@ -571,7 +572,7 @@ idu my_idu(
 
 
 wire [4:0] EXU_LSU_rd,LSU_WBU_rd,EXU_IDU_REG_ADDR,LSU_IDU_REG_ADDR;
-wire EXU_LSU_ren,EXU_LSU_reg,LSU_WBU_reg,EXU_LSU_ebreak,IDU_EXU_ebreak,EXU_LSU_wen,EXU_IDU_REG_WEN,LSU_IDU_REG_WEN,LSU_IDU_REN;
+wire EXU_LSU_ren,EXU_LSU_reg,LSU_WBU_reg,EXU_LSU_ebreak,IDU_EXU_ebreak,EXU_LSU_wen,EXU_IDU_REG_WEN,LSU_IDU_REG_WEN,LSU_IDU_REN,EXU_IDU_REN;
 wire EXU_LSU_lw,EXU_LSU_lh,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh;
 wire EXU_LSU_ecall,EXU_LSU_mret,EXU_LSU_C_type;
 wire [2:0] EXU_LSU_csr_rst;
@@ -662,7 +663,8 @@ exu my_exu(
     .EXU_LSU_IMM         (EXU_LSU_IMM),
 
     .EXU_IDU_REG_ADDR          (EXU_IDU_REG_ADDR)     ,
-    .EXU_IDU_REG_WEN           (EXU_IDU_REG_WEN)     
+    .EXU_IDU_REG_WEN           (EXU_IDU_REG_WEN),
+    .EXU_IDU_REN               (EXU_IDU_REN)
 );
 wire [31:0] EXU_LSU_PC,LSU_WBU_PC,PC_DATA,DNPC_DATA,EXU_LSU_dnpc,LSU_WBU_dnpc,IDU_EXU_dnpc;
 wire [31:0] LSU_WBU_DATA;

@@ -83,13 +83,15 @@ module exu(
     output reg [31:0] EXU_LSU_IMM,
 
     output [4:0]  EXU_IDU_REG_ADDR,
-    output        EXU_IDU_REG_WEN
+    output        EXU_IDU_REG_WEN,
+    output        EXU_IDU_REN
     
 );
 wire [31:0] RS1_data;
 wire [31:0] RS2_data;
 assign EXU_IDU_REG_ADDR = IDU_EXU_rd;
 assign EXU_IDU_REG_WEN = IDU_EXU_reg && IDU_EXU_valid && EXU_IDU_ready;
+assign EXU_IDU_REN = IDU_EXU_ren && IDU_EXU_valid && EXU_IDU_ready;
 wire [3:0]aluop;
 wire zero;
 wire [31:0] alu_out;

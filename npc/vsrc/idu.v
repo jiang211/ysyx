@@ -65,6 +65,7 @@ module idu(
 
     input         exu_reg_write_en,
     input  [4:0]  exu_rd_addr,
+    input         exu_ren,
 
     // 来自级
     input         lsu_reg_write_en,
@@ -225,6 +226,7 @@ raw raw_detect(
     // 来自
     .exu_reg_write_en           (exu_reg_write_en),
     .exu_rd_addr                (exu_rd_addr),
+    .exu_ren                    (exu_ren),
 
     // 来自级
     .lsu_reg_write_en           (lsu_reg_write_en),
