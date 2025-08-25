@@ -79,7 +79,7 @@ assign IFU_AXI4_araddr = pc;
 always @(posedge clk) begin
     if (rstn) begin
         IFU_AXI4_arvalid <= 1'b0;
-    end else if (!stall && !EXU_IFU_flush) begin
+    end else if (!stall && !EXU_IFU_flush && !fence_i) begin
         IFU_AXI4_arvalid <= 1'b1;
     end else begin
         IFU_AXI4_arvalid <= 1'b0;
