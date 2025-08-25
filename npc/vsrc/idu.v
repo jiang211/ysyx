@@ -322,7 +322,7 @@ begin
     LOAD_type_count               <=        64'b0;
     STORE_type_count               <=        64'b0;
     end
-    else if(stall || flush || fence_i)begin
+    else if(stall || flush)begin
    // IDU_EXU_opcode        <=        opcode   ;     
     IDU_EXU_rd            <=        5'b0;
     IDU_EXU_rs1           <=        5'b0;  
