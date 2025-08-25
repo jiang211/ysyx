@@ -59,6 +59,7 @@ module idu(
 
     output reg [63:0] calcu_type_count,
     output reg [63:0] Jump_type_count,
+    output reg [63:0] BJump_type_count,
     output reg [63:0] LOAD_type_count,
     output reg [63:0] STORE_type_count,
     output reg [63:0] C_type_count,
@@ -316,6 +317,7 @@ begin
     IDU_EXU_dnpc                <=        32'b0;
     calcu_type_count               <=        64'b0;
     Jump_type_count               <=        64'b0;
+    BJump_type_count               <=        64'b0;
     C_type_count               <=        64'b0;
     LOAD_type_count               <=        64'b0;
     STORE_type_count               <=        64'b0;
@@ -369,7 +371,8 @@ begin
     end
     else if(IFU_IDU_valid && IDU_IFU_ready)begin
         if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
-        else if(J_type || B_type) begin Jump_type_count <= Jump_type_count + 1'b1; end
+        else if(J_type) begin Jump_type_count <= Jump_type_count + 1'b1; end
+        else if(B_type) begin BJump_type_count <= BJump_type_count + 1'b1; end
         else if(C_type) begin C_type_count <= C_type_count + 1'b1; end
         else if(I_type_3) begin LOAD_type_count <= LOAD_type_count + 1'b1; end
         else if(S_type) begin STORE_type_count <= STORE_type_count + 1'b1; end

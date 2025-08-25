@@ -551,6 +551,7 @@ idu my_idu(
 
     .calcu_type_count       (calcu_type_count),
     .Jump_type_count        (Jump_type_count),
+    .BJump_type_count       (BJump_type_count),
     .LOAD_type_count        (LOAD_type_count),
     .STORE_type_count       (STORE_type_count),
     .C_type_count           (C_type_count),
@@ -899,7 +900,7 @@ always @(posedge clock ) begin
         ref_skip <= WBU_TOP_skip;
     end
 end
-reg [63:0] lsu_count,ifu_count,calcu_type_count,Jump_type_count,LOAD_type_count,STORE_type_count,C_type_count,lsu_during_count,ifu_during_count,lsu_load_count,lsu_store_count,total_count;
+reg [63:0] lsu_count,ifu_count,calcu_type_count,Jump_type_count,BJump_type_count,LOAD_type_count,STORE_type_count,C_type_count,lsu_during_count,ifu_during_count,lsu_load_count,lsu_store_count,total_count;
 reg [63:0] ICACHE_hit_count,ICACHE_miss_count,total_access,access_time,miss_penalty;
 always @(posedge clock ) begin
     if(reset) begin
@@ -916,6 +917,7 @@ always @(posedge clock ) begin
         $display("ifu_count                 = %040d\n",ifu_count);
         $display("calcu_type_count          = %040d\n",calcu_type_count);
         $display("Jump_type_count           = %040d\n",Jump_type_count);
+        $display("BJump_type_count          = %040d\n",BJump_type_count);
         $display("LOAD_type_count           = %040d\n",LOAD_type_count);
         $display("STORE_type_count          = %040d\n",STORE_type_count);
         $display("C_type_count              = %040d\n",C_type_count);
