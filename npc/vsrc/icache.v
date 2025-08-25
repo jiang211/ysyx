@@ -102,7 +102,7 @@ always @(posedge clock) begin
         offset_reg1 <= 0;
         reg1_valid  <= 0;
     end
-    else if(flush || fence_i) begin
+    else if(flush) begin
         reg1_valid <= 0;
     end
     else if(!icache_stall && IFU_AXI4_rready) begin
@@ -122,7 +122,7 @@ always @(posedge clock) begin
         offset_reg2 <= 0;
         reg2_valid  <= 0;
     end
-    else if(flush || fence_i) begin
+    else if(flush) begin
         reg2_valid <= 0;
     end 
     else if(!icache_stall && IFU_AXI4_rready) begin
@@ -162,7 +162,7 @@ always @(posedge clock) begin
 end
 assign ICACHE_IFU_rdata = data_reg3;
 assign ICACHE_IFU_raddr = addr_reg3;
-assign ICACHE_IFU_valid = data_valid && (!(flush ));
+assign ICACHE_IFU_valid = data_valid && (~flush);
 
 assign ICACHE_IFU_stall = icache_stall;
 wire stall;
@@ -172,13 +172,13 @@ always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
     end
-    else if(flush || flush_r || fence_i) begin
+    else if(flush || flush_r) begin
         data_valid <= 0;
     end
     else if(LSU_IFU_stall || IDU_IFU_STALL) begin
         data_valid <= data_valid;
     end
-    else if((state == IDLE && reg2_valid && hit_reg2 && (!(flush || fence_i))) || (state == UPDATED_CACHE)) begin
+    else if((state == IDLE && reg2_valid && hit_reg2 && (~flush)) || (state == UPDATED_CACHE)) begin
         data_valid <= 1'b1;
     end
     else begin
@@ -190,8 +190,8 @@ always @(posedge clock) begin
     if(reset) begin
         flush_r <= 0;
     end
-    else if(state != IDLE && (flush || fence_i)) begin
-        flush_r <= flush || fence_i;
+    else if(state != IDLE && flush) begin
+        flush_r <= flush;
     end
     else if(state == IDLE) begin
         flush_r <= 0;
@@ -209,7 +209,7 @@ always @(posedge clock) begin
                 if(hit_reg2)begin
                     state <= IDLE;
                 end
-                else if(!(flush || fence_i)) begin
+                else if(!flush)begin
                     state <= AXI_WAIT;
                 end
             end
