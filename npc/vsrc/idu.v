@@ -243,7 +243,7 @@ raw raw_detect(
     .stall                      (stall)
 );
 ////////////0x0000100F//////////////0000000 00000 00000 001 00000 0001111/////////////
-assign fence_i = (INSTR == 32'h0000100F);
+assign fence_i = (INSTR == 32'h0000100F) && IFU_IDU_valid && IDU_IFU_ready;
 //wire pcsrc = (branch /*& zero*/) | jump | ecall | mret;
 
 
