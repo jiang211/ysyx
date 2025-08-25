@@ -105,7 +105,7 @@ always @(posedge clock) begin
     else if(flush) begin
         reg1_valid <= 0;
     end
-    else if(!icache_stall && IFU_AXI4_rready) begin
+    else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
         pc_reg1 <= IFU_AXI4_araddr;
         tag_reg1 <= current_tag;
         index_reg1 <= current_index;
@@ -125,7 +125,7 @@ always @(posedge clock) begin
     else if(flush) begin
         reg2_valid <= 0;
     end 
-    else if(!icache_stall && IFU_AXI4_rready) begin
+    else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
         pc_reg2 <= pc_reg1;
         tag_reg2 <= tag_reg1;
         index_reg2 <= index_reg1;
@@ -172,7 +172,7 @@ always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
     end
-    else if(flush || flush_r) begin
+    else if(flush || flush_r || fence_i) begin
         data_valid <= 0;
     end
     else if(LSU_IFU_stall || IDU_IFU_STALL) begin
