@@ -9,6 +9,8 @@ static const uint32_t img [] = {
   0xffc10113,  // lbu a0,16(t0)
   0xffc10113,  // lbu a0,16(t0)
   0xffc10113,  // lbu a0,16(t0)
+  0x00112423,
+  0x00812083,
   0x00100073,  // ebreak (used as nemu_trap)
   0xdeadbeef,  // some data
 };
