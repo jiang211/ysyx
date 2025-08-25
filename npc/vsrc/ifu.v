@@ -53,7 +53,7 @@ begin
     pc <= EXU_IFU_pc;
     end
     else if(fence_i)begin
-    pc <= IFU_IDU_PC;
+    pc <= IFU_IDU_PC + 32'h4;
     end
     else if(stall) begin
     pc <= pc;
