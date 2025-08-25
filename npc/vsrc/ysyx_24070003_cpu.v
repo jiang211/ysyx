@@ -562,6 +562,7 @@ idu my_idu(
     // 来自级()
     .lsu_reg_write_en               (LSU_IDU_REG_WEN),          
     .lsu_rd_addr                    (LSU_IDU_REG_ADDR),
+    .lsu_ren                        (LSU_IDU_REN),
 
 
     .stall                    (stall)
@@ -570,7 +571,7 @@ idu my_idu(
 
 
 wire [4:0] EXU_LSU_rd,LSU_WBU_rd,EXU_IDU_REG_ADDR,LSU_IDU_REG_ADDR;
-wire EXU_LSU_ren,EXU_LSU_reg,LSU_WBU_reg,EXU_LSU_ebreak,IDU_EXU_ebreak,EXU_LSU_wen,EXU_IDU_REG_WEN,LSU_IDU_REG_WEN;
+wire EXU_LSU_ren,EXU_LSU_reg,LSU_WBU_reg,EXU_LSU_ebreak,IDU_EXU_ebreak,EXU_LSU_wen,EXU_IDU_REG_WEN,LSU_IDU_REG_WEN,LSU_IDU_REN;
 wire EXU_LSU_lw,EXU_LSU_lh,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh;
 wire EXU_LSU_ecall,EXU_LSU_mret,EXU_LSU_C_type;
 wire [2:0] EXU_LSU_csr_rst;
@@ -578,6 +579,7 @@ wire [31:0] EXU_LSU_csr_data,EXU_LSU_csr_in;
 wire EXU_IFU_JUMP;
 wire [31:0] EXU_IFU_pc;
 wire [31:0] EXU_LSU_RS2DATA,EXU_LSU_IMM;
+wire [31:0] LSU_forward_data;
 exu my_exu(
     .IDU_EXU_rd(rd),
     .clk(clock),
@@ -586,6 +588,7 @@ exu my_exu(
     .IDU_EXU_exu_raw_rs2 (IDU_EXU_exu_raw_rs2),
     .IDU_EXU_lsu_raw_rs1 (IDU_EXU_lsu_raw_rs1),
     .IDU_EXU_lsu_raw_rs2 (IDU_EXU_lsu_raw_rs2),
+    .LSU_forward_data    (LSU_forward_data),
     .IDU_EXU_dnpc   (IDU_EXU_dnpc),
     //.IDU_EXU_STALL(IDU_EXU_STALL),
     .IDU_EXU_ebreak(IDU_EXU_ebreak),
@@ -763,8 +766,10 @@ lsu my_lsu(
     .lsu_load_count   (lsu_load_count),
     .lsu_store_count  (lsu_store_count),
 
+    .LSU_forward_data       (LSU_forward_data),
     .LSU_IDU_REG_ADDR       (LSU_IDU_REG_ADDR),
-    .LSU_IDU_REG_WEN        (LSU_IDU_REG_WEN)
+    .LSU_IDU_REG_WEN        (LSU_IDU_REG_WEN),
+    .LSU_IDU_REN            (LSU_IDU_REN)
 );
 
 

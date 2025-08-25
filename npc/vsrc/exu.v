@@ -30,6 +30,7 @@ module exu(
     input IDU_EXU_exu_raw_rs2,
     input IDU_EXU_lsu_raw_rs1,
     input IDU_EXU_lsu_raw_rs2,
+    input [31:0] LSU_forward_data,
 
     input IDU_EXU_ecall,
     input IDU_EXU_mret,

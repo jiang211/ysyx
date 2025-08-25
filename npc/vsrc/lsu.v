@@ -90,13 +90,17 @@ module lsu(
     output reg [2:0]            LSU_AXI4_ARSIZE,
 
 
+    output     [31:0]           LSU_forward_data,
     output [4:0]            LSU_IDU_REG_ADDR,
-    output                  LSU_IDU_REG_WEN
+    output                  LSU_IDU_REG_WEN,
+    output                  LSU_IDU_REN
       //input  [1:0]                LSU_AXI4_BRESP
 );
 
 assign LSU_IDU_REG_ADDR = EXU_LSU_rd;
 assign LSU_IDU_REG_WEN = EXU_LSU_reg && LSU_EXU_ready && EXU_LSU_valid;
+assign LSU_IDU_REN   = EXU_LSU_ren && LSU_EXU_ready && EXU_LSU_valid;
+assign LSU_forward_data = LSU_WBU_DATA;
 
 parameter  IDLE = 0,
             CACHE_DATA = 1,

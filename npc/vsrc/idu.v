@@ -69,6 +69,7 @@ module idu(
     // 来自级
     input         lsu_reg_write_en,
     input  [4:0]  lsu_rd_addr,
+    input         lsu_ren,
 
 
     output        stall
@@ -228,6 +229,7 @@ raw raw_detect(
     // 来自级
     .lsu_reg_write_en           (lsu_reg_write_en),
     .lsu_rd_addr                (lsu_rd_addr),
+    .lsu_ren                    (lsu_ren),
 
     .rs1_raw_exu                 (rs1_raw_exu),
     .rs2_raw_exu                 (rs2_raw_exu),
