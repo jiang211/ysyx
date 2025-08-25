@@ -52,7 +52,10 @@ begin
     else if(EXU_IFU_flush)begin 
     pc <= EXU_IFU_pc;
     end
-    else if(stall || fence_i) begin
+    else if(fence_i)begin
+    pc <= IFU_IDU_PC;
+    end
+    else if(stall) begin
     pc <= pc;
     end
     else if(IDU_IFU_ready && (~ICACHE_IFU_stall))begin
