@@ -5,11 +5,11 @@
 
 static const uint32_t img [] = {
   0x70009117,  // auipc t0,0
-  0x00178793,  // sb  zero,16(t0)
-  0xffc10113,  // lbu a0,16(t0)
-  0x00812083,  // lbu a0,16(t0)
-  0xffc10113,  // lbu a0,16(t0)
-  0x00112423,
+  0x04812683,  // sb  zero,16(t0)
+  0x04012603,  // lbu a0,16(t0)
+  0x00012503,  // lbu a0,16(t0)
+  0xffd68293,  // lbu a0,16(t0)
+  0x03012683,
   0x00812083,
   0x00100073,  // ebreak (used as nemu_trap)
   0xdeadbeef,  // some data
