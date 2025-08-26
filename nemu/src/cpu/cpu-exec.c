@@ -254,11 +254,14 @@ static void exec_once(Decode *s, vaddr_t pc) {
   isa_exec_once(s);
   cpu.pc = s->dnpc;
   
-  
+  if(s->B_type){
+    uint32_t pc32 = (uint32_t)pc;
+    fwrite(&pc32, sizeof(pc32), 1, trace_fd);
+    fwrite(&s->branchpc, sizeof(pc32), 1, trace_fd);
+    fwrite(&s->dnpc, sizeof(s->dnpc), 1, trace_fd);
+  }
    //写入 PC 地址（32位）
-   uint32_t pc32 = (uint32_t)pc;
-   fwrite(&pc32, sizeof(pc32), 1, trace_fd);
-   fwrite(&s->isa.inst.val, sizeof(s->isa.inst.val), 1, trace_fd);
+   
  
 #ifdef CONFIG_IRINGBUF
   char logbuf[256] = {0};  // 创建一个临时日志缓冲区

@@ -22,6 +22,9 @@ typedef struct Decode {
   vaddr_t pc;
   vaddr_t snpc; // static next pc
   vaddr_t dnpc; // dynamic next pc
+  vaddr_t branchpc;
+  vaddr_t taken;
+  vaddr_t B_type;
   ISADecodeInfo isa;
   IFDEF(CONFIG_ITRACE, char logbuf[128]);
 
