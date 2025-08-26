@@ -15,7 +15,7 @@
 
 #include <isa.h>
 #include <memory/paddr.h>
-//#define YSYXSOC
+#define YSYXSOC
 
 // this is not consistent with uint8_t
 // but it is ok since we do not access the array directly
