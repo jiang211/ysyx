@@ -162,7 +162,7 @@ void process_branch(BranchSim* sim, uint32_t pc, uint32_t target_pc, uint32_t dn
     if (record->btb_hit) {
         sim->btb_hits++;
         // 如果BTB命中，使用BTB中的目标地址进行预测
-        record->predicted = (btb_target != pc + 4);
+        record->predicted = predict_branch(sim, pc, btb_target);//(btb_target != pc + 4);
     } else {
         sim->btb_misses++;
         // 如果BTB未命中，使用静态预测算法
@@ -311,8 +311,8 @@ int main(int argc, char* argv[]) {
     PredictionAlgorithm algo = BTFN;
     uint32_t btb_size = 1024;
     
-    //algo = ALWAYS_TAKEN;
-    algo = BTFN;
+    algo = ALWAYS_TAKEN;
+    //algo = BTFN;
     // 解析BTB大小参数
     if (argc >= 4) {
         btb_size = atoi(argv[3]);

@@ -177,6 +177,8 @@ wire IFU_AXI4_arvalid,IFU_AXI4_arready,IFU_AXI4_rvalid,IFU_AXI4_rready;
 wire ICACHE_IFU_stall;
 wire flush;
 wire [31:0] ICACHE_IFU_raddr;
+wire [31:0] ifu_current_pc,BTB_pred_pc;
+wire BTB_pred_valid;
 
 ifu my_ifu(
     .WBU_IFU_JUMP  (EXU_IFU_JUMP),
@@ -205,6 +207,9 @@ ifu my_ifu(
     .IFU_dnpc           (IFU_IDU_dnpc       ),
    // .inst_addr_o    (inst_addr_o),
     .IFU_IDU_PC     (IFU_IDU_PC),
+    .cur_pc         (ifu_current_pc),
+    .BTB_pred_pc    (BTB_pred_pc),
+    .BTB_pred_valid (BTB_pred_valid),
     .IFU_IDU_INSTR          (instr),
     //.instr_in       (instr_in),
     .IFU_AXI4_araddr(IFU_AXI4_araddr),
@@ -257,6 +262,19 @@ icache  my_icache(
     .miss_penalty            (miss_penalty),
     .ifu_during_count        (ifu_during_count),
     .ICACHE_AXI4_arlen       (ICACHE_AXI4_arlen)
+);
+wire EXU_update_valid;
+
+btb my_btb(
+    .clock              (clock),
+    .reset              (reset),
+    .cur_pc             (ifu_current_pc),
+    .update_pc          (),
+    .target_pc          (),
+    .update_valid       (EXU_update_valid),
+
+    .pred_pc            (BTB_pred_pc),
+    .pred_valid         (BTB_pred_valid)
 );
 
 wire AXI4_SRAM_ARVALID,AXI4_SRAM_ARREADY,AXI4_SRAM_RVALID,AXI4_SRAM_RREADY;

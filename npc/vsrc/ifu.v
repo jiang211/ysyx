@@ -7,12 +7,17 @@ module ifu(
     input  IDU_IFU_ready, //IDU是否准备好接收IFU的指令
     input [31:0]EXU_IFU_pc,
     input       EXU_IFU_flush,
+    input [31:0] BTB_pred_pc,
+    input       BTB_pred_valid,
     input [1:0] resp,
     output  reg[31:0] IFU_dnpc,
     //output [31:0] inst_addr_o,
     output [31:0]IFU_IDU_INSTR,
     //input  [31:0] instr_in,
     output  [31:0] IFU_IDU_PC,
+    output  [31:0] cur_pc,
+
+
     input  EXU_LSU_valid,
 
     input  fence_i,
@@ -39,10 +44,9 @@ reg [1:0] state;
 
 wire [31:0] dnpc;
 assign dnpc = (EXU_IFU_flush)? EXU_IFU_pc :pc + 4;
-//assign inst_addr_o = pc ;
-wire [31:0] inst_addr;
-assign inst_addr   = pc;
 
+
+assign cur_pc = pc;
 
 always@(posedge clk)
 begin 
@@ -54,6 +58,9 @@ begin
     end
     else if(stall) begin
     pc <= pc;
+    end
+    else if(BTB_pred_valid) begin
+    pc <= BTB_pred_pc;
     end
     else if(IDU_IFU_ready && (~ICACHE_IFU_stall))begin
     pc <= pc + 32'h4;
