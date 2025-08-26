@@ -4,7 +4,7 @@
 
 
 static const uint32_t img [] = {
-  0x70009117,  // auipc t0,0
+  0x70010117,  // auipc t0,0
   0x04812683,  // sb  zero,16(t0)
   0x04012603,  // lbu a0,16(t0)
   0x00012503,  // lbu a0,16(t0)
