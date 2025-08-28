@@ -36,8 +36,8 @@ module apb_delayer(
   // assign in_pslverr  = out_pslverr;
 
   /////////////////////////////  fmax = 630   r = 630 s = 32  (6.3-1) * 32 ////////////
-  //localparam DELAY_COUNT = 169;
-  localparam DELAY_COUNT = 32;
+  localparam DELAY_COUNT = 169;
+  
   reg [31:0] count;
   reg [1:0] state;
   parameter IDLE = 2'b00, WAIT = 2'b01, DELAY = 2'b10;
