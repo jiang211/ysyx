@@ -176,7 +176,7 @@ wire [31:0] IFU_AXI4_rdata,IFU_AXI4_araddr;
 wire IFU_AXI4_arvalid,IFU_AXI4_arready,IFU_AXI4_rvalid,IFU_AXI4_rready;
 wire ICACHE_IFU_stall;
 wire flush;
-wire [31:0] ICACHE_IFU_raddr;
+wire [31:0] ICACHE_IFU_raddr,IFU_IDU_DNPC;
 wire [31:0] ifu_current_pc,BTB_pred_pc;
 wire BTB_pred_valid;
 
@@ -207,6 +207,7 @@ ifu my_ifu(
     .IFU_dnpc           (IFU_IDU_dnpc       ),
    // .inst_addr_o    (inst_addr_o),
     .IFU_IDU_PC     (IFU_IDU_PC),
+    .IFU_IDU_DNPC   (IFU_IDU_DNPC),
     .cur_pc         (ifu_current_pc),
     .BTB_pred_pc    (BTB_pred_pc),
     .BTB_pred_valid (BTB_pred_valid),
@@ -219,11 +220,12 @@ ifu my_ifu(
     .ICACHE_IFU_rvalid(IFU_AXI4_rvalid),
     .IFU_AXI4_rready(IFU_AXI4_rready),
     .ICACHE_IFU_raddr(ICACHE_IFU_raddr),
+    .ICACHE_IFU_dnpc(ICACHE_IFU_dnpc),
     .ICACHE_IFU_stall(ICACHE_IFU_stall),
     .ifu_count      (ifu_count)
 );
 
-wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr;
+wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr,ICACHE_IFU_dnpc;
 wire ICACHE_AXI4_arvalid,ICACHE_AXI4_arready,ICACHE_AXI4_rvalid,ICACHE_AXI4_rready;
 wire [7:0] ICACHE_AXI4_arlen;
 wire [7:0] AXI4_MASTER_ARLEN;
@@ -245,6 +247,7 @@ icache  my_icache(
 
     .ICACHE_IFU_rdata       (IFU_AXI4_rdata),
     .ICACHE_IFU_raddr       (ICACHE_IFU_raddr),
+    .ICACHE_IFU_dnpc        (ICACHE_IFU_dnpc),
     .ICACHE_IFU_valid       (IFU_AXI4_rvalid),
     .ICACHE_IFU_stall       (ICACHE_IFU_stall),
 
@@ -515,7 +518,7 @@ idu my_idu(
     .rst_n                   (reset       ),
     .flush                   (flush       ),
     .fence_i                (fence_i     ),
-    .IFU_IDU_dnpc           (IFU_IDU_dnpc       ),
+    .IFU_IDU_dnpc           (IFU_IDU_DNPC       ),
    // .IFU_IDU_STALL           (IFU_IDU_STALL),
     .IFU_IDU_valid          (IFU_IDU_valid),
     .IDU_IFU_ready           (IDU_IFU_ready),

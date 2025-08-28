@@ -15,6 +15,7 @@ module ifu(
     output [31:0]IFU_IDU_INSTR,
     //input  [31:0] instr_in,
     output  [31:0] IFU_IDU_PC,
+    output  [31:0] IFU_IDU_DNPC,
     output  [31:0] cur_pc,
 
 
@@ -30,6 +31,7 @@ module ifu(
     input             ICACHE_IFU_rvalid,
     output reg        IFU_AXI4_rready,
     input  [31:0]     ICACHE_IFU_raddr,
+    input  [31:0]     ICACHE_IFU_dnpc,
     input             ICACHE_IFU_stall,
     output reg [63:0] ifu_count
 );
@@ -42,8 +44,8 @@ reg [1:0] state;
 
 //reg [63:0] ifu_count;
 
-wire [31:0] dnpc;
-assign dnpc = (EXU_IFU_flush)? EXU_IFU_pc :pc + 4;
+// wire [31:0] dnpc;
+// assign dnpc = (EXU_IFU_flush)? EXU_IFU_pc :pc + 4;
 
 
 assign cur_pc = pc;
@@ -69,15 +71,15 @@ begin
 end
 
 
-always@(posedge clk)
-begin
-    if(rstn)begin
-        IFU_dnpc <= 32'h80000000;
-    end
-    else begin
-        IFU_dnpc <= dnpc;
-    end
-end
+// always@(posedge clk)
+// begin
+//     if(rstn)begin
+//         IFU_dnpc <= 32'h80000000;
+//     end
+//     else begin
+//         IFU_dnpc <= dnpc;
+//     end
+// end
 reg [31:0] instr;
 
 assign IFU_IDU_valid = ICACHE_IFU_rvalid;
@@ -97,6 +99,7 @@ end
 
 assign IFU_IDU_INSTR = IFU_AXI4_rdata;
 assign IFU_IDU_PC   = ICACHE_IFU_raddr;   // 早就发出的地址
+assign IFU_IDU_DNPC = ICACHE_IFU_dnpc;   // 
 
 
 assign IFU_AXI4_rready = IDU_IFU_ready;

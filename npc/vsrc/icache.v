@@ -13,6 +13,7 @@ module icache(
 
     output    [31:0]  ICACHE_IFU_rdata,
     output    [31:0]  ICACHE_IFU_raddr,
+    output    [31:0]  ICACHE_IFU_dnpc,
     output            ICACHE_IFU_valid,
 
     output reg [31:0] ICACHE_AXI4_araddr,
@@ -162,6 +163,7 @@ always @(posedge clock) begin
 end
 assign ICACHE_IFU_rdata = data_reg3;
 assign ICACHE_IFU_raddr = addr_reg3;
+assign ICACHE_IFU_dnpc  = pc_reg2;;
 assign ICACHE_IFU_valid = data_valid && (~flush);
 
 assign ICACHE_IFU_stall = icache_stall;
