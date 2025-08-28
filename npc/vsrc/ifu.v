@@ -59,7 +59,7 @@ begin
     else if(stall) begin
     pc <= pc;
     end
-    else if(BTB_pred_valid) begin
+    else if(BTB_pred_valid && IDU_IFU_ready && (~ICACHE_IFU_stall)) begin
     pc <= BTB_pred_pc;
     end
     else if(IDU_IFU_ready && (~ICACHE_IFU_stall))begin
