@@ -271,9 +271,9 @@ btb my_btb(
     .clock              (clock),
     .reset              (reset),
     .cur_pc             (ifu_current_pc),
-    .update_pc          (),
-    .target_pc          (),
-    .update_valid       (EXU_update_valid),
+    .update_pc          (IDU_EXU_PC),
+    .target_pc          (EXU_BTB_PC),
+    .update_valid       (EXU_BTB_updata_valid),
 
     .pred_pc            (BTB_pred_pc),
     .pred_valid         (BTB_pred_valid)
