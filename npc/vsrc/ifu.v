@@ -59,9 +59,9 @@ begin
     else if(stall) begin
     pc <= pc;
     end
-    // else if(BTB_pred_valid) begin
-    // pc <= BTB_pred_pc;
-    // end
+    else if(BTB_pred_valid) begin
+    pc <= BTB_pred_pc;
+    end
     else if(IDU_IFU_ready && (~ICACHE_IFU_stall))begin
     pc <= pc + 32'h4;
     end
