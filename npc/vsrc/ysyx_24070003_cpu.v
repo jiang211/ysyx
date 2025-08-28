@@ -72,10 +72,267 @@ module ysyx_24070003_cpu(
     output  wire      io_slave_rlast ,
     output  wire        [3:0] io_slave_rid   
 );
-wire [31:0] AXI4_MASTER_ARADDR,AXI4_MASTER_RDATA,AXI4_MASTER_AWADDR,AXI4_MASTER_WDATA;
-wire [3:0] AXI4_MASTER_WSTRB;
-wire AXI4_MASTER_ARVALID,AXI4_MASTER_ARREADY,AXI4_MASTER_RVALID,AXI4_MASTER_RREADY;
-wire AXI4_MASTER_AWVALID,AXI4_MASTER_AWREADY,AXI4_MASTER_WVALID,AXI4_MASTER_WREADY,AXI4_MASTER_BVALID,AXI4_MASTER_BREADY;
+
+reg [63:0]                           lsu_count                      ;
+reg [63:0]                           ifu_count                      ;
+reg [63:0]                           calcu_type_count               ;
+reg [63:0]                           Jump_type_count                ;
+reg [63:0]                           BJump_type_count               ;
+reg [63:0]                           LOAD_type_count                ;
+reg [63:0]                           STORE_type_count               ;
+reg [63:0]                           C_type_count                   ;
+reg [63:0]                           lsu_during_count               ;
+reg [63:0]                           ifu_during_count               ;
+reg [63:0]                           lsu_load_count                 ;
+reg [63:0]                           lsu_store_count                ;
+reg [63:0]                           total_count                    ;
+reg [63:0]                           ICACHE_hit_count               ;
+reg [63:0]                           ICACHE_miss_count              ;
+reg [63:0]                           total_access                   ;
+reg [63:0]                           access_time                    ;
+reg [63:0]                           miss_penalty                   ;
+
+wire [31:0]                          instr                          ;
+wire [31:0]                          IFU_IDU_PC                     ;
+wire [31:0]                          IFU_IDU_dnpc                   ;
+wire [31:0]                          AXI4_MASTER_ARADDR             ;
+wire [31:0]                          AXI4_MASTER_RDATA              ;
+wire [31:0]                          AXI4_MASTER_AWADDR             ;
+wire [31:0]                          AXI4_MASTER_WDATA              ;
+wire [31:0]                          IFU_AXI4_rdata                 ;
+wire [31:0]                          ICACHE_IFU_raddr               ;
+wire [31:0]                          BTB_pre_DNPC                   ;
+wire [31:0]                          ifu_current_pc                 ;
+wire [31:0]                          imm                            ;
+wire [31:0]                          rs1_data                       ;
+wire [31:0]                          rs2_data                       ;   
+wire [31:0]                          alu_out                        ;
+wire [31:0]                          ICACHE_AXI4_rdata              ;
+wire [31:0]                          ICACHE_AXI4_araddr             ;
+wire [31:0]                          AXI4_SRAM_ARADDR               ;
+wire [31:0]                          AXI4_SRAM_RDATA                ;
+wire [31:0]                          IFU_AXI4_araddr                ;
+wire [31:0]                          BTB_pred_pc                    ;
+wire [31:0]                          ICACHE_IFU_pre_dnpc;
+wire [31:0]                          AXI4_SRAM_AWADDR;
+wire [31:0]                          AXI4_SRAM_WDATA;
+wire [31:0]                          AXI4_UART_ARADDR;
+wire [31:0]                          AXI4_UART_RDATA;
+wire [31:0]                          AXI4_UART_AWADDR;
+wire [31:0]                          AXI4_UART_WDATA;
+wire [31:0]                          AXI4_CLINT_ARADDR;
+wire [31:0]                          AXI4_CLINT_RDATA;
+wire [31:0]                          AXI4_CLINT_AWADDR;
+wire [31:0]                          AXI4_CLINT_WDATA;
+wire [31:0]                          IDU_EXU_PC;
+wire [31:0]                          IDU_EXU_pre_dnpc;
+wire [31:0]                          EXU_LSU_PC;
+wire [31:0]                          LSU_WBU_PC;
+wire [31:0]                          PC_DATA;
+wire [31:0]                          DNPC_DATA;
+wire [31:0]                          EXU_LSU_dnpc;
+wire [31:0]                          LSU_WBU_dnpc;
+wire [31:0]                          IDU_EXU_dnpc;
+wire [31:0]                          LSU_WBU_DATA;
+wire [31:0]                          LSU_WBU_csr_data;
+wire [31:0]                          LSU_WBU_csr_in;
+wire [31:0]                          WBU_CSR_DATA;
+wire [31:0]                          EXU_IFU_pc;
+wire [31:0]                          EXU_LSU_RS2DATA;
+wire [31:0]                          EXU_LSU_IMM;
+wire [31:0]                          LSU_forward_data;
+wire [31:0]                          EXU_BTB_PC;
+wire [31:0]                          LSU_AXI4_RDATA;
+wire [31:0]                          LSU_AXI4_AWADDR;
+wire [31:0]                          LSU_AXI4_WDATA;
+wire [31:0]                          LSU_AXI4_ARADDR;
+wire [31:0]                          EXU_LSU_csr_data;
+wire [31:0]                          EXU_LSU_csr_in;
+wire [31:0]                          wbu_data;
+reg  [31:0]                          TO_top_pc;
+reg  [31:0]                          TO_top_dnpc;
+reg  [31:0]                          csr_data;
+wire [31:0]                          LSU_RDATA;
+
+wire                                 u_alu_type;
+wire                                 mul_high;
+wire                                 alu_src1;
+wire                                 alu_src2;
+wire                                 U_type_1;
+wire                                 J_type_1;
+wire                                 ebreak;
+reg                                  difftest_valid;
+wire                                 IFU_IDU_valid;
+wire                                 IDU_EXU_valid;
+wire                                 EXU_IDU_ready;
+wire                                 IDU_IFU_ready;
+wire                                 WBU_IFU_ready;
+wire                                 WBU_IFU_valid;
+wire                                 LSU_WBU_ready;
+wire                                 LSU_WBU_valid;
+wire                                 LSU_EXU_ready;
+wire                                 EXU_LSU_valid;
+wire                                 IFU_AXI4_arvalid;
+wire                                 IFU_AXI4_arready;
+wire                                 IFU_AXI4_rvalid;
+wire                                 IFU_AXI4_rready;
+wire                                 ICACHE_IFU_stall;
+wire                                 flush;
+wire                                 BTB_pred_valid;
+wire                                 ICACHE_AXI4_arvalid;
+wire                                 ICACHE_AXI4_arready;
+wire                                 ICACHE_AXI4_rvalid;
+wire                                 ICACHE_AXI4_rready;
+wire                                 LSU_IFU_stall;
+wire                                 AXI4_SRAM_ARVALID;
+wire                                 AXI4_SRAM_ARREADY;
+wire                                 AXI4_SRAM_RVALID;
+wire                                 AXI4_SRAM_RREADY;
+wire                                 AXI4_SRAM_AWVALID;
+wire                                 AXI4_SRAM_AWREADY;
+wire                                 AXI4_SRAM_WVALID;
+wire                                 AXI4_SRAM_WREADY;
+wire                                 AXI4_SRAM_BVALID;
+wire                                 AXI4_SRAM_BREADY;
+wire                                 AXI4_UART_ARVALID;
+wire                                 AXI4_UART_ARREADY;
+wire                                 AXI4_UART_RVALID;
+wire                                 AXI4_UART_RREADY;
+wire                                 AXI4_UART_AWVALID;
+wire                                 AXI4_UART_AWREADY;
+wire                                 AXI4_UART_WVALID;
+wire                                 AXI4_UART_WREADY;
+wire                                 AXI4_UART_BVALID;
+wire                                 AXI4_UART_BREADY;
+wire                                 AXI4_CLINT_ARVALID;
+wire                                 AXI4_CLINT_ARREADY;
+wire                                 AXI4_CLINT_RVALID;
+wire                                 AXI4_CLINT_RREADY;
+wire                                 AXI4_CLINT_AWVALID;
+wire                                 AXI4_CLINT_AWREADY;
+wire                                 AXI4_CLINT_WVALID;
+wire                                 AXI4_CLINT_WREADY;
+wire                                 AXI4_CLINT_BVALID;
+wire                                 AXI4_CLINT_BREADY;
+wire                                 IDU_EXU_lw;
+wire                                 IDU_EXU_lh;
+wire                                 IDU_EXU_lb;
+wire                                 IDU_EXU_lbu;
+wire                                 IDU_EXU_lhu;
+wire                                 IDU_EXU_sw;
+wire                                 IDU_EXU_sb;
+wire                                 IDU_EXU_sh;
+wire                                 IDU_EXU_csw;
+wire                                 IDU_EXU_csc;
+wire                                 IDU_EXU_css;
+wire                                 IDU_EXU_ecall;
+wire                                 IDU_EXU_mret;
+wire                                 IDU_EXU_jal;
+wire                                 IDU_EXU_jalr;
+wire                                 IDU_EXU_C_type;
+wire                                 IDU_EXU_B_type;
+wire                                 fence_i;
+wire                                 stall;
+wire                                 IDU_EXU_exu_raw_rs1;
+wire                                 IDU_EXU_exu_raw_rs2;
+wire                                 IDU_EXU_lsu_raw_rs1;
+wire                                 IDU_EXU_lsu_raw_rs2;
+wire                                 EXU_LSU_ren;
+wire                                 EXU_LSU_reg;
+wire                                 LSU_WBU_reg;
+wire                                 EXU_LSU_ebreak;
+wire                                 IDU_EXU_ebreak;
+wire                                 EXU_LSU_wen;
+wire                                 EXU_IDU_REG_WEN;
+wire                                 LSU_IDU_REG_WEN;
+wire                                 LSU_IDU_REN;
+wire                                 EXU_IDU_REN;
+wire                                 EXU_LSU_lw;
+wire                                 EXU_LSU_lh;
+wire                                 EXU_LSU_lb;
+wire                                 EXU_LSU_lbu;
+wire                                 EXU_LSU_lhu;
+wire                                 EXU_LSU_sw;
+wire                                 EXU_LSU_sb;
+wire                                 EXU_LSU_sh;
+wire                                 EXU_LSU_ecall;
+wire                                 EXU_LSU_mret;
+wire                                 EXU_LSU_C_type;
+wire                                 EXU_IFU_JUMP;
+wire                                 EXU_BTB_updata_valid;
+wire                                 LSU_WBU_ecall;
+wire                                 LSU_WBU_mret;
+wire                                 LSU_WBU_C_type;
+wire                                 LSU_AXI4_RVALID;
+wire                                 LSU_AXI4_RREADY;
+wire                                 LSU_AXI4_AWVALID;
+wire                                 LSU_AXI4_AWREADY;
+wire                                 LSU_AXI4_WVALID;
+wire                                 LSU_AXI4_WREADY;
+wire                                 LSU_AXI4_BVALID;
+wire                                 LSU_AXI4_BREADY;
+wire                                 LSU_AXI4_ARVALID;
+wire                                 LSU_AXI4_ARREADY;
+wire                                 LSU_RVALID;
+wire                                 LSU_AXI_wlast;
+wire                                 WBU_wen;
+wire                                 WBU_CSR_WEN;
+wire                                 WBU_ECALL;
+wire                                 WBU_TOP_skip;
+wire                                 WBU_IDU_REG_wen;
+wire                                 LSU_WBU_skip;
+wire                                 LSU_ARREADY;
+wire                                 branch;
+wire                                 mem_read;
+wire                                 mem_write;
+wire                                 reg_write;
+wire                                 AXI4_MASTER_ARVALID;
+wire                                 AXI4_MASTER_ARREADY;
+wire                                 AXI4_MASTER_RVALID;
+wire                                 AXI4_MASTER_RREADY;
+wire                                 AXI4_MASTER_AWVALID;
+wire                                 AXI4_MASTER_AWREADY;
+wire                                 AXI4_MASTER_WVALID;
+wire                                 AXI4_MASTER_WREADY;
+wire                                 AXI4_MASTER_BVALID;
+wire                                 AXI4_MASTER_BREADY;
+reg                                  WBU_IFU_valid_cache;
+reg                                  ref_skip;
+
+wire [3:0]                           AXI4_SRAM_WSTRB;
+wire [3:0]                           AXI4_UART_WSTRB;
+wire [3:0]                           AXI4_CLINT_WSTRB;
+wire [3:0]                           LSU_AXI4_WSTRB;
+wire [3:0]                           alu_op;
+wire [3:0]                           AXI4_MASTER_WSTRB;
+
+wire [4:0]                           rd;
+wire [4:0]                           rs1;
+wire [4:0]                           rs2;
+wire [4:0]                           EXU_LSU_rd;
+wire [4:0]                           LSU_WBU_rd;
+wire [4:0]                           EXU_IDU_REG_ADDR;
+wire [4:0]                           LSU_IDU_REG_ADDR;
+wire [4:0]                           wbu_addr;
+wire [4:0]                           WBU_IDU_REG_ADDR;
+
+
+wire [2:0]                           funct3;
+wire [2:0]                           LSU_AXI4_ARSIZE;
+wire [2:0]                           AXI4_MASTER_ARSIZE;
+wire [2:0]                           IDU_EXU_csr_rst;
+wire [2:0]                           EXU_LSU_csr_rst;
+wire [2:0]                           WBU_CSR_ADDR;
+wire [2:0]                           LSU_WBU_csr_rst;
+wire [2:0]                           WBU_CSR_RADDR;
+wire [2:0]                           LSU_AXI4_wsize;
+wire [5:0]                           funct7;
+wire [1:0]                           resp;
+wire [7:0]                           ICACHE_AXI4_arlen;
+wire [7:0]                           AXI4_MASTER_ARLEN;
+
+
+
 
 assign io_master_awvalid = AXI4_MASTER_AWVALID;
 assign io_master_awaddr = AXI4_MASTER_AWADDR;
@@ -121,64 +378,10 @@ assign io_slave_rdata = 'd0;
 assign io_slave_rlast = 'd0;
 assign io_slave_rid = 'd0;
 
-wire [1:0] resp;
+
 assign resp = io_master_rresp | io_master_bresp;
 //wire [6:0] opcode;
-wire [2:0] funct3;
-wire [5:0] funct7;
-wire [4:0] rd;
-wire [4:0] rs1;
-wire [4:0] rs2;
-wire [31:0] imm;
-wire [31:0] rs1_data;
-wire [31:0] rs2_data;
-wire [31:0] alu_out;
-//wire [31:0] rdata;
-reg  [31:0] csr_data;
-//wire [31:0] inst_addr_o;
-//wire        pcsrc;
-//wire [31:0] dnpc;
-//wire ebreak;
-wire branch;
 
-wire mem_read;
-wire mem_write;
-wire reg_write;
-
-wire [3:0] alu_op;
-
-wire     u_alu_type;
-wire     mul_high;
-wire     alu_src1;
-wire     alu_src2;
-
-wire     U_type_1;
-wire     J_type_1;
-//assign pc = TO_top_pc ;
-//assign dnpc = TO_top_dnpc ;
-reg difftest_valid; 
-wire ebreak;
-wire IDU_EXU_valid;
-wire IFU_IDU_valid;
-wire EXU_IDU_ready;
-wire IDU_IFU_ready;
-wire WBU_IFU_ready;
-wire WBU_IFU_valid;
-wire LSU_WBU_ready;
-wire LSU_WBU_valid;
-wire LSU_EXU_ready;
-wire EXU_LSU_valid;
-//wire EXU_IFU_STALL_done;
-wire [31:0] instr;
-wire [31:0] IFU_IDU_PC;
-wire [31:0] IFU_IDU_dnpc;
-wire [31:0] IFU_AXI4_rdata,IFU_AXI4_araddr;
-wire IFU_AXI4_arvalid,IFU_AXI4_arready,IFU_AXI4_rvalid,IFU_AXI4_rready;
-wire ICACHE_IFU_stall;
-wire flush;
-wire [31:0] ICACHE_IFU_raddr,BTB_pre_DNPC;
-wire [31:0] ifu_current_pc,BTB_pred_pc;
-wire BTB_pred_valid;
 
 ifu my_ifu(
     .WBU_IFU_JUMP  (EXU_IFU_JUMP),
@@ -223,11 +426,7 @@ ifu my_ifu(
     .ifu_count      (ifu_count)
 );
 
-wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr,ICACHE_IFU_pre_dnpc;
-wire ICACHE_AXI4_arvalid,ICACHE_AXI4_arready,ICACHE_AXI4_rvalid,ICACHE_AXI4_rready;
-wire [7:0] ICACHE_AXI4_arlen;
-wire [7:0] AXI4_MASTER_ARLEN;
-wire LSU_IFU_stall;
+
 icache  my_icache(
     .clock                   (clock),
     .reset                   (reset),
@@ -279,20 +478,7 @@ btb my_btb(
     .pred_valid         (BTB_pred_valid)
 );
 
-wire AXI4_SRAM_ARVALID,AXI4_SRAM_ARREADY,AXI4_SRAM_RVALID,AXI4_SRAM_RREADY;
-wire AXI4_SRAM_AWVALID,AXI4_SRAM_AWREADY,AXI4_SRAM_WVALID,AXI4_SRAM_WREADY,AXI4_SRAM_BVALID,AXI4_SRAM_BREADY;
-wire [31:0] AXI4_SRAM_ARADDR,AXI4_SRAM_RDATA,AXI4_SRAM_AWADDR,AXI4_SRAM_WDATA;
-wire [3:0] AXI4_SRAM_WSTRB;
-wire AXI4_UART_ARVALID,AXI4_UART_ARREADY,AXI4_UART_RVALID,AXI4_UART_RREADY;
-wire AXI4_UART_AWVALID,AXI4_UART_AWREADY,AXI4_UART_WVALID,AXI4_UART_WREADY,AXI4_UART_BVALID,AXI4_UART_BREADY;
-wire [31:0] AXI4_UART_ARADDR,AXI4_UART_RDATA,AXI4_UART_AWADDR,AXI4_UART_WDATA;
-wire [3:0] AXI4_UART_WSTRB;
 
-wire AXI4_CLINT_ARVALID,AXI4_CLINT_ARREADY,AXI4_CLINT_RVALID,AXI4_CLINT_RREADY;
-wire AXI4_CLINT_AWVALID,AXI4_CLINT_AWREADY,AXI4_CLINT_WVALID,AXI4_CLINT_WREADY,AXI4_CLINT_BVALID,AXI4_CLINT_BREADY;
-wire [31:0] AXI4_CLINT_ARADDR,AXI4_CLINT_RDATA,AXI4_CLINT_AWADDR,AXI4_CLINT_WDATA;
-wire [3:0] AXI4_CLINT_WSTRB;
-wire [2:0] LSU_AXI4_ARSIZE,AXI4_MASTER_ARSIZE;
 axi_arbiter my_axi_arbiter(
     .clk                    (clock),
     .rstn                   (reset),   
@@ -373,15 +559,7 @@ clint my_clint(
 );
 
 
-wire [31:0] IDU_EXU_PC,IDU_EXU_pre_dnpc;
-wire IDU_EXU_lw, IDU_EXU_lh, IDU_EXU_lb, IDU_EXU_lbu, IDU_EXU_lhu, IDU_EXU_sw, IDU_EXU_sb, IDU_EXU_sh;
-wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr,IDU_EXU_C_type,IDU_EXU_B_type;
-wire [2:0] IDU_EXU_csr_rst;
-wire fence_i,stall;
-wire IDU_EXU_exu_raw_rs1;
-wire IDU_EXU_exu_raw_rs2;
-wire IDU_EXU_lsu_raw_rs1;
-wire IDU_EXU_lsu_raw_rs2;
+
 idu my_idu(
    // .EXU_IFU_flush          (EXU_IFU_flush),
     .clk                    (clock        ),
@@ -465,16 +643,6 @@ idu my_idu(
 
 
 
-wire [4:0] EXU_LSU_rd,LSU_WBU_rd,EXU_IDU_REG_ADDR,LSU_IDU_REG_ADDR;
-wire EXU_LSU_ren,EXU_LSU_reg,LSU_WBU_reg,EXU_LSU_ebreak,IDU_EXU_ebreak,EXU_LSU_wen,EXU_IDU_REG_WEN,LSU_IDU_REG_WEN,LSU_IDU_REN,EXU_IDU_REN;
-wire EXU_LSU_lw,EXU_LSU_lh,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh;
-wire EXU_LSU_ecall,EXU_LSU_mret,EXU_LSU_C_type;
-wire [2:0] EXU_LSU_csr_rst;
-wire [31:0] EXU_LSU_csr_data,EXU_LSU_csr_in;
-wire EXU_IFU_JUMP;
-wire [31:0] EXU_IFU_pc;
-wire [31:0] EXU_LSU_RS2DATA,EXU_LSU_IMM;
-wire [31:0] LSU_forward_data;
 exu my_exu(
     .IDU_EXU_rd(rd),
     .clk(clock),
@@ -563,28 +731,7 @@ exu my_exu(
     .EXU_BTB_PC                (EXU_BTB_PC),
     .EXU_BTB_updata_valid      (EXU_BTB_updata_valid)
 );
-wire [31:0] EXU_BTB_PC;
-wire EXU_BTB_updata_valid;
-wire [31:0] EXU_LSU_PC,LSU_WBU_PC,PC_DATA,DNPC_DATA,EXU_LSU_dnpc,LSU_WBU_dnpc,IDU_EXU_dnpc;
-wire [31:0] LSU_WBU_DATA;
-wire [31:0] LSU_WBU_csr_data,LSU_WBU_csr_in,WBU_CSR_DATA;
-wire [2:0] WBU_CSR_ADDR;
-wire [2:0]LSU_WBU_csr_rst;
-wire LSU_WBU_ecall,LSU_WBU_mret,LSU_WBU_C_type;
-//wire LSU_WBU_JUMP;
-//wire [31:0] LSU_WDATA,LSU_RDATA;
-//wire [3:0]  LSU_WLEN;
 
-wire LSU_AXI4_RVALID,LSU_AXI4_RREADY,LSU_AXI4_AWVALID,LSU_AXI4_AWREADY,LSU_AXI4_WVALID,LSU_AXI4_WREADY,LSU_AXI4_BVALID,LSU_AXI4_BREADY;
-wire LSU_AXI4_ARVALID,LSU_AXI4_ARREADY;
-wire [31:0] LSU_AXI4_RDATA,LSU_AXI4_AWADDR,LSU_AXI4_WDATA,LSU_AXI4_ARADDR;
-wire [3:0] LSU_AXI4_WSTRB;
-wire LSU_WBU_skip;
-wire LSU_ARREADY;
-wire [31:0] LSU_RDATA;
-wire LSU_RVALID;
-wire LSU_AXI_wlast;
-wire [2:0] LSU_AXI4_wsize;
 assign LSU_RDATA = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RDATA : LSU_AXI4_RDATA;
 assign LSU_RVALID = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RVALID : LSU_AXI4_RVALID;
 assign LSU_ARREADY = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_ARREADY : LSU_AXI4_ARREADY;
@@ -675,10 +822,7 @@ lsu my_lsu(
 
 
 
-wire WBU_ECALL,WBU_TOP_skip;
-wire WBU_IDU_REG_wen;
-wire [4:0] WBU_IDU_REG_ADDR;
-//wire WBU_IFU_JUMP;
+
 wbu my_wbu(
     .clk                (clock),
     .LSU_WBU_dnpc       (LSU_WBU_dnpc),
@@ -717,9 +861,6 @@ wbu my_wbu(
 );
     
 
-wire [31:0] wbu_data;
-wire [4:0] wbu_addr;
-wire WBU_wen,WBU_CSR_WEN;
 RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
         .clk(clock),
         .wdata(wbu_data),
@@ -730,7 +871,6 @@ RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
         .rdata2(rs2_data),
         .raddr2(rs2)
     );
-wire [2:0] WBU_CSR_RADDR;
 assign WBU_CSR_RADDR = (IDU_EXU_ecall) ? 'd3 : (IDU_EXU_mret) ? 'd0 :IDU_EXU_csr_rst;
 csr_reg #(.ADDR_WIDTH(3), .DATA_WIDTH(32)) csr1(
         .clk(clock),
@@ -745,8 +885,7 @@ csr_reg #(.ADDR_WIDTH(3), .DATA_WIDTH(32)) csr1(
 
 ///////////////////difftest/////////////////
 
-reg WBU_IFU_valid_cache,ref_skip;
-reg [31:0]TO_top_pc,TO_top_dnpc;
+
 always @(posedge clock ) begin
     if(reset) begin
         difftest_valid <= 1'b0;
@@ -762,8 +901,7 @@ always @(posedge clock ) begin
         ref_skip <= WBU_TOP_skip;
     end
 end
-reg [63:0] lsu_count,ifu_count,calcu_type_count,Jump_type_count,BJump_type_count,LOAD_type_count,STORE_type_count,C_type_count,lsu_during_count,ifu_during_count,lsu_load_count,lsu_store_count,total_count;
-reg [63:0] ICACHE_hit_count,ICACHE_miss_count,total_access,access_time,miss_penalty;
+
 always @(posedge clock ) begin
     if(reset) begin
         total_count <= 0;
