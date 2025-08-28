@@ -126,7 +126,7 @@ alu my_alu(
 );
 
 wire btb_pre_error = (IDU_EXU_pre_dnpc != next_pc_jal) && (IDU_EXU_jal || IDU_EXU_B_type);
-assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jal || IDU_EXU_jalr || zero) && (IDU_EXU_valid && EXU_IDU_ready);
+assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jalr || btb_pre_error) && (IDU_EXU_valid && EXU_IDU_ready);
 
 assign EXU_IDU_ready = LSU_EXU_ready;  
 
