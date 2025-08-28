@@ -8,15 +8,17 @@ module raw (
     // 来自
     input         exu_reg_write_en,
     input  [4:0]  exu_rd_addr,
+    input         exu_ren,
 
     // 来自级
     input         lsu_reg_write_en,
     input  [4:0]  lsu_rd_addr,
+    input         lsu_ren,
 
-    // 来自
-    input         wbu_reg_write_en,
-    input  [4:0]  wbu_rd_addr,
-
+    output       rs1_raw_exu,
+    output       rs2_raw_exu,
+    output       rs1_raw_lsu,
+    output       rs2_raw_lsu,
     // 输出有一个冲突就阻塞
     output        stall
 );
@@ -30,18 +32,19 @@ module raw (
         end
     endfunction
 
-    wire rs1_raw_exu = conflict(idu_rs1_addr, idu_rs1_valid, exu_rd_addr, exu_reg_write_en);
-    wire rs2_raw_exu = conflict(idu_rs2_addr, idu_rs2_valid, exu_rd_addr, exu_reg_write_en);
+    wire rs1_raw_lsu1 = conflict(idu_rs1_addr, idu_rs1_valid, lsu_rd_addr, lsu_reg_write_en);
+    wire rs2_raw_lsu1 = conflict(idu_rs2_addr, idu_rs2_valid, lsu_rd_addr, lsu_reg_write_en);
 
-    wire rs1_raw_lsu = conflict(idu_rs1_addr, idu_rs1_valid, lsu_rd_addr, lsu_reg_write_en);
-    wire rs2_raw_lsu = conflict(idu_rs2_addr, idu_rs2_valid, lsu_rd_addr, lsu_reg_write_en);
+    wire rs1_raw_exu1 = conflict(idu_rs1_addr, idu_rs1_valid, exu_rd_addr, exu_reg_write_en);
+    wire rs2_raw_exu1 = conflict(idu_rs2_addr, idu_rs2_valid, exu_rd_addr, exu_reg_write_en);
 
-    wire rs1_raw_wbu = conflict(idu_rs1_addr, idu_rs1_valid, wbu_rd_addr, wbu_reg_write_en);
-    wire rs2_raw_wbu = conflict(idu_rs2_addr, idu_rs2_valid, wbu_rd_addr, wbu_reg_write_en);
+    assign rs1_raw_exu = rs1_raw_exu1 && (~exu_ren);
+    assign rs2_raw_exu = rs2_raw_exu1 && (~exu_ren);
 
+    assign rs1_raw_lsu = rs1_raw_lsu1 ;
+    assign rs2_raw_lsu = rs2_raw_lsu1 ;
 
-    assign stall         = rs1_raw_exu | rs2_raw_exu |
-                           rs1_raw_lsu | rs2_raw_lsu |
-                           rs1_raw_wbu | rs2_raw_wbu ;
+    assign stall         = (rs1_raw_exu1 | rs2_raw_exu1) && exu_ren ;
+                            //rs1_raw_wbu | rs2_raw_wbu ;
     
 endmodule

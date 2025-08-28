@@ -235,18 +235,18 @@ void print_iringbuf(InstructionRingBuffer *iringbuf ) {
 
 ////////////end//////////////////
 InstructionRingBuffer iringbuf;
-// static FILE *trace_fd = NULL;
+//  static FILE *trace_fd = NULL;
 
 
-// void init_bincache(const char *cache_bin) {
-//   trace_fd = stdout;
-//   if (cache_bin != NULL) {
-//     FILE *fp = fopen(cache_bin, "wb");
-//     Assert(fp, "Can not open '%s'", cache_bin);
-//     trace_fd = fp;
-//   }
-//   Log("cache bin is written to %s", cache_bin ? cache_bin : "stdout");
-// }
+//  void init_bincache(const char *cache_bin) {
+//    trace_fd = stdout;
+//    if (cache_bin != NULL) {
+//      FILE *fp = fopen(cache_bin, "wb");
+//      Assert(fp, "Can not open '%s'", cache_bin);
+//      trace_fd = fp;
+//    }
+//    Log("cache bin is written to %s", cache_bin ? cache_bin : "stdout");
+//  }
 static void exec_once(Decode *s, vaddr_t pc) {
   s->pc = pc;
   s->snpc = pc;
@@ -254,10 +254,14 @@ static void exec_once(Decode *s, vaddr_t pc) {
   isa_exec_once(s);
   cpu.pc = s->dnpc;
   
-  
-  // 写入 PC 地址（32位）
-  // uint32_t pc32 = (uint32_t)pc;
-  // fwrite(&pc32, sizeof(pc32), 1, trace_fd);
+  // if(s->B_type){
+  //   uint32_t pc32 = (uint32_t)pc;
+  //   fwrite(&pc32, sizeof(pc32), 1, trace_fd);
+  //   fwrite(&s->branchpc, sizeof(pc32), 1, trace_fd);
+  //   fwrite(&s->dnpc, sizeof(s->dnpc), 1, trace_fd);
+  // }
+   //写入 PC 地址（32位）
+   
  
 #ifdef CONFIG_IRINGBUF
   char logbuf[256] = {0};  // 创建一个临时日志缓冲区

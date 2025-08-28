@@ -176,7 +176,9 @@ wire [31:0] IFU_AXI4_rdata,IFU_AXI4_araddr;
 wire IFU_AXI4_arvalid,IFU_AXI4_arready,IFU_AXI4_rvalid,IFU_AXI4_rready;
 wire ICACHE_IFU_stall;
 wire flush;
-wire [31:0] ICACHE_IFU_raddr;
+wire [31:0] ICACHE_IFU_raddr,BTB_pre_DNPC;
+wire [31:0] ifu_current_pc,BTB_pred_pc;
+wire BTB_pred_valid;
 
 ifu my_ifu(
     .WBU_IFU_JUMP  (EXU_IFU_JUMP),
@@ -202,11 +204,14 @@ ifu my_ifu(
     //.mret           (LSU_WBU_mret       ),
     //.csr_data       (csr_data   ),
     //.stall          (IFU_IDU_STALL),
-    .IFU_dnpc           (IFU_IDU_dnpc       ),
    // .inst_addr_o    (inst_addr_o),
     .IFU_IDU_PC     (IFU_IDU_PC),
+    .cur_pc         (ifu_current_pc),
+    .BTB_pred_pc    (BTB_pred_pc),
+    .BTB_pred_valid (BTB_pred_valid),
     .IFU_IDU_INSTR          (instr),
     //.instr_in       (instr_in),
+    .BTB_pre_DNPC           (BTB_pre_DNPC),
     .IFU_AXI4_araddr(IFU_AXI4_araddr),
     .IFU_AXI4_arvalid(IFU_AXI4_arvalid),
     .IFU_AXI4_arready(IFU_AXI4_arready),
@@ -218,7 +223,7 @@ ifu my_ifu(
     .ifu_count      (ifu_count)
 );
 
-wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr;
+wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr,ICACHE_IFU_pre_dnpc;
 wire ICACHE_AXI4_arvalid,ICACHE_AXI4_arready,ICACHE_AXI4_rvalid,ICACHE_AXI4_rready;
 wire [7:0] ICACHE_AXI4_arlen;
 wire [7:0] AXI4_MASTER_ARLEN;
@@ -234,12 +239,14 @@ icache  my_icache(
     //.IFU_AXI4_rvalid         (IFU_AXI4_rvalid),
     .IFU_AXI4_rready         (IFU_AXI4_rready),
 
+    .BTB_pre_DNPC            (BTB_pre_DNPC),
     .IDU_IFU_STALL           (stall),
     .LSU_IFU_stall           (LSU_IFU_stall),
 
 
     .ICACHE_IFU_rdata       (IFU_AXI4_rdata),
     .ICACHE_IFU_raddr       (ICACHE_IFU_raddr),
+    .ICACHE_IFU_pre_dnpc        (ICACHE_IFU_pre_dnpc),
     .ICACHE_IFU_valid       (IFU_AXI4_rvalid),
     .ICACHE_IFU_stall       (ICACHE_IFU_stall),
 
@@ -257,6 +264,19 @@ icache  my_icache(
     .miss_penalty            (miss_penalty),
     .ifu_during_count        (ifu_during_count),
     .ICACHE_AXI4_arlen       (ICACHE_AXI4_arlen)
+);
+wire EXU_update_valid;
+
+btb my_btb(
+    .clock              (clock),
+    .reset              (reset),
+    .cur_pc             (ifu_current_pc),
+    .update_pc          (IDU_EXU_PC),
+    .target_pc          (EXU_BTB_PC),
+    .update_valid       (EXU_BTB_updata_valid),
+
+    .pred_pc            (BTB_pred_pc),
+    .pred_valid         (BTB_pred_valid)
 );
 
 wire AXI4_SRAM_ARVALID,AXI4_SRAM_ARREADY,AXI4_SRAM_RVALID,AXI4_SRAM_RREADY;
@@ -481,11 +501,15 @@ sram_inst inst_sram(
 );
 
 */
-wire [31:0] IDU_EXU_PC;
+wire [31:0] IDU_EXU_PC,IDU_EXU_pre_dnpc;
 wire IDU_EXU_lw, IDU_EXU_lh, IDU_EXU_lb, IDU_EXU_lbu, IDU_EXU_lhu, IDU_EXU_sw, IDU_EXU_sb, IDU_EXU_sh;
-wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr,IDU_EXU_C_type;
+wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr,IDU_EXU_C_type,IDU_EXU_B_type;
 wire [2:0] IDU_EXU_csr_rst;
 wire fence_i,stall;
+wire IDU_EXU_exu_raw_rs1;
+wire IDU_EXU_exu_raw_rs2;
+wire IDU_EXU_lsu_raw_rs1;
+wire IDU_EXU_lsu_raw_rs2;
 idu my_idu(
    // .EXU_IFU_flush          (EXU_IFU_flush),
     .clk                    (clock        ),
@@ -493,7 +517,7 @@ idu my_idu(
     .rst_n                   (reset       ),
     .flush                   (flush       ),
     .fence_i                (fence_i     ),
-    .IFU_IDU_dnpc           (IFU_IDU_dnpc       ),
+    .IFU_IDU_pre_dnpc           (ICACHE_IFU_pre_dnpc       ),
    // .IFU_IDU_STALL           (IFU_IDU_STALL),
     .IFU_IDU_valid          (IFU_IDU_valid),
     .IDU_IFU_ready           (IDU_IFU_ready),
@@ -536,13 +560,19 @@ idu my_idu(
     .IDU_EXU_J_type_1       (J_type_1  ),
    // .IDU_EXU_pcsrc          (pcsrc       ),
     .IDU_EXU_C_type         (IDU_EXU_C_type    ),
+    .IDU_EXU_B_type         (IDU_EXU_B_type),
     //.IDU_EXU_STALL          (IDU_EXU_STALL),
     .IDU_EXU_PC             (IDU_EXU_PC),
-    .IDU_EXU_dnpc           (IDU_EXU_dnpc),
+    .IDU_EXU_pre_dnpc           (IDU_EXU_pre_dnpc),
 
+    .IDU_EXU_exu_raw_rs1    (IDU_EXU_exu_raw_rs1),
+    .IDU_EXU_exu_raw_rs2    (IDU_EXU_exu_raw_rs2),
+    .IDU_EXU_lsu_raw_rs1    (IDU_EXU_lsu_raw_rs1),
+    .IDU_EXU_lsu_raw_rs2    (IDU_EXU_lsu_raw_rs2),
 
     .calcu_type_count       (calcu_type_count),
     .Jump_type_count        (Jump_type_count),
+    .BJump_type_count       (BJump_type_count),
     .LOAD_type_count        (LOAD_type_count),
     .STORE_type_count       (STORE_type_count),
     .C_type_count           (C_type_count),
@@ -550,14 +580,13 @@ idu my_idu(
 
     .exu_reg_write_en               (EXU_IDU_REG_WEN),
     .exu_rd_addr                    (EXU_IDU_REG_ADDR),
+    .exu_ren                        (EXU_IDU_REN),
 
     // 来自级()
     .lsu_reg_write_en               (LSU_IDU_REG_WEN),          
     .lsu_rd_addr                    (LSU_IDU_REG_ADDR),
+    .lsu_ren                        (LSU_IDU_REN),
 
-    // 来自()
-    .wbu_reg_write_en               (WBU_IDU_REG_wen),
-    .wbu_rd_addr                    (WBU_IDU_REG_ADDR),
 
     .stall                    (stall)
 );  
@@ -565,7 +594,7 @@ idu my_idu(
 
 
 wire [4:0] EXU_LSU_rd,LSU_WBU_rd,EXU_IDU_REG_ADDR,LSU_IDU_REG_ADDR;
-wire EXU_LSU_ren,EXU_LSU_reg,LSU_WBU_reg,EXU_LSU_ebreak,IDU_EXU_ebreak,EXU_LSU_wen,EXU_IDU_REG_WEN,LSU_IDU_REG_WEN;
+wire EXU_LSU_ren,EXU_LSU_reg,LSU_WBU_reg,EXU_LSU_ebreak,IDU_EXU_ebreak,EXU_LSU_wen,EXU_IDU_REG_WEN,LSU_IDU_REG_WEN,LSU_IDU_REN,EXU_IDU_REN;
 wire EXU_LSU_lw,EXU_LSU_lh,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh;
 wire EXU_LSU_ecall,EXU_LSU_mret,EXU_LSU_C_type;
 wire [2:0] EXU_LSU_csr_rst;
@@ -573,11 +602,17 @@ wire [31:0] EXU_LSU_csr_data,EXU_LSU_csr_in;
 wire EXU_IFU_JUMP;
 wire [31:0] EXU_IFU_pc;
 wire [31:0] EXU_LSU_RS2DATA,EXU_LSU_IMM;
+wire [31:0] LSU_forward_data;
 exu my_exu(
     .IDU_EXU_rd(rd),
     .clk(clock),
     .rstn(reset),
-    .IDU_EXU_dnpc   (IDU_EXU_dnpc),
+    .IDU_EXU_exu_raw_rs1 (IDU_EXU_exu_raw_rs1),
+    .IDU_EXU_exu_raw_rs2 (IDU_EXU_exu_raw_rs2),
+    .IDU_EXU_lsu_raw_rs1 (IDU_EXU_lsu_raw_rs1),
+    .IDU_EXU_lsu_raw_rs2 (IDU_EXU_lsu_raw_rs2),
+    .LSU_forward_data    (LSU_forward_data),
+    .IDU_EXU_pre_dnpc   (IDU_EXU_pre_dnpc),
     //.IDU_EXU_STALL(IDU_EXU_STALL),
     .IDU_EXU_ebreak(IDU_EXU_ebreak),
     .IDU_EXU_csr_rst(IDU_EXU_csr_rst),
@@ -601,6 +636,7 @@ exu my_exu(
     .IDU_EXU_ecall(IDU_EXU_ecall),
     .IDU_EXU_mret(IDU_EXU_mret),
     .IDU_EXU_C_type(IDU_EXU_C_type),
+    .IDU_EXU_B_type(IDU_EXU_B_type),
     .EXU_IDU_ready(EXU_IDU_ready),
     .IDU_EXU_valid(IDU_EXU_valid),
     .LSU_EXU_ready(LSU_EXU_ready),
@@ -650,8 +686,13 @@ exu my_exu(
     .EXU_LSU_IMM         (EXU_LSU_IMM),
 
     .EXU_IDU_REG_ADDR          (EXU_IDU_REG_ADDR)     ,
-    .EXU_IDU_REG_WEN           (EXU_IDU_REG_WEN)     
+    .EXU_IDU_REG_WEN           (EXU_IDU_REG_WEN),
+    .EXU_IDU_REN               (EXU_IDU_REN),
+    .EXU_BTB_PC                (EXU_BTB_PC),
+    .EXU_BTB_updata_valid      (EXU_BTB_updata_valid)
 );
+wire [31:0] EXU_BTB_PC;
+wire EXU_BTB_updata_valid;
 wire [31:0] EXU_LSU_PC,LSU_WBU_PC,PC_DATA,DNPC_DATA,EXU_LSU_dnpc,LSU_WBU_dnpc,IDU_EXU_dnpc;
 wire [31:0] LSU_WBU_DATA;
 wire [31:0] LSU_WBU_csr_data,LSU_WBU_csr_in,WBU_CSR_DATA;
@@ -754,8 +795,10 @@ lsu my_lsu(
     .lsu_load_count   (lsu_load_count),
     .lsu_store_count  (lsu_store_count),
 
+    .LSU_forward_data       (LSU_forward_data),
     .LSU_IDU_REG_ADDR       (LSU_IDU_REG_ADDR),
-    .LSU_IDU_REG_WEN        (LSU_IDU_REG_WEN)
+    .LSU_IDU_REG_WEN        (LSU_IDU_REG_WEN),
+    .LSU_IDU_REN            (LSU_IDU_REN)
 );
 
 
@@ -834,9 +877,7 @@ wbu my_wbu(
     .WBU_ECALL          (WBU_ECALL),
     .PC_DATA            (PC_DATA),
     .DNPC_DATA          (DNPC_DATA),
-    .WBU_TOP_skip       (WBU_TOP_skip),
-    .WBU_IDU_REG_wen    (WBU_IDU_REG_wen),
-    .WBU_IDU_REG_ADDR   (WBU_IDU_REG_ADDR)
+    .WBU_TOP_skip       (WBU_TOP_skip)
 );
     
 
@@ -885,7 +926,7 @@ always @(posedge clock ) begin
         ref_skip <= WBU_TOP_skip;
     end
 end
-reg [63:0] lsu_count,ifu_count,calcu_type_count,Jump_type_count,LOAD_type_count,STORE_type_count,C_type_count,lsu_during_count,ifu_during_count,lsu_load_count,lsu_store_count,total_count;
+reg [63:0] lsu_count,ifu_count,calcu_type_count,Jump_type_count,BJump_type_count,LOAD_type_count,STORE_type_count,C_type_count,lsu_during_count,ifu_during_count,lsu_load_count,lsu_store_count,total_count;
 reg [63:0] ICACHE_hit_count,ICACHE_miss_count,total_access,access_time,miss_penalty;
 always @(posedge clock ) begin
     if(reset) begin
@@ -902,6 +943,7 @@ always @(posedge clock ) begin
         $display("ifu_count                 = %040d\n",ifu_count);
         $display("calcu_type_count          = %040d\n",calcu_type_count);
         $display("Jump_type_count           = %040d\n",Jump_type_count);
+        $display("BJump_type_count          = %040d\n",BJump_type_count);
         $display("LOAD_type_count           = %040d\n",LOAD_type_count);
         $display("STORE_type_count          = %040d\n",STORE_type_count);
         $display("C_type_count              = %040d\n",C_type_count);

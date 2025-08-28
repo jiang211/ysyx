@@ -7,16 +7,21 @@ module ifu(
     input  IDU_IFU_ready, //IDU是否准备好接收IFU的指令
     input [31:0]EXU_IFU_pc,
     input       EXU_IFU_flush,
+    input [31:0] BTB_pred_pc,
+    input       BTB_pred_valid,
     input [1:0] resp,
-    output  reg[31:0] IFU_dnpc,
     //output [31:0] inst_addr_o,
     output [31:0]IFU_IDU_INSTR,
     //input  [31:0] instr_in,
     output  [31:0] IFU_IDU_PC,
+    output  [31:0] cur_pc,
+
+
     input  EXU_LSU_valid,
 
     input  fence_i,
     input  stall,
+    output [31:0]     BTB_pre_DNPC,
     // AXI-Lite4 Interface
     output reg [31:0] IFU_AXI4_araddr,
     output reg        IFU_AXI4_arvalid,
@@ -37,13 +42,12 @@ reg [1:0] state;
 
 //reg [63:0] ifu_count;
 
-wire [31:0] dnpc;
-assign dnpc = (EXU_IFU_flush)? EXU_IFU_pc :pc + 4;
-//assign inst_addr_o = pc ;
-wire [31:0] inst_addr;
-assign inst_addr   = pc;
+// wire [31:0] dnpc;
+// assign dnpc = (EXU_IFU_flush)? EXU_IFU_pc :pc + 4;
 
 
+assign cur_pc = pc;
+assign BTB_pre_DNPC = BTB_pred_pc;
 always@(posedge clk)
 begin 
    if(rstn | (resp != 2'b00))begin
@@ -55,6 +59,9 @@ begin
     else if(stall) begin
     pc <= pc;
     end
+    else if(BTB_pred_valid && IDU_IFU_ready && (~ICACHE_IFU_stall)) begin
+    pc <= BTB_pred_pc;
+    end
     else if(IDU_IFU_ready && (~ICACHE_IFU_stall))begin
     pc <= pc + 32'h4;
     end
@@ -62,15 +69,15 @@ begin
 end
 
 
-always@(posedge clk)
-begin
-    if(rstn)begin
-        IFU_dnpc <= 32'h80000000;
-    end
-    else begin
-        IFU_dnpc <= dnpc;
-    end
-end
+// always@(posedge clk)
+// begin
+//     if(rstn)begin
+//         IFU_dnpc <= 32'h80000000;
+//     end
+//     else begin
+//         IFU_dnpc <= dnpc;
+//     end
+// end
 reg [31:0] instr;
 
 assign IFU_IDU_valid = ICACHE_IFU_rvalid;
@@ -79,7 +86,7 @@ assign IFU_AXI4_araddr = pc;
 always @(posedge clk) begin
     if (rstn) begin
         IFU_AXI4_arvalid <= 1'b0;
-    end else if (!stall && !EXU_IFU_flush) begin
+    end else if (!stall && !EXU_IFU_flush && !fence_i) begin
         IFU_AXI4_arvalid <= 1'b1;
     end else begin
         IFU_AXI4_arvalid <= 1'b0;
