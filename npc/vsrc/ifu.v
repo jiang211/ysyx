@@ -10,12 +10,10 @@ module ifu(
     input [31:0] BTB_pred_pc,
     input       BTB_pred_valid,
     input [1:0] resp,
-    output  reg[31:0] IFU_dnpc,
     //output [31:0] inst_addr_o,
     output [31:0]IFU_IDU_INSTR,
     //input  [31:0] instr_in,
     output  [31:0] IFU_IDU_PC,
-    output  [31:0] IFU_IDU_DNPC,
     output  [31:0] cur_pc,
 
 
@@ -23,6 +21,7 @@ module ifu(
 
     input  fence_i,
     input  stall,
+    output [31:0]     BTB_pre_DNPC,
     // AXI-Lite4 Interface
     output reg [31:0] IFU_AXI4_araddr,
     output reg        IFU_AXI4_arvalid,
@@ -31,7 +30,6 @@ module ifu(
     input             ICACHE_IFU_rvalid,
     output reg        IFU_AXI4_rready,
     input  [31:0]     ICACHE_IFU_raddr,
-    input  [31:0]     ICACHE_IFU_dnpc,
     input             ICACHE_IFU_stall,
     output reg [63:0] ifu_count
 );
@@ -49,7 +47,7 @@ reg [1:0] state;
 
 
 assign cur_pc = pc;
-
+assign BTB_pre_DNPC = BTB_pred_pc;
 always@(posedge clk)
 begin 
    if(rstn | (resp != 2'b00))begin
@@ -99,7 +97,6 @@ end
 
 assign IFU_IDU_INSTR = IFU_AXI4_rdata;
 assign IFU_IDU_PC   = ICACHE_IFU_raddr;   // 早就发出的地址
-assign IFU_IDU_DNPC = ICACHE_IFU_dnpc;   // 
 
 
 assign IFU_AXI4_rready = IDU_IFU_ready;

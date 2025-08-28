@@ -7,13 +7,13 @@ module icache(
     input reg         IFU_AXI4_arvalid,
     // output reg        IFU_AXI4_rvalid,
     input             IFU_AXI4_rready,
-
+    input  [31:0]     BTB_pre_DNPC,
     input             IDU_IFU_STALL,
     input             LSU_IFU_stall,
 
     output    [31:0]  ICACHE_IFU_rdata,
     output    [31:0]  ICACHE_IFU_raddr,
-    output    [31:0]  ICACHE_IFU_dnpc,
+    output    [31:0]  ICACHE_IFU_pre_dnpc,
     output            ICACHE_IFU_valid,
 
     output reg [31:0] ICACHE_AXI4_araddr,
@@ -59,7 +59,7 @@ state_t state;
 
 
 reg [127:0] burst_buffer; 
-reg [31:0] addr_buffer;
+reg [31:0] addr_buffer,pre_pc_buffer;
 reg [SDRAM_INDEX_BITS - 1:0] index_buffer;
 wire [SDRAM_TAG_BITS-1:0] current_tag = IFU_AXI4_araddr[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
 wire [SDRAM_INDEX_BITS-1:0] current_index = IFU_AXI4_araddr[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
@@ -78,6 +78,7 @@ reg [SDRAM_TAG_BITS-1:0] tag_reg1;
 reg [SDRAM_INDEX_BITS-1:0] index_reg1;
 reg [SDRAM_OFFSET_BITS-1:0] offset_reg1;
 reg reg1_valid;
+reg [31:0] reg1_pre_dnpc;
 
 wire hit_reg2;
 reg [31:0] pc_reg2;
@@ -85,9 +86,11 @@ reg [SDRAM_TAG_BITS-1:0] tag_reg2;
 reg [SDRAM_INDEX_BITS-1:0] index_reg2;
 reg [SDRAM_OFFSET_BITS-1:0] offset_reg2;
 reg reg2_valid;
+reg [31:0] reg2_pre_dnpc;
 
 reg [31:0] addr_reg3;
 reg [31:0] data_reg3;
+reg [31:0] per_pc_reg3;
 reg data_valid;
 
 reg flush_r;
@@ -102,6 +105,7 @@ always @(posedge clock) begin
         index_reg1 <= 0;
         offset_reg1 <= 0;
         reg1_valid  <= 0;
+        reg1_pre_dnpc <= 0;
     end
     else if(flush) begin
         reg1_valid <= 0;
@@ -112,6 +116,7 @@ always @(posedge clock) begin
         index_reg1 <= current_index;
         offset_reg1 <= current_offset;
         reg1_valid <= 1'b1;
+        reg1_pre_dnpc <= BTB_pre_DNPC;
     end
 end
 
@@ -122,6 +127,7 @@ always @(posedge clock) begin
         index_reg2 <= 0;
         offset_reg2 <= 0;
         reg2_valid  <= 0;
+        reg2_pre_dnpc <= 0;
     end
     else if(flush) begin
         reg2_valid <= 0;
@@ -132,6 +138,7 @@ always @(posedge clock) begin
         index_reg2 <= index_reg1;
         offset_reg2 <= offset_reg1;
         reg2_valid <= reg1_valid;
+        reg2_pre_dnpc <= reg1_pre_dnpc;
     end
 end
 
@@ -139,6 +146,7 @@ always @(posedge clock) begin
     if(reset) begin
         addr_reg3 <= 0;
         data_reg3 <= 0;
+        per_pc_reg3 <= 0;
     end
     else if(!icache_stall && IFU_AXI4_rready) begin
         if(reg2_valid && hit_reg2 && state == IDLE) begin
@@ -149,6 +157,7 @@ always @(posedge clock) begin
                 2'b11: data_reg3 <= data[index_reg2][127:96];
             endcase
             addr_reg3 <= pc_reg2;
+            per_pc_reg3 <= reg2_pre_dnpc;
         end
     end
     else if((!(LSU_IFU_stall || IDU_IFU_STALL)) && state == UPDATED_CACHE)begin
@@ -159,11 +168,12 @@ always @(posedge clock) begin
             2'b11: data_reg3 <= burst_buffer[127:96];
         endcase
         addr_reg3 <= addr_buffer;
+        per_pc_reg3 <= pre_pc_buffer;
     end
 end
 assign ICACHE_IFU_rdata = data_reg3;
 assign ICACHE_IFU_raddr = addr_reg3;
-assign ICACHE_IFU_dnpc  = pc_reg2;;
+assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
 assign ICACHE_IFU_valid = data_valid && (~flush);
 
 assign ICACHE_IFU_stall = icache_stall;
@@ -322,10 +332,12 @@ always @(posedge clock)begin
     if(reset) begin
         index_buffer <= 0;
         addr_buffer <= 32'h0;
+        pre_pc_buffer <= 32'h0;
     end 
     else if(state == IDLE && (!hit_reg2) && reg2_valid) begin
         index_buffer <= index_reg2;
         addr_buffer <= pc_reg2;
+        pre_pc_buffer <= reg2_pre_dnpc;
     end 
 end
 

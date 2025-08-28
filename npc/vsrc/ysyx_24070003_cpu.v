@@ -176,7 +176,7 @@ wire [31:0] IFU_AXI4_rdata,IFU_AXI4_araddr;
 wire IFU_AXI4_arvalid,IFU_AXI4_arready,IFU_AXI4_rvalid,IFU_AXI4_rready;
 wire ICACHE_IFU_stall;
 wire flush;
-wire [31:0] ICACHE_IFU_raddr,IFU_IDU_DNPC;
+wire [31:0] ICACHE_IFU_raddr,BTB_pre_DNPC;
 wire [31:0] ifu_current_pc,BTB_pred_pc;
 wire BTB_pred_valid;
 
@@ -204,15 +204,14 @@ ifu my_ifu(
     //.mret           (LSU_WBU_mret       ),
     //.csr_data       (csr_data   ),
     //.stall          (IFU_IDU_STALL),
-    .IFU_dnpc           (IFU_IDU_dnpc       ),
    // .inst_addr_o    (inst_addr_o),
     .IFU_IDU_PC     (IFU_IDU_PC),
-    .IFU_IDU_DNPC   (IFU_IDU_DNPC),
     .cur_pc         (ifu_current_pc),
     .BTB_pred_pc    (BTB_pred_pc),
     .BTB_pred_valid (BTB_pred_valid),
     .IFU_IDU_INSTR          (instr),
     //.instr_in       (instr_in),
+    .BTB_pre_DNPC           (BTB_pre_DNPC),
     .IFU_AXI4_araddr(IFU_AXI4_araddr),
     .IFU_AXI4_arvalid(IFU_AXI4_arvalid),
     .IFU_AXI4_arready(IFU_AXI4_arready),
@@ -220,12 +219,11 @@ ifu my_ifu(
     .ICACHE_IFU_rvalid(IFU_AXI4_rvalid),
     .IFU_AXI4_rready(IFU_AXI4_rready),
     .ICACHE_IFU_raddr(ICACHE_IFU_raddr),
-    .ICACHE_IFU_dnpc(ICACHE_IFU_dnpc),
     .ICACHE_IFU_stall(ICACHE_IFU_stall),
     .ifu_count      (ifu_count)
 );
 
-wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr,ICACHE_IFU_dnpc;
+wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr,ICACHE_IFU_pre_dnpc;
 wire ICACHE_AXI4_arvalid,ICACHE_AXI4_arready,ICACHE_AXI4_rvalid,ICACHE_AXI4_rready;
 wire [7:0] ICACHE_AXI4_arlen;
 wire [7:0] AXI4_MASTER_ARLEN;
@@ -241,13 +239,14 @@ icache  my_icache(
     //.IFU_AXI4_rvalid         (IFU_AXI4_rvalid),
     .IFU_AXI4_rready         (IFU_AXI4_rready),
 
+    .BTB_pre_DNPC            (BTB_pre_DNPC),
     .IDU_IFU_STALL           (stall),
     .LSU_IFU_stall           (LSU_IFU_stall),
 
 
     .ICACHE_IFU_rdata       (IFU_AXI4_rdata),
     .ICACHE_IFU_raddr       (ICACHE_IFU_raddr),
-    .ICACHE_IFU_dnpc        (ICACHE_IFU_dnpc),
+    .ICACHE_IFU_pre_dnpc        (ICACHE_IFU_pre_dnpc),
     .ICACHE_IFU_valid       (IFU_AXI4_rvalid),
     .ICACHE_IFU_stall       (ICACHE_IFU_stall),
 
@@ -502,7 +501,7 @@ sram_inst inst_sram(
 );
 
 */
-wire [31:0] IDU_EXU_PC;
+wire [31:0] IDU_EXU_PC,IDU_EXU_pre_dnpc;
 wire IDU_EXU_lw, IDU_EXU_lh, IDU_EXU_lb, IDU_EXU_lbu, IDU_EXU_lhu, IDU_EXU_sw, IDU_EXU_sb, IDU_EXU_sh;
 wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr,IDU_EXU_C_type;
 wire [2:0] IDU_EXU_csr_rst;
@@ -518,7 +517,7 @@ idu my_idu(
     .rst_n                   (reset       ),
     .flush                   (flush       ),
     .fence_i                (fence_i     ),
-    .IFU_IDU_dnpc           (IFU_IDU_DNPC       ),
+    .IFU_IDU_pre_dnpc           (ICACHE_IFU_pre_dnpc       ),
    // .IFU_IDU_STALL           (IFU_IDU_STALL),
     .IFU_IDU_valid          (IFU_IDU_valid),
     .IDU_IFU_ready           (IDU_IFU_ready),
@@ -563,7 +562,7 @@ idu my_idu(
     .IDU_EXU_C_type         (IDU_EXU_C_type    ),
     //.IDU_EXU_STALL          (IDU_EXU_STALL),
     .IDU_EXU_PC             (IDU_EXU_PC),
-    .IDU_EXU_dnpc           (IDU_EXU_dnpc),
+    .IDU_EXU_pre_dnpc           (IDU_EXU_pre_dnpc),
 
     .IDU_EXU_exu_raw_rs1    (IDU_EXU_exu_raw_rs1),
     .IDU_EXU_exu_raw_rs2    (IDU_EXU_exu_raw_rs2),
@@ -612,7 +611,7 @@ exu my_exu(
     .IDU_EXU_lsu_raw_rs1 (IDU_EXU_lsu_raw_rs1),
     .IDU_EXU_lsu_raw_rs2 (IDU_EXU_lsu_raw_rs2),
     .LSU_forward_data    (LSU_forward_data),
-    .IDU_EXU_dnpc   (IDU_EXU_dnpc),
+    .IDU_EXU_pre_dnpc   (IDU_EXU_pre_dnpc),
     //.IDU_EXU_STALL(IDU_EXU_STALL),
     .IDU_EXU_ebreak(IDU_EXU_ebreak),
     .IDU_EXU_csr_rst(IDU_EXU_csr_rst),

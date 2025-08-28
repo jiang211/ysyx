@@ -24,7 +24,7 @@ module exu(
     input IDU_EXU_csc,
     input IDU_EXU_css,
     input [31:0] csr_data,
-    input [31:0] IDU_EXU_dnpc,
+    input [31:0] IDU_EXU_pre_dnpc,
 
     input IDU_EXU_exu_raw_rs1,
     input IDU_EXU_exu_raw_rs2,
@@ -204,7 +204,7 @@ begin
     //EXU_IFU_pc               <=        pc_jump;
     EXU_LSU_RS2DATA           <=        RS2_data;
     EXU_LSU_PC               <=        pc_data;
-    EXU_LSU_dnpc               <=        IDU_EXU_dnpc;
+    EXU_LSU_dnpc               <=        EXU_IFU_pc;
     EXU_LSU_IMM                <=      imm_data;
     end
     else begin
