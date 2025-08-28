@@ -112,7 +112,7 @@ state_r state1;
 
   /////////////////////////////  fmax = 630   r = 630 s = 32  (6.3-1) * 32 ////////////
 //localparam DELAY_COUNT = 169;
-  localparam DELAY_COUNT = 1;
+  localparam DELAY_COUNT = 32;
 
 reg [31:0] write_count;
 reg [31:0] read_count;
