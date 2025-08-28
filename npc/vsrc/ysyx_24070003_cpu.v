@@ -503,7 +503,7 @@ sram_inst inst_sram(
 */
 wire [31:0] IDU_EXU_PC,IDU_EXU_pre_dnpc;
 wire IDU_EXU_lw, IDU_EXU_lh, IDU_EXU_lb, IDU_EXU_lbu, IDU_EXU_lhu, IDU_EXU_sw, IDU_EXU_sb, IDU_EXU_sh;
-wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr,IDU_EXU_C_type;
+wire IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css, IDU_EXU_ecall, IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr,IDU_EXU_C_type,IDU_EXU_B_type;
 wire [2:0] IDU_EXU_csr_rst;
 wire fence_i,stall;
 wire IDU_EXU_exu_raw_rs1;
@@ -560,6 +560,7 @@ idu my_idu(
     .IDU_EXU_J_type_1       (J_type_1  ),
    // .IDU_EXU_pcsrc          (pcsrc       ),
     .IDU_EXU_C_type         (IDU_EXU_C_type    ),
+    .IDU_EXU_B_type         (IDU_EXU_B_type),
     //.IDU_EXU_STALL          (IDU_EXU_STALL),
     .IDU_EXU_PC             (IDU_EXU_PC),
     .IDU_EXU_pre_dnpc           (IDU_EXU_pre_dnpc),
@@ -635,6 +636,7 @@ exu my_exu(
     .IDU_EXU_ecall(IDU_EXU_ecall),
     .IDU_EXU_mret(IDU_EXU_mret),
     .IDU_EXU_C_type(IDU_EXU_C_type),
+    .IDU_EXU_B_type(IDU_EXU_B_type),
     .EXU_IDU_ready(EXU_IDU_ready),
     .IDU_EXU_valid(IDU_EXU_valid),
     .LSU_EXU_ready(LSU_EXU_ready),
@@ -685,8 +687,12 @@ exu my_exu(
 
     .EXU_IDU_REG_ADDR          (EXU_IDU_REG_ADDR)     ,
     .EXU_IDU_REG_WEN           (EXU_IDU_REG_WEN),
-    .EXU_IDU_REN               (EXU_IDU_REN)
+    .EXU_IDU_REN               (EXU_IDU_REN),
+    .EXU_BTB_PC                (EXU_BTB_PC),
+    .EXU_BTB_updata_valid      (EXU_BTB_updata_valid)
 );
+wire [31:0] EXU_BTB_PC;
+wire EXU_BTB_updata_valid;
 wire [31:0] EXU_LSU_PC,LSU_WBU_PC,PC_DATA,DNPC_DATA,EXU_LSU_dnpc,LSU_WBU_dnpc,IDU_EXU_dnpc;
 wire [31:0] LSU_WBU_DATA;
 wire [31:0] LSU_WBU_csr_data,LSU_WBU_csr_in,WBU_CSR_DATA;

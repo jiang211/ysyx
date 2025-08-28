@@ -35,6 +35,7 @@ module exu(
     input IDU_EXU_ecall,
     input IDU_EXU_mret,
     input IDU_EXU_C_type,
+    input IDU_EXU_B_type,
     input [2:0] IDU_EXU_csr_rst,
     
     input [31:0] rs1_data,
@@ -84,7 +85,10 @@ module exu(
 
     output [4:0]  EXU_IDU_REG_ADDR,
     output        EXU_IDU_REG_WEN,
-    output        EXU_IDU_REN
+    output        EXU_IDU_REN,
+
+    output [31:0] EXU_BTB_PC,
+    output        EXU_BTB_updata_valid
     
 );
 wire [31:0] RS1_data;
@@ -120,9 +124,14 @@ alu my_alu(
     .alu_out        (alu_out    ),
     .zero           (zero       )
 );
+
+wire btb_pre_error = (IDU_EXU_pre_dnpc != next_pc_jal) && (IDU_EXU_jal || IDU_EXU_B_type);
 assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jal || IDU_EXU_jalr || zero) && (IDU_EXU_valid && EXU_IDU_ready);
 
 assign EXU_IDU_ready = LSU_EXU_ready;  
+
+assign EXU_BTB_PC = (IDU_EXU_jal || IDU_EXU_B_type) ? next_pc_jal : next_pc_jalr;
+assign EXU_BTB_updata_valid = (IDU_EXU_jal || IDU_EXU_B_type) && (IDU_EXU_valid && EXU_IDU_ready);
 
 always @(posedge clk) begin 
     if(rstn) begin

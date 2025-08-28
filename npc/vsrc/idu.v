@@ -46,6 +46,7 @@ module idu(
     output reg IDU_EXU_mret          ,
     output reg IDU_EXU_U_type_1      ,
     output reg IDU_EXU_J_type_1      ,
+    output reg IDU_EXU_B_type      ,
     //output reg IDU_EXU_pcsrc         ,
     output reg IDU_EXU_C_type        ,
     //output reg IDU_EXU_STALL         ,
@@ -306,7 +307,7 @@ begin
     IDU_EXU_J_type_1            <=        1'b0;
     //IDU_EXU_pcsrc               <=        1'b0;  
     IDU_EXU_C_type              <=        1'b0;
-
+    IDU_EXU_B_type              <=        1'b0;
     IDU_EXU_exu_raw_rs1           <=        1'b0;
     IDU_EXU_exu_raw_rs2           <=        1'b0;
     IDU_EXU_lsu_raw_rs1           <=        1'b0;
@@ -360,6 +361,7 @@ begin
     IDU_EXU_J_type_1            <=        1'b0;
     //IDU_EXU_pcsrc               <=        1'b0;  
     IDU_EXU_C_type              <=        1'b0;
+    IDU_EXU_B_type              <=        1'b0;
     //IDU_EXU_STALL               <=        1'b0;
     IDU_EXU_PC                  <=        32'b0;
     IDU_EXU_pre_dnpc                <=        32'b0;
@@ -412,6 +414,7 @@ begin
     IDU_EXU_J_type_1            <=        J_type_1  ;
     //IDU_EXU_pcsrc               <=        pcsrc     ;  
     IDU_EXU_C_type              <=        C_type    ;
+    IDU_EXU_B_type              <=        B_type    ;
     //IDU_EXU_STALL               <=        IFU_IDU_STALL;
     IDU_EXU_PC                  <=        IFU_IDU_PC;
     IDU_EXU_pre_dnpc                <=        IFU_IDU_pre_dnpc;
@@ -459,6 +462,7 @@ begin
     IDU_EXU_J_type_1            <=  IDU_EXU_J_type_1  ;  
     //IDU_EXU_pcsrc               <=//IDU_EXU_pcsrc   ;  
     IDU_EXU_C_type              <=  IDU_EXU_C_type    ;  
+    IDU_EXU_B_type              <=  IDU_EXU_B_type    ;
     //IDU_EXU_STALL               <=//IDU_EXU_STALL   ;  
     IDU_EXU_PC                  <=  IDU_EXU_PC        ;  
     IDU_EXU_pre_dnpc                <=  IDU_EXU_pre_dnpc      ;  
