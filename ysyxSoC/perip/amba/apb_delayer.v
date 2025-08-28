@@ -51,16 +51,16 @@ module apb_delayer(
         IDLE: begin
           if(in_psel) begin
             state <= WAIT;
-            count <= count + DELAY_COUNT;
+            count <= count + 32'd169;
           end
         end
         WAIT: begin
           if(out_pready) begin
             state <= DELAY;
-            count <= (count + DELAY_COUNT) >> 5;
+            count <= (count + 32'd169) >> 5;
           end
           else begin
-            count <= count + DELAY_COUNT;
+            count <= count + 32'd169;
           end
         end
         DELAY: begin
