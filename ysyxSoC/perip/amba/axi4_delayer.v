@@ -110,7 +110,8 @@ typedef enum logic [2:0] {
 
 state_r state1;
 
- /////////////////////////////  fmax = 784   r = 7.8 s = 32  (7.8-1) * 32 = 217 ////////////
+  /////////////////////////////  fmax = 630   r = 630 s = 32  (6.3-1) * 32 ////////////
+localparam DELAY_COUNT = 169;
 
 reg [31:0] write_count;
 reg [31:0] read_count;
@@ -129,7 +130,7 @@ reg         out_bvalid_reg;
         case (state0)
             WRITE_IDLE: begin
               if(in_awvalid | in_wvalid) begin
-                write_count <= write_count + 32'd217;
+                write_count <= write_count + DELAY_COUNT;
                 state0 <= WRITE_WAIT;
               end
             end
@@ -137,10 +138,10 @@ reg         out_bvalid_reg;
               if(out_bvalid) begin
                 out_bvalid_reg <= out_bvalid;
                 state0 <= WRITE_DELAY;
-                write_count <= (write_count + 32'd217) >> 5;
+                write_count <= (write_count + DELAY_COUNT) >> 5;
               end
               else begin
-                write_count <= write_count + 32'd217;
+                write_count <= write_count + DELAY_COUNT;
               end
             end
             WRITE_DELAY: begin
@@ -166,7 +167,7 @@ reg         out_bvalid_reg;
         case (state1)
             READ_IDLE: begin
               if(in_arvalid | out_rvalid) begin
-                read_count <= read_count + 32'd217;
+                read_count <= read_count + DELAY_COUNT;
                 state1 <= READ_WAIT;
               end
             end
@@ -178,10 +179,10 @@ reg         out_bvalid_reg;
                 rid_cahce <= out_rid;
                 rlast_cahce <= out_rlast;
                 state1 <= READ_DELAY;
-                read_count <= (read_count + 32'd217) >> 5;
+                read_count <= (read_count + DELAY_COUNT) >> 5;
               end
               else begin
-                read_count <= read_count + 32'd217;
+                read_count <= read_count + DELAY_COUNT;
               end
             end
             READ_DELAY: begin

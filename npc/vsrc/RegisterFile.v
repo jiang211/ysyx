@@ -17,8 +17,8 @@ module RegisterFile #(
 );
 
     reg [DATA_WIDTH-1:0] rf[31:0];
-    import "DPI-C" function void set_gpr_ptr(input logic [31:0] a []);
-    initial set_gpr_ptr(rf); 
+    // import "DPI-C" function void set_gpr_ptr(input logic [31:0] a []);
+    // initial set_gpr_ptr(rf); 
 
     
     always @(posedge clk) begin
