@@ -1,7 +1,7 @@
 #ifndef __ISA_H__
 #define __ISA_H__
 
-#include <cpu.h>
+#include <common.h>
 
 extern CPU_state cpu;
 

@@ -1,6 +1,6 @@
 #include <common.h>
 #include <paddr.h>
-#include <cpu.h>
+//#include <cpu.h>
 #include <isa.h>
 #include <dlfcn.h>
 #include <difftest.h>

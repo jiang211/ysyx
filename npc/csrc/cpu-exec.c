@@ -1,5 +1,5 @@
 #include <common.h>
-#include <cpu.h>
+//#include <cpu.h>
 #include <locale.h>
 #include <paddr.h>
 #include <config.h>

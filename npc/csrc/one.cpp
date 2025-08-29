@@ -13,7 +13,7 @@
 #include <VysyxSoCFull.h>
 #include "svdpi.h"
 #include "VysyxSoCFull__Dpi.h"
-#include <cpu.h>
+//#include <cpu.h>
 
 
 //#define MTRACE
