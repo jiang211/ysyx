@@ -1,4 +1,4 @@
-module wbu(
+module ysyx_24070003_wbu(
     input clk,
     input rst_n,
     //input LSU_WBU_JUMP,

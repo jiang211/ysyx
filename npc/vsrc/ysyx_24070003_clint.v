@@ -1,4 +1,4 @@
-module clint #(
+module ysyx_24070003_clint #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
 )(
@@ -46,7 +46,7 @@ localparam READ_DATA  = 2'b01;
 localparam READ_WAIT   = 2'b10;
 
 
-reg [1:0] state_read, state_write;
+reg [1:0] state_read;
 reg [ADDR_WIDTH-1:0] read_addr_reg;
 
 // DPI-C interface for instruction read

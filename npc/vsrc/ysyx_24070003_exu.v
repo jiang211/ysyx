@@ -1,4 +1,4 @@
-module exu(
+module ysyx_24070003_exu(
     input clk,
     input rstn,
     //input IDU_EXU_STALL,
@@ -46,7 +46,7 @@ module exu(
     input alu_src2,
     input branch,
     input u_alu_type,
-    input mul_high,
+    //input mul_high,
     input U_type_1,
     input J_type_1,
     
@@ -81,7 +81,7 @@ module exu(
     output reg [31:0] EXU_LSU_RS2DATA,
     output reg [31:0] EXU_LSU_PC,
     output reg [31:0] EXU_LSU_dnpc,
-    output reg [31:0] EXU_LSU_IMM,
+    //output reg [31:0] EXU_LSU_IMM,
 
     output [4:0]  EXU_IDU_REG_ADDR,
     output        EXU_IDU_REG_WEN,
@@ -96,7 +96,7 @@ wire [31:0] RS2_data;
 assign EXU_IDU_REG_ADDR = IDU_EXU_rd;
 assign EXU_IDU_REG_WEN = IDU_EXU_reg && IDU_EXU_valid && EXU_IDU_ready;
 assign EXU_IDU_REN = IDU_EXU_ren && IDU_EXU_valid && EXU_IDU_ready;
-wire [3:0]aluop;
+//wire [3:0]aluop;
 wire zero;
 wire [31:0] alu_out;
 wire [31:0] csr_in;
@@ -108,7 +108,7 @@ assign csr_in = ( {32{IDU_EXU_csw}} & (RS1_data)) |
                 ( {32{IDU_EXU_csc}} & (RS1_data &csr_data)) |
                 ( {32{IDU_EXU_css}} & (csr_data | RS1_data)) ;
 
-alu my_alu(
+ysyx_24070003_alu my_alu(
     .rs1_data       (RS1_data   ),
     .rs2_data       (RS2_data   ),
     .imm_data       (imm_data        ),
@@ -118,7 +118,7 @@ alu my_alu(
     .branch         (branch     ),   
     .J_type_1       (J_type_1   ),
     .u_alu_type     (u_alu_type ),
-    .mul_high       (mul_high   ),
+    //.mul_high       (mul_high   ),
     .U_type_1       (U_type_1   ),
     .alu_crtl       (alu_op      ),
     .alu_out        (alu_out    ),
@@ -145,7 +145,7 @@ always @(posedge clk) begin
     end
 end
 
-wire [31:0] next_pc_seq = pc_data + 4;
+//wire [31:0] next_pc_seq = pc_data + 4;
 wire [31:0] next_pc_jal = pc_data + imm_data;
 wire [31:0] next_pc_jalr = RS1_data + imm_data;
 
@@ -184,7 +184,7 @@ begin
     EXU_LSU_RS2DATA           <=        32'b0;
     EXU_LSU_PC               <=        32'b0;
     EXU_LSU_dnpc               <=        32'b0;
-    EXU_LSU_IMM              <=          32'b0;
+    //EXU_LSU_IMM              <=          32'b0;
     end
     else if(IDU_EXU_valid & EXU_IDU_ready)begin
     EXU_LSU_alu_out           <=        alu_out;
@@ -214,7 +214,7 @@ begin
     EXU_LSU_RS2DATA           <=        RS2_data;
     EXU_LSU_PC               <=        pc_data;
     EXU_LSU_dnpc               <=        EXU_IFU_pc;
-    EXU_LSU_IMM                <=      imm_data;
+    //EXU_LSU_IMM                <=      imm_data;
     end
     else begin
     //EXU_IFU_zero              <=        1'b0;
@@ -244,7 +244,7 @@ begin
     EXU_LSU_RS2DATA           <=        EXU_LSU_RS2DATA;
     EXU_LSU_PC               <=        EXU_LSU_PC;
     EXU_LSU_dnpc               <=        EXU_LSU_dnpc;
-    EXU_LSU_IMM              <=         EXU_LSU_IMM;
+    //EXU_LSU_IMM              <=         EXU_LSU_IMM;
 end
 end
 endmodule

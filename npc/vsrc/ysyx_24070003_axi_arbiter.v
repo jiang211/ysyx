@@ -1,4 +1,4 @@
-module axi_arbiter #(
+module ysyx_24070003_axi_arbiter #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
 )(
@@ -35,7 +35,7 @@ module axi_arbiter #(
     //output [1:0]            lsu_bresp,
     output                  lsu_bvalid,
     input                   lsu_bready,
-    output   [2:0]          lsu_arsize,
+    input   [2:0]          lsu_arsize,
     
     // SRAM 从设备接口
     output [ADDR_WIDTH-1:0] master_araddr,
@@ -83,9 +83,9 @@ arb_state_t state;
 
 // 内部信号
 reg [ADDR_WIDTH-1:0] saved_araddr;
-reg [ADDR_WIDTH-1:0] saved_awaddr;
-reg [DATA_WIDTH-1:0] saved_wdata;
-reg [3:0]            saved_wstrb;
+//reg [ADDR_WIDTH-1:0] saved_awaddr;
+//reg [DATA_WIDTH-1:0] saved_wdata;
+//reg [3:0]            saved_wstrb;
 
 wire clint = (lsu_araddr >= 32'h02000000 && lsu_araddr <= 32'h02000004);
 // 状态机
@@ -93,9 +93,9 @@ always @(posedge clk ) begin
     if (rstn) begin
         state <= IDLE;
         saved_araddr <= '0;
-        saved_awaddr <= '0;
-        saved_wdata <= '0;
-        saved_wstrb <= '0;
+        //saved_awaddr <= '0;
+        //saved_wdata <= '0;
+        //saved_wstrb <= '0;
     end else begin
         case (state)
             IDLE: begin
@@ -110,9 +110,9 @@ always @(posedge clk ) begin
                 end
                 // LSU写请求
                 else if (lsu_awvalid && lsu_wvalid) begin
-                    saved_awaddr <= lsu_awaddr;
-                    saved_wdata <= lsu_wdata;
-                    saved_wstrb <= lsu_wstrb;
+                    //saved_awaddr <= lsu_awaddr;
+                    //saved_wdata <= lsu_wdata;
+                    //saved_wstrb <= lsu_wstrb;
                     state <= LSU_WRITE_START;
                 end
             end
@@ -214,3 +214,4 @@ assign lsu_bvalid =master_bvalid ;
 assign master_bready = lsu_bready ;
 
 endmodule
+

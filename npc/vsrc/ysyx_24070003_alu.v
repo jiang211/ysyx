@@ -1,4 +1,4 @@
-module alu(
+module ysyx_24070003_alu(
     input [31:0] rs1_data,
     input [31:0] rs2_data,
     input [31:0] imm_data,
@@ -7,7 +7,7 @@ module alu(
     input alu_src2,
     input branch,
     input u_alu_type,
-    input mul_high,
+    //input mul_high,
     input U_type_1,
     input J_type_1,
     input [3:0] alu_crtl,

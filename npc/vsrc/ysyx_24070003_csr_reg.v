@@ -1,4 +1,4 @@
-module csr_reg #(
+module ysyx_24070003_csr_reg #(
     parameter ADDR_WIDTH = 5,  
     parameter DATA_WIDTH = 32
 ) (
@@ -42,4 +42,3 @@ module csr_reg #(
     
 
 endmodule
-

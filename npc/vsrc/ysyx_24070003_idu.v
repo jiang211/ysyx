@@ -1,4 +1,4 @@
-module idu(
+module ysyx_24070003_idu(
     input wire [31:0] INSTR,
     input wire [31:0] IFU_IDU_PC,
     input [31:0]IFU_IDU_pre_dnpc,
@@ -20,7 +20,7 @@ module idu(
     output reg[31:0]IDU_EXU_imm,
     output reg [3:0]IDU_EXU_alu_op ,       
     output reg IDU_EXU_u_alu_type    ,
-    output reg IDU_EXU_mul_high      ,
+    //output reg IDU_EXU_mul_high      ,
     output reg IDU_EXU_alu_src1      ,
     output reg IDU_EXU_alu_src2      ,
     output reg IDU_EXU_branch        ,
@@ -72,7 +72,6 @@ module idu(
     // 来自级
     input         lsu_reg_write_en,
     input  [4:0]  lsu_rd_addr,
-    input         lsu_ren,
 
 
     output        stall
@@ -171,8 +170,8 @@ wire sh   = (S_type && funct3 == 3'b001);
 
 
 wire remu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b111);
-wire mulh = (R_type && funct7 == 7'b0000001 && funct3 == 3'b001);
-wire mulhu= (R_type && funct7 == 7'b0000001 && funct3 == 3'b011);
+// wire mulh = (R_type && funct7 == 7'b0000001 && funct3 == 3'b001);
+// wire mulhu= (R_type && funct7 == 7'b0000001 && funct3 == 3'b011);
 wire divu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b101);
 wire sltu = (R_type && funct7 == 7'b0000000 && funct3 == 3'b011);
 wire mul  = (R_type && funct7 == 7'b0000001 && funct3 == 3'b000);
@@ -180,8 +179,8 @@ wire sltiu= (I_type_1 && funct3 == 3'b011);
 wire bltu = (B_type && funct3 == 3'b110);
 wire bgeu = (B_type && funct3 == 3'b111);
 
-wire u_alu_type = (mulhu | divu | sltu | mul | sltiu | bltu | bgeu | remu | lbu | lhu ) ? 1'b1 : 1'b0;
-wire mul_high = mulh | mulhu;
+wire u_alu_type = (divu | sltu | mul | sltiu | bltu | bgeu | remu | lbu | lhu ) ? 1'b1 : 1'b0;
+//wire mul_high = mulh | mulhu;
 //wire jump = J_type | I_type_2;
 wire mem_read = I_type_3;
 wire mem_write = S_type;
@@ -201,7 +200,7 @@ assign alu_op = (R_type) ? 2'b10 :
                 (S_type | U_type | I_type_3 | J_type) ? 2'b00 :
                 2'b11;
 wire [3:0] aluop;
-exuop_ctrl my_exuop_crtl(
+ysyx_24070003_exuop_ctrl my_exuop_crtl(
     .funct3         (funct3),
     .funct7         (funct7[5:0]),
     .alu_op         (alu_op),
@@ -218,7 +217,7 @@ wire rs2_raw_exu;
 wire rs1_raw_lsu;
 wire rs2_raw_lsu;
 
-raw raw_detect(
+ysyx_24070003_raw raw_detect(
     // 来自译码的源寄存器
     .idu_rs1_addr               (rs1),
     .idu_rs2_addr               (rs2),
@@ -233,7 +232,6 @@ raw raw_detect(
     // 来自级
     .lsu_reg_write_en           (lsu_reg_write_en),
     .lsu_rd_addr                (lsu_rd_addr),
-    .lsu_ren                    (lsu_ren),
 
     .rs1_raw_exu                 (rs1_raw_exu),
     .rs2_raw_exu                 (rs2_raw_exu),
@@ -279,7 +277,7 @@ begin
 
     IDU_EXU_alu_op              <=        4'b0;     
     IDU_EXU_u_alu_type          <=        1'b0;   
-    IDU_EXU_mul_high            <=        1'b0;
+    //IDU_EXU_mul_high            <=        1'b0;
     IDU_EXU_alu_src1            <=        1'b0;
     IDU_EXU_alu_src2            <=        1'b0;  
     IDU_EXU_branch              <=        1'b0;
@@ -333,7 +331,7 @@ begin
 
     IDU_EXU_alu_op              <=        4'b0;     
     IDU_EXU_u_alu_type          <=        1'b0;   
-    IDU_EXU_mul_high            <=        1'b0;
+    //IDU_EXU_mul_high            <=        1'b0;
     IDU_EXU_alu_src1            <=        1'b0;
     IDU_EXU_alu_src2            <=        1'b0;  
     IDU_EXU_branch              <=        1'b0;
@@ -386,7 +384,7 @@ begin
     IDU_EXU_imm           <=        imm      ;
     IDU_EXU_alu_op              <=        aluop;     
     IDU_EXU_u_alu_type          <=        u_alu_type;   
-    IDU_EXU_mul_high            <=        mul_high     ;
+    //IDU_EXU_mul_high            <=        mul_high     ;
     IDU_EXU_alu_src1            <=        alu_src1     ;
     IDU_EXU_alu_src2            <=        alu_src2     ;  
     IDU_EXU_branch              <=        branch       ;
@@ -434,7 +432,7 @@ begin
     IDU_EXU_imm           <=        IDU_EXU_imm         ;
     IDU_EXU_alu_op              <=  IDU_EXU_alu_op      ;
     IDU_EXU_u_alu_type          <=  IDU_EXU_u_alu_type  ;
-    IDU_EXU_mul_high            <=  IDU_EXU_mul_high    ;
+    //IDU_EXU_mul_high            <=  IDU_EXU_mul_high    ;
     IDU_EXU_alu_src1            <=  IDU_EXU_alu_src1    ;
     IDU_EXU_alu_src2            <=  IDU_EXU_alu_src2    ;
     IDU_EXU_branch              <=  IDU_EXU_branch      ;

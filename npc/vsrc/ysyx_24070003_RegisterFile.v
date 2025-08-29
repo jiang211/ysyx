@@ -1,4 +1,4 @@
-module RegisterFile #(
+module ysyx_24070003_RegisterFile #(
     parameter ADDR_WIDTH = 5,  
     parameter DATA_WIDTH = 32
 ) (

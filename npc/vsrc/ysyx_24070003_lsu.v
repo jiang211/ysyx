@@ -1,4 +1,4 @@
-module lsu(
+module ysyx_24070003_lsu(
     input           clk,
     input           rst_n,
    // input           EXU_LSU_JUMP,
@@ -92,23 +92,22 @@ module lsu(
 
     output     [31:0]           LSU_forward_data,
     output [4:0]            LSU_IDU_REG_ADDR,
-    output                  LSU_IDU_REG_WEN,
-    output                  LSU_IDU_REN
+    output                  LSU_IDU_REG_WEN
+    //output                  LSU_IDU_REN
       //input  [1:0]                LSU_AXI4_BRESP
 );
 
 assign LSU_IDU_REG_ADDR = EXU_LSU_rd;
 assign LSU_IDU_REG_WEN = EXU_LSU_reg && LSU_EXU_ready && EXU_LSU_valid;
-assign LSU_IDU_REN   = EXU_LSU_ren && LSU_EXU_ready && EXU_LSU_valid;
+//assign LSU_IDU_REN   = EXU_LSU_ren && LSU_EXU_ready && EXU_LSU_valid;
 assign LSU_forward_data = LSU_WBU_DATA;
 
 parameter  IDLE = 0,
-            CACHE_DATA = 1,
-            START = 2,
-            READ_START = 3,
-            WRITE_WIRE_1 = 4,
-            WRITE_WIRE_2 = 5,
-            WRITE_DATA = 6;
+            START = 1,
+            READ_START = 2,
+            WRITE_WIRE_1 = 3,
+            WRITE_WIRE_2 = 4,
+            WRITE_DATA = 5;
 reg [2:0] state;
 
     //reg [63:0] lsu_count;
@@ -124,7 +123,7 @@ reg [2:0] state;
     wire [31:0] lsu_wdata;
     wire [31:0] lsu_rdata;
     wire [31:0] lsu_rdata_;
-    wire [2:0] lsu_arsize,arsize;
+    wire [2:0] lsu_arsize;
     reg skip;
     wire skip1 = (((EXU_LSU_result >= 32'h10000000) && (EXU_LSU_result < 32'h30000000)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
     wire skip2 = (((EXU_LSU_result >= 32'h02000000) && (EXU_LSU_result < 32'h0200ffff)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
@@ -191,7 +190,7 @@ reg mret;
 reg C_type;
 reg [2:0] csr_rst;
 reg [31:0] csr_in,pc,dnpc;
-reg lw,lh,lb,lbu,lhu,ren,wen;
+reg lw,lh,lb,lbu,lhu,ren;
 
 assign LSU_IFU_stall = (state != IDLE);
 
@@ -213,7 +212,7 @@ always@(posedge clk) begin
         lbu <=  1'b0;
         lhu <=  1'b0;
         ren <=  1'b0;
-        wen <=  1'b0;
+        //wen <=  1'b0;
         pc <=  32'd0;
         dnpc <=  32'd0;
         skip <=  1'b0;
@@ -237,7 +236,7 @@ always@(posedge clk) begin
         lbu <=  EXU_LSU_lbu;
         lhu <=  EXU_LSU_lhu;
         ren <=  EXU_LSU_ren;
-        wen <=  EXU_LSU_wen;
+        //wen <=  EXU_LSU_wen;
         pc <=  EXU_LSU_PC;
         dnpc <=  EXU_LSU_dnpc;
         skip <=  EXU_skip;
@@ -259,7 +258,7 @@ always @(posedge clk) begin
         LSU_WBU_valid <= 1'b0;
 
         LSU_AXI_wlast <= 1'b0;
-        lsu_count <=  63'd0;
+        lsu_count <=  64'd0;
         lsu_during_count <= 64'd0;
         lsu_load_count <= 64'd0;
         lsu_store_count <= 64'd0;
@@ -501,7 +500,7 @@ always @(posedge clk) begin
 end
 
 
-assign LSU_EXU_ready = ((state == IDLE) );
+assign LSU_EXU_ready = ((state == IDLE) && LSU_WBU_ready);
 /*
 sram_data data_sram(
     .CLK(clk),

@@ -1,4 +1,4 @@
-module icache(
+module ysyx_24070003_icache(
     input clock,
     input reset,
     input fence_i,
@@ -67,17 +67,17 @@ wire [SDRAM_INDEX_BITS-1:0] current_index = IFU_AXI4_araddr[SDRAM_OFFSET_BITS+SD
 wire [SDRAM_OFFSET_BITS-1:0] current_offset = IFU_AXI4_araddr[SDRAM_OFFSET_BITS-1:0];
 
 
-wire hit = (valid[current_index] && (tags[current_index] == current_tag));
+//wire hit = (valid[current_index] && (tags[current_index] == current_tag));
 
 
 reg [1:0] burst_count;
 integer i;
 
-reg hit_reg1;
+//reg hit_reg1;
 reg [31:0]  pc_reg1;
 reg [SDRAM_TAG_BITS-1:0] tag_reg1;
 reg [SDRAM_INDEX_BITS-1:0] index_reg1;
-reg [SDRAM_OFFSET_BITS-1:0] offset_reg1;
+//reg [SDRAM_OFFSET_BITS-1:0] offset_reg1;
 reg reg1_valid;
 reg [31:0] reg1_pre_dnpc;
 
@@ -85,7 +85,7 @@ wire hit_reg2;
 reg [31:0] pc_reg2;
 reg [SDRAM_TAG_BITS-1:0] tag_reg2;
 reg [SDRAM_INDEX_BITS-1:0] index_reg2;
-reg [SDRAM_OFFSET_BITS-1:0] offset_reg2;
+//reg [SDRAM_OFFSET_BITS-1:0] offset_reg2;
 reg reg2_valid;
 reg [31:0] reg2_pre_dnpc;
 
@@ -104,7 +104,7 @@ always @(posedge clock) begin
         pc_reg1 <= 0;
         tag_reg1 <= 0;
         index_reg1 <= 0;
-        offset_reg1 <= 0;
+        //offset_reg1 <= 0;
         reg1_valid  <= 0;
         reg1_pre_dnpc <= 0;
     end
@@ -115,7 +115,7 @@ always @(posedge clock) begin
         pc_reg1 <= IFU_AXI4_araddr;
         tag_reg1 <= current_tag;
         index_reg1 <= current_index;
-        offset_reg1 <= current_offset;
+        //offset_reg1 <= current_offset;
         reg1_valid <= 1'b1;
         reg1_pre_dnpc <= BTB_pre_DNPC;
     end
@@ -126,7 +126,7 @@ always @(posedge clock) begin
         pc_reg2 <= 0;
         tag_reg2 <= 0;
         index_reg2 <= 0;
-        offset_reg2 <= 0;
+        //offset_reg2 <= 0;
         reg2_valid  <= 0;
         reg2_pre_dnpc <= 0;
     end
@@ -137,7 +137,7 @@ always @(posedge clock) begin
         pc_reg2 <= pc_reg1;
         tag_reg2 <= tag_reg1;
         index_reg2 <= index_reg1;
-        offset_reg2 <= offset_reg1;
+        //offset_reg2 <= offset_reg1;
         reg2_valid <= reg1_valid;
         reg2_pre_dnpc <= reg1_pre_dnpc;
     end
@@ -311,7 +311,7 @@ end
 
 
 assign ICACHE_AXI4_rready = 1'b1;
-assign ICACHE_AXI4_arlen = 2'b11;  // 一次读取4个数据
+assign ICACHE_AXI4_arlen = 8'b11;  // 一次读取4个数据
 //assign ICACHE_AXI4_araddr = (is_sdram_reg2) ? {pc_reg2[31:4], 4'b0} : {pc_reg2[31:2], 2'b0};  // 地址对齐到16字节边界
 
 always @(posedge clock)begin
@@ -545,4 +545,3 @@ end
 // end
 
 endmodule
-

@@ -1,4 +1,4 @@
-module raw (
+module ysyx_24070003_raw (
     // 来自译码的源寄存器
     input  [4:0] idu_rs1_addr,
     input  [4:0] idu_rs2_addr,
@@ -13,7 +13,6 @@ module raw (
     // 来自级
     input         lsu_reg_write_en,
     input  [4:0]  lsu_rd_addr,
-    input         lsu_ren,
 
     output       rs1_raw_exu,
     output       rs2_raw_exu,
@@ -48,3 +47,4 @@ module raw (
                             //rs1_raw_wbu | rs2_raw_wbu ;
     
 endmodule
+
