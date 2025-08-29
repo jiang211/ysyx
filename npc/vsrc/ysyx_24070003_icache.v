@@ -298,7 +298,7 @@ always @(posedge clock)begin
         burst_buffer <= 128'h0;
     end 
     else if(state == AXI_READ && ICACHE_AXI4_rvalid) begin
-        case (2'b01)
+        case (burst_count)
             2'b00: burst_buffer[31:0] <= ICACHE_AXI4_rdata;
             2'b01: burst_buffer[63:32] <= ICACHE_AXI4_rdata;
             2'b10: burst_buffer[95:64] <= ICACHE_AXI4_rdata;
