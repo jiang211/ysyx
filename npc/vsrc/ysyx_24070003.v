@@ -1,4 +1,4 @@
-module ysyx_24070003_cpu(
+module ysyx_24070003(
     /*
     input clk,
     input rstn,
