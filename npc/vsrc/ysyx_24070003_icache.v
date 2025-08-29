@@ -64,7 +64,10 @@ reg [23:0] tag_buffer;
 reg [SDRAM_INDEX_BITS - 1:0] index_buffer;
 wire [SDRAM_TAG_BITS-1:0] tag_reg2 = pc_reg2[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
 wire [SDRAM_INDEX_BITS-1:0] index_reg2 = pc_reg2[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
+//wire [SDRAM_OFFSET_BITS-1:0] current_offset = IFU_AXI4_araddr[SDRAM_OFFSET_BITS-1:0];
 
+
+//wire hit = (valid[current_index] && (tags[current_index] == current_tag));
 
 
 reg [1:0] burst_count;
@@ -72,11 +75,17 @@ integer i;
 
 //reg hit_reg1;
 reg [31:0]  pc_reg1;
+// reg [SDRAM_TAG_BITS-1:0] tag_reg1;
+// reg [SDRAM_INDEX_BITS-1:0] index_reg1;
+//reg [SDRAM_OFFSET_BITS-1:0] offset_reg1;
 reg reg1_valid;
 reg [31:0] reg1_pre_dnpc;
 
 wire hit_reg2;
 reg [31:0] pc_reg2;
+// reg [SDRAM_TAG_BITS-1:0] tag_reg2;
+// reg [SDRAM_INDEX_BITS-1:0] index_reg2;
+//reg [SDRAM_OFFSET_BITS-1:0] offset_reg2;
 reg reg2_valid;
 reg [31:0] reg2_pre_dnpc;
 
@@ -93,6 +102,9 @@ wire icache_stall = stall || LSU_IFU_stall || IDU_IFU_STALL;
 always @(posedge clock) begin
     if(reset) begin
         pc_reg1 <= 0;
+        // tag_reg1 <= 0;
+        // index_reg1 <= 0;
+        //offset_reg1 <= 0;
         reg1_valid  <= 0;
         reg1_pre_dnpc <= 0;
     end
@@ -101,6 +113,9 @@ always @(posedge clock) begin
     end
     else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
         pc_reg1 <= IFU_AXI4_araddr;
+        // tag_reg1 <= current_tag;
+        // index_reg1 <= current_index;
+        //offset_reg1 <= current_offset;
         reg1_valid <= 1'b1;
         reg1_pre_dnpc <= BTB_pre_DNPC;
     end
@@ -109,6 +124,9 @@ end
 always @(posedge clock) begin
     if(reset) begin
         pc_reg2 <= 0;
+        // tag_reg2 <= 0;
+        // index_reg2 <= 0;
+        //offset_reg2 <= 0;
         reg2_valid  <= 0;
         reg2_pre_dnpc <= 0;
     end
@@ -117,6 +135,9 @@ always @(posedge clock) begin
     end 
     else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
         pc_reg2 <= pc_reg1;
+        // tag_reg2 <= tag_reg1;
+        // index_reg2 <= index_reg1;
+        //offset_reg2 <= offset_reg1;
         reg2_valid <= reg1_valid;
         reg2_pre_dnpc <= reg1_pre_dnpc;
     end
