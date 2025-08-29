@@ -200,12 +200,12 @@ reg         out_bvalid_reg;
     end
   end
 
-  assign out_rready = in_rready & read_count == 1'b1;
-  assign in_rvalid = out_rvalid_reg & read_count == 1'b1;
+  assign out_rready = in_rready & read_count == 32'b1;
+  assign in_rvalid = out_rvalid_reg & read_count == 32'b1;
   assign in_rid = rid_cahce;
   assign in_rdata = rdata_cahce;
   assign in_rresp = rresp_cahce;
   assign in_rlast = rlast_cahce;
-  assign out_bready = in_bready & write_count == 1'b1;
-  assign in_bvalid = out_bvalid_reg & write_count == 1'b1;
+  assign out_bready = in_bready & write_count == 32'b1;
+  assign in_bvalid = out_bvalid_reg & write_count == 32'b1;
 endmodule
