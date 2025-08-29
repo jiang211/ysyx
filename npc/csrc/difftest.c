@@ -1,9 +1,9 @@
 #include <common.h>
 #include <paddr.h>
 //#include <cpu.h>
-#include <isa.h>
+//#include <isa.h>
 #include <dlfcn.h>
-#include <difftest.h>
+//#include <difftest.h>
 
 void (*ref_difftest_memcpy)(paddr_t addr, void *buf, size_t n, bool direction)=NULL;
 void (*ref_difftest_regcpy)(CPU_state *dut, bool direction) = NULL;

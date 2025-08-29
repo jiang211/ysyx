@@ -1,5 +1,5 @@
 #include <common.h>
-#include <isa.h>
+//#include <isa.h>
 
 const char *regs[] = {
   "$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",

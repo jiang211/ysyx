@@ -1,5 +1,5 @@
 #include <common.h>
-#include <isa.h>
+//#include <isa.h>
 #include <paddr.h>
 #include <VysyxSoCFull.h>
 #include "svdpi.h"

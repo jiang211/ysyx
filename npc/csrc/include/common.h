@@ -56,3 +56,22 @@ typedef struct Decode {
 
 #endif
 
+#ifndef __ISA_H__
+#define __ISA_H__
+
+
+
+extern CPU_state cpu;
+
+
+
+#endif
+
+#ifndef __DIFFTEST_H__
+#define __DIFFTEST_H__
+
+enum { DIFFTEST_TO_DUT, DIFFTEST_TO_REF };
+
+#endif
+
+
