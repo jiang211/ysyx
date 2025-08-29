@@ -4,7 +4,7 @@ module ysyx_24070003_idu(
     input [31:0]IFU_IDU_pre_dnpc,
     input       flush,
     //input wire EXU_IFU_flush,
-    input clk,
+    input clock,
     input rst_n,
     output fence_i,
     //input               IFU_IDU_STALL,
@@ -251,7 +251,7 @@ assign fence_i = (INSTR == 32'h0000100F) && IFU_IDU_valid && IDU_IFU_ready;
 assign IDU_IFU_ready = EXU_IDU_ready  && (~stall);    // 设置IDU到IFU的就绪信号
 
 reg idu_exu_valid;
-always @(posedge clk) begin
+always @(posedge clock) begin
     if(rst_n) begin
         idu_exu_valid <= 1'b0;
     end else if(stall) begin
@@ -265,7 +265,7 @@ end
 
 assign IDU_EXU_valid = idu_exu_valid ;
 
-always@(posedge clk)
+always@(posedge clock)
 begin 
    if((rst_n ))begin
    // IDU_EXU_opcode        <=        7'b0;     

@@ -2,7 +2,7 @@ module ysyx_24070003_axi_arbiter #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
 )(
-    input clk,
+    input clock,
     input rstn,
     
     // IFU 接口 (指令获取)
@@ -89,7 +89,7 @@ reg [ADDR_WIDTH-1:0] saved_araddr;
 
 wire clint = (lsu_araddr >= 32'h02000000 && lsu_araddr <= 32'h02000004);
 // 状态机
-always @(posedge clk ) begin
+always @(posedge clock ) begin
     if (rstn) begin
         state <= IDLE;
         saved_araddr <= '0;

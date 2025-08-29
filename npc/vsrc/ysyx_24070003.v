@@ -383,7 +383,7 @@ ysyx_24070003_ifu my_ifu(
     .IFU_IDU_valid                  (IFU_IDU_valid      ), 
     .IDU_IFU_ready                  (IDU_IFU_ready      ),
     .resp                           (resp               ),
-    .clk                            (clock              ),
+    .clock                            (clock              ),
     .rstn                           (reset              ),
     .fence_i                        (fence_i            ),
     .stall                          (stall              ),
@@ -475,7 +475,7 @@ ysyx_24070003_btb my_btb(
 
 
 ysyx_24070003_axi_arbiter my_axi_arbiter(
-    .clk                            (clock              ),
+    .clock                            (clock              ),
     .rstn                           (reset              ),   
     
     // IFU 接口 (指令获取)
@@ -538,7 +538,7 @@ ysyx_24070003_axi_arbiter my_axi_arbiter(
 
 
 ysyx_24070003_clint my_clint(
-    .CLK                            (clock              )  ,
+    .clock                            (clock              )  ,
     .rstn                           (reset              ),    
 
 
@@ -557,7 +557,7 @@ ysyx_24070003_clint my_clint(
 
 ysyx_24070003_idu my_idu(
    // .EXU_IFU_flush                (EXU_IFU_flush      ),
-    .clk                            (clock              ),
+    .clock                            (clock              ),
     .IFU_IDU_PC                     (IFU_IDU_PC         ),
     .rst_n                          (reset              ),
     .flush                          (flush              ),
@@ -640,7 +640,7 @@ ysyx_24070003_idu my_idu(
 
 ysyx_24070003_exu my_exu(
     .IDU_EXU_rd                     (rd                 ),
-    .clk                            (clock              ),
+    .clock                            (clock              ),
     .rstn                           (reset              ),
     .IDU_EXU_exu_raw_rs1            (IDU_EXU_exu_raw_rs1),
     .IDU_EXU_exu_raw_rs2            (IDU_EXU_exu_raw_rs2),
@@ -763,7 +763,7 @@ ysyx_24070003_lsu my_lsu(
     .EXU_LSU_valid                  (EXU_LSU_valid      ),
     .LSU_WBU_valid                  (LSU_WBU_valid      ),
     .LSU_WBU_ready                  (LSU_WBU_ready      ),
-    .clk                            (clock              ),
+    .clock                          (clock              ),
     .rst_n                          (reset              ),
     .LSU_WBU_PC                     (LSU_WBU_PC         ),
     //.alu_result                   (alu_out            ),
@@ -819,7 +819,7 @@ ysyx_24070003_lsu my_lsu(
 
 
 ysyx_24070003_wbu my_wbu(
-    .clk                            (clock              ),
+    .clock                            (clock              ),
     .LSU_WBU_dnpc                   (LSU_WBU_dnpc       ),
     .LSU_WBU_skip                   (LSU_WBU_skip       ),
     //.LSU_WBU_pc                   (LSU_WBU_pc         ),
@@ -857,7 +857,7 @@ ysyx_24070003_wbu my_wbu(
     
 
 ysyx_24070003_RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
-        .clk                        (clock              ),
+        .clock                        (clock              ),
         .wdata                      (wbu_data           ),
         .waddr                      (wbu_addr           ),
         .wen                        (WBU_wen            ),
@@ -868,7 +868,7 @@ ysyx_24070003_RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
     );
 assign WBU_CSR_RADDR = (IDU_EXU_ecall) ? 'd3 : (IDU_EXU_mret) ? 'd0 :IDU_EXU_csr_rst;
 ysyx_24070003_csr_reg #(.ADDR_WIDTH(3), .DATA_WIDTH(32)) csr1(
-        .clk                        (clock              ),
+        .clock                        (clock              ),
         .wdata                      (WBU_CSR_DATA       ),
         .ecall                      (WBU_ECALL          ),
         .pc                         (PC_DATA            ),

@@ -2,7 +2,7 @@ module ysyx_24070003_csr_reg #(
     parameter ADDR_WIDTH = 5,  
     parameter DATA_WIDTH = 32
 ) (
-    input clk,
+    input clock,
     input [DATA_WIDTH-1:0] wdata,
     input ecall,
     input [31:0] pc,
@@ -17,17 +17,17 @@ module ysyx_24070003_csr_reg #(
     reg [DATA_WIDTH-1:0] csr[5:0];
     reg clk_reg;
     wire clk_neg;
-    always@(posedge clk)
+    always@(posedge clock)
     begin 
-        clk_reg <= clk;
+        clk_reg <= clock;
     end
-    assign clk_neg = ~clk & clk_reg;
+    assign clk_neg = ~clock & clk_reg;
     initial begin
         csr[4] = 32'h79737978; // zero register
         csr[5] = 32'h016e38bf; // zero register
     end
-    import "DPI-C" function void set_csr_ptr(input logic [31:0] a []);
-    initial set_csr_ptr(csr); // set the pointer to the CSR array
+     import "DPI-C" function void set_csr_ptr(input logic [31:0] a []);
+     initial set_csr_ptr(csr); // set the pointer to the CSR array
     initial csr[1] = 'h1800;
     always @(posedge clk_neg) begin
         if (ecall) begin 

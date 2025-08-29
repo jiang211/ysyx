@@ -2,7 +2,7 @@ module ysyx_24070003_clint #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
 )(
-    input CLK,
+    input clock,
     input rstn,
     //input wen,
     //input ren,
@@ -30,7 +30,7 @@ module ysyx_24070003_clint #(
 //import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
 
 reg [63:0] mtime;
-always @(posedge CLK) begin
+always @(posedge clock) begin
     if (rstn) begin
         mtime <= 64'b0;
     end else begin
@@ -53,7 +53,7 @@ reg [ADDR_WIDTH-1:0] read_addr_reg;
 //import "DPI-C" function void vpmem_read(input int raddr, output int rdata);
 
 // State machine
-always @(posedge CLK) begin
+always @(posedge clock) begin
     if (rstn) begin
         state_read <= RIDLE;
         AXI4_CLINT_ARREADY <= 1'b0;

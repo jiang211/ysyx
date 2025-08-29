@@ -1,5 +1,5 @@
 module ysyx_24070003_ifu(
-    input clk,
+    input clock,
     input rstn,
     //input WBU_IFU_JUMP,
      //IDU是否准备好接收IFU的指令
@@ -48,7 +48,7 @@ reg [31:0] pc;
 
 assign cur_pc = pc;
 assign BTB_pre_DNPC = BTB_pred_pc;
-always@(posedge clk)
+always@(posedge clock)
 begin 
    if(rstn | (resp != 2'b00))begin
     pc<=32'h30000000 ;
@@ -83,7 +83,7 @@ end
 assign IFU_IDU_valid = ICACHE_IFU_rvalid;
 
 assign IFU_AXI4_araddr = pc;
-always @(posedge clk) begin
+always @(posedge clock) begin
     if (rstn) begin
         IFU_AXI4_arvalid <= 1'b0;
     end else if (!stall && !EXU_IFU_flush && !fence_i) begin
@@ -101,7 +101,7 @@ assign IFU_IDU_PC   = ICACHE_IFU_raddr;   // 早就发出的地址
 
 assign IFU_AXI4_rready = IDU_IFU_ready;
 
-always @(posedge clk) begin
+always @(posedge clock) begin
     if (rstn) begin
         ifu_count <= 64'h0;
     end

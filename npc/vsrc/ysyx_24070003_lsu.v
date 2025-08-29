@@ -1,5 +1,5 @@
 module ysyx_24070003_lsu(
-    input           clk,
+    input           clock,
     input           rst_n,
    // input           EXU_LSU_JUMP,
     //output        reg  LSU_WBU_JUMP,
@@ -194,7 +194,7 @@ reg lw,lh,lb,lbu,lhu,ren;
 
 assign LSU_IFU_stall = (state != IDLE);
 
-always@(posedge clk) begin
+always@(posedge clock) begin
     if(rst_n) begin
         rd <=  5'd0;
         result <=  32'd0;
@@ -244,7 +244,7 @@ always@(posedge clk) begin
 end
 
 
-always @(posedge clk) begin
+always @(posedge clock) begin
     if (rst_n) begin
         state <= IDLE;
         
@@ -379,7 +379,7 @@ always @(posedge clk) begin
     end
 end
 
-always @(posedge clk) begin
+always @(posedge clock) begin
     if(rst_n) begin
         LSU_WBU_valid <= 1'b0;
     end
@@ -398,7 +398,7 @@ end
 //import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
 //reg [31:0] RDATAIN,WDATA;
 reg LSU_WBU_lb,LSU_WBU_lh,LSU_WBU_lw,LSU_WBU_lbu,LSU_WBU_lhu;
-always @(posedge clk) begin
+always @(posedge clock) begin
     if(rst_n)begin
         //RDATAIN <= 32'b0;
         //WDATA   <= 32'b0;

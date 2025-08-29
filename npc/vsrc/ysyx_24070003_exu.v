@@ -1,5 +1,5 @@
 module ysyx_24070003_exu(
-    input clk,
+    input clock,
     input rstn,
     //input IDU_EXU_STALL,
     output      reg       EXU_IDU_ready,          // 从执行单元(EXU)到IDU的就绪信号
@@ -133,7 +133,7 @@ assign EXU_IDU_ready = LSU_EXU_ready;
 assign EXU_BTB_PC = (IDU_EXU_jal || IDU_EXU_B_type) ? next_pc_jal : next_pc_jalr;
 assign EXU_BTB_updata_valid = (IDU_EXU_jal || IDU_EXU_B_type) && (IDU_EXU_valid && EXU_IDU_ready);
 
-always @(posedge clk) begin 
+always @(posedge clock) begin 
     if(rstn) begin
         EXU_LSU_valid <= 1'b0;
     end
@@ -154,7 +154,7 @@ assign EXU_IFU_pc = (IDU_EXU_ecall || IDU_EXU_mret) ? csr_data : (IDU_EXU_jal) ?
 
 //always @(posedge clk) begin EXU_IFU_STALL_done <= IDU_EXU_STALL; end
 
-always@(posedge clk)
+always@(posedge clock)
 begin 
    if(rstn)begin
     //EXU_IFU_zero              <=        1'b0;
