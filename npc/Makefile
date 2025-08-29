@@ -19,6 +19,7 @@ VERILATOR_FLAGS += -I$(YSYXSOC)/perip/spi/rtl
 VERILATOR_FLAGS += --timescale "1ns/1ns"
 VERILATOR_FLAGS += --no-timing
 VERILATOR_FLAGS += --top-module $(TOPNAME)
+VERILATOR_FLAGS += --autoflush
 VERILATOR_FLAGS += --Wno-UNUSED
 # 取消未驱动信号的报错（仅显示警告） 
 VERILATOR_FLAGS += --Wno-UNDRIVEN
@@ -27,8 +28,6 @@ VERILATOR_FLAGS += --Wno-DECLFILENAME
 VERILATOR_FLAGS += --Wno-DEFPARAM
 VERILATOR_FLAGS += --Wno-PINCONNECTEMPTY
 VERILATOR_FLAGS += --Wno-SYNCASYNCNET
-VERILATOR_FLAGS += --Wno-WIDTHEXPAND
-VERILATOR_FLAGS += --autoflush
 #VERILATOR_FLAGS += --debug --gdbbt
 
 YSYXSOC ?= $(HOME)/ysyx-workbench/ysyxSoC  # 默认路径，按需修改
