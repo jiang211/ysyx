@@ -99,7 +99,7 @@ always @(posedge clock) begin
     else if(flush) begin
         reg1_valid <= 0;
     end
-    else if(!icache_stall && IFU_AXI4_rready && !fence_i && hit_reg2) begin
+    else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
         pc_reg1 <= IFU_AXI4_araddr;
         reg1_valid <= 1'b1;
         reg1_pre_dnpc <= BTB_pre_DNPC;
@@ -115,7 +115,7 @@ always @(posedge clock) begin
     else if(flush) begin
         reg2_valid <= 0;
     end 
-    else if(!icache_stall && IFU_AXI4_rready && !fence_i && hit_reg2) begin
+    else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
         pc_reg2 <= pc_reg1;
         reg2_valid <= reg1_valid;
         reg2_pre_dnpc <= reg1_pre_dnpc;
@@ -170,7 +170,7 @@ always @(posedge clock) begin
     else if(LSU_IFU_stall || IDU_IFU_STALL) begin
         data_valid <= data_valid;
     end
-    else if((state == IDLE && reg2_valid && hit_reg2 && (~flush)) ) begin
+    else if((state == IDLE && reg2_valid && hit_reg2 && (~flush)) || (state == UPDATED_CACHE)) begin
         data_valid <= 1'b1;
     end
     else begin
