@@ -18,7 +18,7 @@
 
 void init_rand();
 void init_log(const char *log_file);
-void init_bincache(const char *cache_bin);
+// void init_bincache(const char *cache_bin);
 void init_mem();
 void init_difftest(char *ref_so_file, long img_size, int port);
 void init_device();
@@ -120,7 +120,7 @@ void init_monitor(int argc, char *argv[]) {
   /* Open the log file. */
   init_log(log_file);
   /* Initialize cache. */
-  init_bincache(cache_bin);
+  // init_bincache(cache_bin);
   /* Initialize memory. */
   init_mem();
   /* Initialize devices. */
