@@ -23,13 +23,9 @@ module ysyx_24070003_alu(
 `define ysyx_24070003_OP_SRA         4'b0110 // >>>
 `define ysyx_24070003_OP_OR          4'b0111 // |
 `define ysyx_24070003_OP_AND         4'b1000 // &
-`define ysyx_24070003_OP_MU          4'b1001 // *
-`define ysyx_24070003_OP_DIV         4'b1010 // /
-`define ysyx_24070003_OP_REM         4'b1011 // %
-`define ysyx_24070003_OP_BGE         4'b1100 // >=
-`define ysyx_24070003_OP_BNE         4'b1101 // !=
-`define ysyx_24070003_OP_BEQ         4'b1110 // ==
-`define ysyx_24070003_MUL_H          4'b1111 // *
+`define ysyx_24070003_OP_BGE         4'b1001 // >=
+`define ysyx_24070003_OP_BNE         4'b1010 // !=
+`define ysyx_24070003_OP_BEQ         4'b1011 // ==
 
     wire [31:0] a;
     wire [31:0] b;

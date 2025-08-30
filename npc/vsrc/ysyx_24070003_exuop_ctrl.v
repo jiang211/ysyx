@@ -7,19 +7,15 @@ module ysyx_24070003_exuop_ctrl(
 `define ysyx_24070003_OP_ADD         4'b0000 // +
 `define ysyx_24070003_OP_SUB         4'b0001 // -
 `define ysyx_24070003_OP_SLL         4'b0010 // <<
-`define ysyx_24070003_OP_SLT         4'b0011 // <
+`define ysyx_24070003_OP_BLT         4'b0011 // <
 `define ysyx_24070003_OP_XOR         4'b0100 // ^
 `define ysyx_24070003_OP_SRL         4'b0101 // >>
 `define ysyx_24070003_OP_SRA         4'b0110 // >>>
 `define ysyx_24070003_OP_OR          4'b0111 // |
 `define ysyx_24070003_OP_AND         4'b1000 // &
-`define ysyx_24070003_OP_MU          4'b1001 // *
-`define ysyx_24070003_OP_DIV         4'b1010 // /
-`define ysyx_24070003_OP_REM         4'b1011 // %
-`define ysyx_24070003_OP_BGE         4'b1100 // >=
-`define ysyx_24070003_OP_BNE         4'b1101 // !=
-`define ysyx_24070003_OP_BEQ         4'b1110 // ==
-`define ysyx_24070003_MUL_H          4'b1111 // *
+`define ysyx_24070003_OP_BGE         4'b1001 // >=
+`define ysyx_24070003_OP_BNE         4'b1010 // !=
+`define ysyx_24070003_OP_BEQ         4'b1011 // ==
 
 `define ysyx_24070003_BEQ_FUNCT3         3'b000
 `define ysyx_24070003_BNE_FUNCT3         3'b001
@@ -53,51 +49,32 @@ module ysyx_24070003_exuop_ctrl(
             `ysyx_24070003_SUB_ADD_MUL_FUNCT3: begin
                   if(funct7[5]) //sub
                     aluOp = `ysyx_24070003_OP_SUB;
-                  else if(funct7[0]) //mul
-                    aluOp = `ysyx_24070003_OP_MU;
                   else //add
                     aluOp = `ysyx_24070003_OP_ADD;
               end
             `ysyx_24070003_SLL_MULH_FUNCT3: begin
-                  if(funct7[0]) //mulh
-                    aluOp = `ysyx_24070003_OP_MU;
-                  else //sll
-                    aluOp = `ysyx_24070003_OP_SLL;
+                  aluOp = `ysyx_24070003_OP_SLL;
               end
             `ysyx_24070003_SLT_FUNCT3: begin
-                  aluOp = `ysyx_24070003_OP_SLT;
+                  aluOp = `ysyx_24070003_OP_BLT;
               end
             `ysyx_24070003_SLTU_MULHU_FUNCT3: begin
-                  if(funct7[0]) //mulhu
-                    aluOp = `ysyx_24070003_OP_MU;
-                  else //sltu
-                    aluOp = `ysyx_24070003_OP_SLT;
+                  aluOp = `ysyx_24070003_OP_BLT;
               end
             `ysyx_24070003_XOR_DIV_FUNCT3: begin
-                  if(funct7[0]) //div
-                    aluOp = `ysyx_24070003_OP_DIV;
-                  else //xor
-                    aluOp = `ysyx_24070003_OP_XOR;
+                  aluOp = `ysyx_24070003_OP_XOR;
               end
             `ysyx_24070003_SRL_SRA_DIVU_FUNCT3: begin
                   if(funct7[5]) //sra
                     aluOp = `ysyx_24070003_OP_SRA;
-                  else if(funct7[0]) //divu
-                    aluOp = `ysyx_24070003_OP_DIV;
                   else //srl
                     aluOp = `ysyx_24070003_OP_SRL;
               end
             `ysyx_24070003_OR_REM_FUNCT3: begin
-                  if(funct7[0]) //rem
-                    aluOp = `ysyx_24070003_OP_REM;
-                  else //or
-                    aluOp = `ysyx_24070003_OP_OR;
+                  aluOp = `ysyx_24070003_OP_OR;
               end
             `ysyx_24070003_AND_REMU_FUNCT3: begin
-                  if(funct7[0]) //remu
-                    aluOp = `ysyx_24070003_OP_REM;
-                  else //and
-                    aluOp = `ysyx_24070003_OP_AND;
+                  aluOp = `ysyx_24070003_OP_AND;
               end
             default : aluOp = `ysyx_24070003_OP_ADD;
         endcase
@@ -106,9 +83,9 @@ module ysyx_24070003_exuop_ctrl(
           case(funct3)                   
             `ysyx_24070003_BEQ_FUNCT3:  aluOp = `ysyx_24070003_OP_BEQ;
             `ysyx_24070003_BNE_FUNCT3:  aluOp = `ysyx_24070003_OP_BNE;
-            `ysyx_24070003_BLT_FUNCT3:  aluOp = `ysyx_24070003_OP_SLT;
+            `ysyx_24070003_BLT_FUNCT3:  aluOp = `ysyx_24070003_OP_BLT;
             `ysyx_24070003_BGE_FUNCT3:  aluOp = `ysyx_24070003_OP_BGE;
-            `ysyx_24070003_BLTU_FUNCT3: aluOp = `ysyx_24070003_OP_SLT;
+            `ysyx_24070003_BLTU_FUNCT3: aluOp = `ysyx_24070003_OP_BLT;
             `ysyx_24070003_BGEU_FUNCT3: aluOp = `ysyx_24070003_OP_BGE;
             default:      aluOp = `ysyx_24070003_OP_ADD;
           endcase
@@ -117,8 +94,8 @@ module ysyx_24070003_exuop_ctrl(
         case(funct3)                   
             `ysyx_24070003_ADDI_FUNCT3: aluOp = `ysyx_24070003_OP_ADD;
             `ysyx_24070003_SLLI_FUNCT3: aluOp = `ysyx_24070003_OP_SLL;
-            `ysyx_24070003_SLTI_FUNCT3: aluOp = `ysyx_24070003_OP_SLT;
-            `ysyx_24070003_SLTIU_FUNCT3: aluOp = `ysyx_24070003_OP_SLT;
+            `ysyx_24070003_SLTI_FUNCT3: aluOp = `ysyx_24070003_OP_BLT;
+            `ysyx_24070003_SLTIU_FUNCT3: aluOp = `ysyx_24070003_OP_BLT;
             `ysyx_24070003_XORI_FUNCT3: aluOp = `ysyx_24070003_OP_XOR;
             `ysyx_24070003_SRLI_SRAI_FUNCT3: begin if(funct7[5]) aluOp = `ysyx_24070003_OP_SRA;else aluOp = `ysyx_24070003_OP_SRL; end
             `ysyx_24070003_ORI_FUNCT3: aluOp = `ysyx_24070003_OP_OR;
