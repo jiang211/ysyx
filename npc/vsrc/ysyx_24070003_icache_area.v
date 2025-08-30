@@ -232,59 +232,59 @@ always @(posedge clock) begin
     end
 end
 
-// always @(posedge clock) begin
-//     if(reset) begin
-//         ICACHE_hit_count <= 0;
-//     end
-//     else if(hit_reg2 && reg2_valid && (!stall) && IFU_AXI4_rready)begin
-//         ICACHE_hit_count <= ICACHE_hit_count + 1;
-//     end
-// end
+always @(posedge clock) begin
+    if(reset) begin
+        ICACHE_hit_count <= 0;
+    end
+    else if(hit_reg2 && reg2_valid && (!stall) && IFU_AXI4_rready)begin
+        ICACHE_hit_count <= ICACHE_hit_count + 1;
+    end
+end
 
-// always @(posedge clock) begin
-//     if(reset) begin
-//         ICACHE_miss_count <= 0;
-//     end
-//     else if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid && state == AXI_WAIT)begin
-//         ICACHE_miss_count <= ICACHE_miss_count + 1;
-//     end
-// end
+always @(posedge clock) begin
+    if(reset) begin
+        ICACHE_miss_count <= 0;
+    end
+    else if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid && state == AXI_WAIT)begin
+        ICACHE_miss_count <= ICACHE_miss_count + 1;
+    end
+end
 
-// always @(posedge clock) begin
-//     if(reset) begin
-//         access_time <= 0;
-//     end
-//     else if(state == IDLE && IFU_AXI4_arvalid) begin
-//         access_time <= access_time + 1'b1;
-//     end
-// end
+always @(posedge clock) begin
+    if(reset) begin
+        access_time <= 0;
+    end
+    else if(state == IDLE && IFU_AXI4_arvalid) begin
+        access_time <= access_time + 1'b1;
+    end
+end
 
-// always @(posedge clock) begin
-//     if(reset) begin
-//         total_access <= 0;
-//     end
-//     else if(reg2_valid && (!stall) && IFU_AXI4_rready) begin
-//         total_access <= total_access + 1'b1;
-//     end
-// end
+always @(posedge clock) begin
+    if(reset) begin
+        total_access <= 0;
+    end
+    else if(reg2_valid && (!stall) && IFU_AXI4_rready) begin
+        total_access <= total_access + 1'b1;
+    end
+end
 
-// always @(posedge clock) begin
-//     if(reset) begin
-//         miss_penalty <= 0;
-//     end
-//     else if(((!hit_reg2) && reg2_valid && (!stall) && IFU_AXI4_rready && state == IDLE) || state == AXI_READ || state == AXI_WAIT) begin
-//         miss_penalty <= miss_penalty + 1'b1;
-//     end
-// end
+always @(posedge clock) begin
+    if(reset) begin
+        miss_penalty <= 0;
+    end
+    else if(((!hit_reg2) && reg2_valid && (!stall) && IFU_AXI4_rready && state == IDLE) || state == AXI_READ || state == AXI_WAIT) begin
+        miss_penalty <= miss_penalty + 1'b1;
+    end
+end
 
-// always @(posedge clock) begin
-//     if(reset) begin
-//         ifu_during_count <= 0;
-//     end
-//     else if((reg2_valid && (!stall) && IFU_AXI4_rready) || state == AXI_READ || state == AXI_WAIT || state == UPDATED_CACHE ) begin
-//         ifu_during_count <= ifu_during_count + 1;
-//     end
-// end
+always @(posedge clock) begin
+    if(reset) begin
+        ifu_during_count <= 0;
+    end
+    else if((reg2_valid && (!stall) && IFU_AXI4_rready) || state == AXI_READ || state == AXI_WAIT || state == UPDATED_CACHE ) begin
+        ifu_during_count <= ifu_during_count + 1;
+    end
+end
 
 
 
