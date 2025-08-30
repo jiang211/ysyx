@@ -34,10 +34,10 @@ module ysyx_24070003_icache(
 );
 
 parameter SDRAM_BLOCK_SIZE = 16;      // 4字节块大小
-parameter SDRAM_NUM_BLOCKS = 16;     // 16个缓存块
-parameter SDRAM_OFFSET_BITS = 4;     // 2^2 = 4字节 (块内偏移)
-parameter SDRAM_INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
-parameter SDRAM_TAG_BITS = 24;       // 32 - (2+4) = 26位标签
+parameter SDRAM_NUM_BLOCKS = 4;     // 16个缓存块
+parameter SDRAM_OFFSET_BITS = 2;     // 2^2 = 4字节 (块内偏移)
+parameter SDRAM_INDEX_BITS = 2;      // 2^4 = 16个块 (索引位)
+parameter SDRAM_TAG_BITS = 28;       // 32 - (2+4) = 26位标签
 
 
 reg [SDRAM_TAG_BITS-1:0] tags [0:SDRAM_NUM_BLOCKS-1];  // 标签存储
@@ -60,7 +60,7 @@ state_t state;
 
 reg [127:0] burst_buffer; 
 reg [31:0] addr_buffer,pre_pc_buffer;
-reg [23:0] tag_buffer;
+reg [SDRAM_TAG_BITS - 1:0] tag_buffer;
 reg [SDRAM_INDEX_BITS - 1:0] index_buffer;
 wire [SDRAM_TAG_BITS-1:0] tag_reg2 = pc_reg2[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
 wire [SDRAM_INDEX_BITS-1:0] index_reg2 = pc_reg2[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
