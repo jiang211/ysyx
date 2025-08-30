@@ -14,6 +14,23 @@ module ysyx_24070003_alu(
     output reg [31:0] alu_out,
     output reg zero
 );
+`define ysyx_24070003_OP_ADD         4'b0000 // +
+`define ysyx_24070003_OP_SUB         4'b0001 // -
+`define ysyx_24070003_OP_SLL         4'b0010 // <<
+`define ysyx_24070003_OP_BLT         4'b0011 // <
+`define ysyx_24070003_OP_XOR         4'b0100 // ^
+`define ysyx_24070003_OP_SRL         4'b0101 // >>
+`define ysyx_24070003_OP_SRA         4'b0110 // >>>
+`define ysyx_24070003_OP_OR          4'b0111 // |
+`define ysyx_24070003_OP_AND         4'b1000 // &
+`define ysyx_24070003_OP_MU          4'b1001 // *
+`define ysyx_24070003_OP_DIV         4'b1010 // /
+`define ysyx_24070003_OP_REM         4'b1011 // %
+`define ysyx_24070003_OP_BGE         4'b1100 // >=
+`define ysyx_24070003_OP_BNE         4'b1101 // !=
+`define ysyx_24070003_OP_BEQ         4'b1110 // ==
+`define ysyx_24070003_MUL_H          4'b1111 // *
+
     wire [31:0] a;
     wire [31:0] b;
     assign a = (alu_src1)? rs1_data : (U_type_1) ? 32'h00000000 : pc_data;
@@ -26,29 +43,32 @@ module ysyx_24070003_alu(
     wire [31:0] opdata2;
     assign opdata1 = (u_alu_type)? unsigned_a : signed_a;
     assign opdata2 = (u_alu_type)? unsigned_b : signed_b;
-    /*
-    always @(*) begin
-    $display("Value of signal opdata1 is %08x", opdata1);
-    $display("Value of signal opdata2 is %08x", opdata2&32'h0000001f);
-    $display("Value of signal alu_out is %08x", alu_out);
-     $display("Value of signal alu_crtl is %04b", alu_crtl);
-    end
-    */
+    wire chocie;
+    wire [31:0] sum;
+    ysyx_24070003_add my_add(
+        .a                (opdata1),
+        .b                (opdata2),
+        .b_n              (~opdata2),
+        .chocie           (chocie),
+        .sum              (sum)
+    );
+    //assign chocie = (alu_crtl == `ysyx_24070003_OP_SUB || alu_crtl == )
+
     always @(*) begin
         case (alu_crtl)
-            4'b0000: begin
+            `ysyx_24070003_OP_ADD: begin
                     alu_out = opdata1 + opdata2;
                     zero = 1'b0;
                 end
-            4'b0001: begin
+            `ysyx_24070003_OP_SUB: begin
                     alu_out = opdata1 - opdata2;
                     zero = 1'b0;
                 end
-            4'b0010: begin
+            `ysyx_24070003_OP_SLL: begin
                     alu_out = opdata1 << opdata2[4:0];
                     zero = 1'b0;
                 end
-            4'b0011: begin
+            `ysyx_24070003_OP_BLT: begin
                 if(branch)
                     if(u_alu_type) begin
                         if(rs1_data < rs2_data)begin
@@ -81,39 +101,27 @@ module ysyx_24070003_alu(
                     end
                 end
             end
-            4'b0100: begin
+            `ysyx_24070003_OP_XOR: begin
                     alu_out = opdata1 ^ opdata2;
                     zero = 1'b0;
                 end 
-            4'b0101: begin
-                    alu_out = opdata1 >> (opdata2 & 32'h0000001f);
+            `ysyx_24070003_OP_SRL: begin
+                    alu_out = opdata1 >> opdata2[4:0];
                     zero = 1'b0;
             end
-            4'b0110: begin 
-                    alu_out = $signed(opdata1) >>> (opdata2 & 32'h0000001f);
+            `ysyx_24070003_OP_SRA: begin 
+                    alu_out = $signed(opdata1) >>> opdata2[4:0];
                     zero = 1'b0;
             end
-            4'b0111: begin 
+            `ysyx_24070003_OP_OR: begin 
                     alu_out = opdata1 | opdata2;
                     zero = 1'b0;
             end
-            4'b1000: begin
+            `ysyx_24070003_OP_AND: begin
                     alu_out = opdata1 & opdata2;
                     zero = 1'b0;
             end
-            4'b1001: begin
-                zero = 1'b0;
-                alu_out = 32'b0;
-            end
-            4'b1010: begin
-                    alu_out = opdata1 + opdata2;
-                    zero = 1'b0;
-                end
-            4'b1011: begin
-                    alu_out = opdata1 + opdata2;
-                    zero = 1'b0;
-                end
-            4'b1100:
+            `ysyx_24070003_OP_BGE:
                 if(branch)begin
                     if(u_alu_type) begin
                         if(rs1_data >= rs2_data)begin
@@ -140,7 +148,7 @@ module ysyx_24070003_alu(
                     alu_out = (opdata1 >= opdata2) ? 1 : 0;
                     zero = 1'b0;
                 end
-            4'b1101: 
+            `ysyx_24070003_OP_BNE: 
                 if(branch)
                     if(rs1_data != rs2_data)begin
                         alu_out = pc_data + imm_data;
@@ -154,7 +162,7 @@ module ysyx_24070003_alu(
                     alu_out = (opdata1 != opdata2) ? 1 : 0;
                     zero = 1'b0;
                 end
-            4'b1110: 
+            `ysyx_24070003_OP_BEQ: 
                 if(branch)
                     if(rs1_data == rs2_data)begin
                         alu_out = pc_data + imm_data;
@@ -168,10 +176,6 @@ module ysyx_24070003_alu(
                     alu_out = (opdata1 == opdata2) ? 1 : 0;
                     zero = 1'b0;
                 end
-            4'b1111: begin
-                    alu_out = 32'b0;
-                    zero = 1'b0;
-                end
             default: begin
                     alu_out = 32'b0;
                     zero = 1'b0;
@@ -180,3 +184,22 @@ module ysyx_24070003_alu(
         
     end
 endmodule
+
+
+
+module ysyx_24070003_add(
+    input  [31:0] a,
+    input  [31:0] b,
+    input  [31:0] b_n,
+    input         chocie,
+    output [31:0] sum
+);
+
+wire [31:0] add_b;
+
+assign add_b = chocie? b : b_n;
+
+assign sum = a + add_b;
+
+endmodule
+
