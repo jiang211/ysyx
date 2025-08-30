@@ -856,15 +856,15 @@ ysyx_24070003_wbu my_wbu(
 );
     
 
-ysyx_24070003_RegisterFile #(.ADDR_WIDTH(5), .DATA_WIDTH(32)) rf1(
+ysyx_24070003_RegisterFile #(.ADDR_WIDTH(4), .DATA_WIDTH(32)) rf1(
         .clock                        (clock              ),
         .wdata                      (wbu_data           ),
-        .waddr                      (wbu_addr           ),
+        .waddr                      (wbu_addr[3:0]      ),
         .wen                        (WBU_wen            ),
         .rdata1                     (rs1_data           ),
-        .raddr1                     (rs1                ),
+        .raddr1                     (rs1[3:0]           ),
         .rdata2                     (rs2_data           ),
-        .raddr2                     (rs2                )
+        .raddr2                     (rs2[3:0]           )
     );
 assign WBU_CSR_RADDR = (IDU_EXU_ecall) ? 'd3 : (IDU_EXU_mret) ? 'd0 :IDU_EXU_csr_rst;
 ysyx_24070003_csr_reg #(.ADDR_WIDTH(3), .DATA_WIDTH(32)) csr1(

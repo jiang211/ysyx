@@ -1,5 +1,5 @@
 module ysyx_24070003_RegisterFile #(
-    parameter ADDR_WIDTH = 5,  
+    parameter ADDR_WIDTH = 4,  
     parameter DATA_WIDTH = 32
 ) (
     input clock,
@@ -16,7 +16,7 @@ module ysyx_24070003_RegisterFile #(
     input [ADDR_WIDTH-1:0] raddr2
 );
 
-    reg [DATA_WIDTH-1:0] rf[31:0];
+    reg [DATA_WIDTH-1:0] rf[15:0];
     import "DPI-C" function void set_gpr_ptr(input logic [31:0] a []);
     initial set_gpr_ptr(rf); 
 
