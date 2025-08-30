@@ -48,16 +48,16 @@ module ysyx_24070003_alu(
         .chocie           (chocie),
         .sum              (sum)
     );
-    //assign chocie = (alu_crtl == `ysyx_24070003_OP_SUB || alu_crtl == )
+    assign chocie = (alu_crtl == `ysyx_24070003_OP_SUB ) ? 1'b0 : 1'b1;
 
     always @(*) begin
         case (alu_crtl)
             `ysyx_24070003_OP_ADD: begin
-                    alu_out = opdata1 + opdata2;
+                    alu_out = sum;
                     zero = 1'b0;
                 end
             `ysyx_24070003_OP_SUB: begin
-                    alu_out = opdata1 - opdata2;
+                    alu_out = sum;
                     zero = 1'b0;
                 end
             `ysyx_24070003_OP_SLL: begin
