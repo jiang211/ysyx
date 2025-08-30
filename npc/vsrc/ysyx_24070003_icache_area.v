@@ -197,7 +197,7 @@ always @(posedge clock) begin
     else begin
         case (state)
         IDLE: begin
-            if(reg2_valid && (!stall) && IFU_AXI4_rready) begin
+            if(reg2_valid && IFU_AXI4_rready) begin
                 if(hit_reg2)begin
                     state <= IDLE;
                 end
