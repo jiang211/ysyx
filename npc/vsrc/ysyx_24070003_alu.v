@@ -57,7 +57,7 @@ module ysyx_24070003_alu(
                     zero = 1'b0;
                 end
             `ysyx_24070003_OP_SUB: begin
-                    alu_out = sum;
+                    alu_out = opdata1 - opdata2;
                     zero = 1'b0;
                 end
             `ysyx_24070003_OP_SLL: begin
