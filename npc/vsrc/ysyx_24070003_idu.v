@@ -188,8 +188,8 @@ wire  ebreak = ( INSTR == 32'b00000000000100000000000001110011 ) ;
 wire ecall  = ( INSTR == 32'b00000000000000000000000001110011)  ;
 wire mret   = ( INSTR == 32'b00110000001000000000000001110011 ) ;
 wire reg_write = !(B_type || S_type);
-wire alu_src1 = R_type | I_type_1 | I_type_3 | I_type_4 | S_type;
-wire alu_src2 = R_type;
+wire alu_src1 = R_type | I_type_1 | I_type_3 | I_type_4 | S_type | B_type;
+wire alu_src2 = R_type | B_type;
 
 wire idu_rs1_valid = R_type | I_type | S_type | B_type | C_type;
 wire idu_rs2_valid = R_type | S_type | B_type;
