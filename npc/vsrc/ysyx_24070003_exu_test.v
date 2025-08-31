@@ -1,4 +1,4 @@
-module ysyx_24070003_exu(
+module ysyx_24070003_exu_test(
     input clock,
     input rstn,
     //input IDU_EXU_STALL,
@@ -110,28 +110,30 @@ assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2
 
 wire [2:0] csr_op = {IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css};
 
-assign  csr_in = (csr_op == 3'b100) ? RS1_data        :
+wire [31:0] csr_in = (csr_op == 3'b100) ? RS1_data        :
                      (csr_op == 3'b010) ? RS1_data & csr_data :
                      (csr_op == 3'b001) ? RS1_data | csr_data :
                                         32'h0;   // 无效，理论上不会出现
 
-ysyx_24070003_alu my_alu(
-    .clock          (clock      ),
-    .rs1_data       (RS1_data   ),
-    .rs2_data       (RS2_data   ),
-    .imm_data       (imm_data        ),
-    .pc_data        (pc_data       ),
-    .alu_src1       (alu_src1   ),
-    .alu_src2       (alu_src2   ),
-    .branch         (branch     ),   
-    .J_type_1       (J_type_1   ),
-    .u_alu_type     (u_alu_type ),
-    //.mul_high       (mul_high   ),
-    .U_type_1       (U_type_1   ),
-    .alu_crtl       (alu_op      ),
-    .alu_out        (alu_out    ),
-    .zero           (zero       )
-);
+wire [31:0] alu_out = 32'b0;
+wire  zero = 1'b0;
+// ysyx_24070003_alu my_alu(
+//     .clock          (clock      ),
+//     .rs1_data       (RS1_data   ),
+//     .rs2_data       (RS2_data   ),
+//     .imm_data       (imm_data        ),
+//     .pc_data        (pc_data       ),
+//     .alu_src1       (alu_src1   ),
+//     .alu_src2       (alu_src2   ),
+//     .branch         (branch     ),   
+//     .J_type_1       (J_type_1   ),
+//     .u_alu_type     (u_alu_type ),
+//     //.mul_high       (mul_high   ),
+//     .U_type_1       (U_type_1   ),
+//     .alu_crtl       (alu_op      ),
+//     .alu_out        (alu_out    ),
+//     .zero           (zero       )
+// );
 
 wire btb_pre_error = (IDU_EXU_pre_dnpc != EXU_IFU_pc) && (IDU_EXU_jal || IDU_EXU_B_type);
 assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jalr || btb_pre_error) && (IDU_EXU_valid && EXU_IDU_ready);

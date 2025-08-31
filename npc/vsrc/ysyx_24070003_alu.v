@@ -15,21 +15,7 @@ module ysyx_24070003_alu(
     output reg [31:0] alu_out,
     output  zero
 );
-`define ysyx_24070003_OP_ADD         4'b0001 // +
-`define ysyx_24070003_OP_SUB         4'b0011 // -
 
-`define ysyx_24070003_OP_AND         4'b0100 // &
-`define ysyx_24070003_OP_OR          4'b0101 // |
-`define ysyx_24070003_OP_XOR         4'b0110 // ^
-
-`define ysyx_24070003_OP_SLL         4'b1100 // <<
-`define ysyx_24070003_OP_SRL         4'b1101 // >>
-`define ysyx_24070003_OP_SRA         4'b1110 // >>>
-
-`define ysyx_24070003_OP_BLT         4'b1000 // <
-`define ysyx_24070003_OP_BGE         4'b1001 // >=
-`define ysyx_24070003_OP_BNE         4'b1010 // !=
-`define ysyx_24070003_OP_BEQ         4'b1011 // ==
 wire [31:0] opdata1;
 wire [31:0] opdata2;
 assign opdata1 = (alu_src1)? rs1_data : (U_type_1) ? 32'h00000000 : pc_data;
@@ -39,8 +25,7 @@ wire [1:0] logic_ctl;
 wire [1:0] shift_ctl;
 wire       sub_ctl;
 wire [1:0] data_choice;
-wire SIGctr;
-wire Ovctr;
+
 wire ADD_zero;
 
 assign logic_ctl = alu_crtl[1:0];
@@ -63,7 +48,7 @@ wire [5:0]     ALU_SHIFT;
 wire [31:0] shift_result;
 assign ALU_SHIFT=opdata2[5:0];
 
-Shifter myShifter(.ALU_DA(opdata1),
+ysyx_24070003_Shifter myShifter(.ALU_DA(opdata1),
                 .ALU_SHIFT(ALU_SHIFT),
 				.Shiftctr(shift_ctl),
 				.shift_result(shift_result));
@@ -76,7 +61,7 @@ wire [31:0] ADD_result;
 assign BIT_M={32{sub_ctl}};
 assign XOR_M=BIT_M^opdata2;
 
-Adder Adder(.A(opdata1),
+ysyx_24070003_Adder Adder(.A(opdata1),
             .B(XOR_M),
 			.Cin(sub_ctl),
 			.ALU_CTL(alu_crtl),
@@ -119,7 +104,7 @@ end
  
 endmodule
 
-module Shifter(input [31:0] ALU_DA,
+module ysyx_24070003_Shifter(input [31:0] ALU_DA,
                input [5:0] ALU_SHIFT,
 			   input [1:0] Shiftctr,
 			   output reg [31:0] shift_result);
@@ -141,7 +126,7 @@ endmodule
 //***********************************adder*********************
 
 //`define ALGORITHM
-module Adder(input [31:0] A,
+module ysyx_24070003_Adder(input [31:0] A,
              input [31:0] B,
 			 input Cin,
 			 input [3:0] ALU_CTL,
