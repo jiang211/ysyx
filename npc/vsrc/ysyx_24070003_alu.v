@@ -97,10 +97,10 @@ assign BLT = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  & ~alu_crtl[0]);
 assign BGE = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  &  alu_crtl[0]);
 assign BNE = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  & ~alu_crtl[0]);
 assign BEQ = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  &  alu_crtl[0]);
-assign zero = (BLT &  LESS_S)   |
+assign zero = (BLT & & branch  &  LESS_S)   |
               (BGE & ~LESS_S)   |
               (BNE & ~ADD_zero) |
-              (BEQ &  ADD_zero) & branch;
+              (BEQ &  ADD_zero) ;
 
 assign LESS_M1 = ADD_carry ^ sub_ctl;
 assign LESS_M2 = ADD_OverFlow ^ ADD_result[31];
