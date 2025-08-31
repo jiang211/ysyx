@@ -59,9 +59,9 @@ always@(*) begin
 	endcase
 end 
 //************************shift op************************
-wire [4:0]     ALU_SHIFT;
+wire [5:0]     ALU_SHIFT;
 wire [31:0] shift_result;
-assign ALU_SHIFT=opdata2[4:0];
+assign ALU_SHIFT=opdata2[5:0];
 
 Shifter myShifter(.ALU_DA(opdata1),
                 .ALU_SHIFT(ALU_SHIFT),
@@ -120,21 +120,20 @@ end
 endmodule
 
 module Shifter(input [31:0] ALU_DA,
-               input [4:0] ALU_SHIFT,
+               input [5:0] ALU_SHIFT,
 			   input [1:0] Shiftctr,
 			   output reg [31:0] shift_result);
 			
-     wire [5:0] shift_n;
-	 assign shift_n = 6'd32 - Shiftctr;
+     wire [63:0] tmp_res;
      always@(*) begin
 	   case(Shiftctr)
-	   2'b00:shift_result = ALU_DA << ALU_SHIFT;
-	   2'b01:shift_result = ALU_DA >> ALU_SHIFT;
-	   2'b10:shift_result = ({32{ALU_DA[31]}} << shift_n) | (ALU_DA >> ALU_SHIFT);
+	   2'b00:shift_result = ALU_DA << ALU_SHIFT[4:0];
+	   2'b01:shift_result = ALU_DA >> ALU_SHIFT[4:0];
+	   2'b10:shift_result = tmp_res[31:0];
 	   default:shift_result = ALU_DA;
 	   endcase
 	 end
-
+assign tmp_res = {{{32{ALU_DA[31]}}, ALU_DA} >> ALU_SHIFT};
 
 endmodule
 
