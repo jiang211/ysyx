@@ -169,17 +169,17 @@ wire sb   = (S_type && funct3 == 3'b000);
 wire sh   = (S_type && funct3 == 3'b001);
 
 
-// wire remu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b111);
+wire remu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b111);
 // wire mulh = (R_type && funct7 == 7'b0000001 && funct3 == 3'b001);
 // wire mulhu= (R_type && funct7 == 7'b0000001 && funct3 == 3'b011);
-// wire divu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b101);
+wire divu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b101);
 wire sltu = (R_type && funct7 == 7'b0000000 && funct3 == 3'b011);
-// wire mul  = (R_type && funct7 == 7'b0000001 && funct3 == 3'b000);
+wire mul  = (R_type && funct7 == 7'b0000001 && funct3 == 3'b000);
 wire sltiu= (I_type_1 && funct3 == 3'b011);
 wire bltu = (B_type && funct3 == 3'b110);
 wire bgeu = (B_type && funct3 == 3'b111);
 
-wire u_alu_type = (sltu | sltiu | bltu | bgeu | lbu | lhu ) ? 1'b1 : 1'b0;
+wire u_alu_type = (divu | sltu | mul | sltiu | bltu | bgeu | remu | lbu | lhu ) ? 1'b1 : 1'b0;
 //wire mul_high = mulh | mulhu;
 //wire jump = J_type | I_type_2;
 wire mem_read = I_type_3;
