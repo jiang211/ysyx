@@ -86,20 +86,17 @@ Adder Adder(.A(opdata1),
 			.ADD_result(ADD_result));
 
 //assign ALU_OverFlow = ADD_OverFlow & Ovctr;
-`define ysyx_24070003_OP_BLT         4'b1000 // <
-`define ysyx_24070003_OP_BGE         4'b1001 // >=
-`define ysyx_24070003_OP_BNE         4'b1010 // !=
-`define ysyx_24070003_OP_BEQ         4'b1011 // ==
+
 //********************************************************
 //**************************slt op************************
 wire [31:0] SLT_result;
 wire LESS_M1,LESS_M2,LESS_S,SLT_M;
 wire BLT,BGE,BNE,BEQ;
 
-assign BLT = ( ~alu_crtl[1]  & ~alu_crtl[0]);
-assign BGE = ( ~alu_crtl[1]  &  alu_crtl[0]);
-assign BNE = (  alu_crtl[1]  & ~alu_crtl[0]);
-assign BEQ = (  alu_crtl[1]  &  alu_crtl[0]);
+assign BLT = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  & ~alu_crtl[0]);
+assign BGE = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  &  alu_crtl[0]);
+assign BNE = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  & ~alu_crtl[0]);
+assign BEQ = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  &  alu_crtl[0]);
 assign zero = (BLT &  LESS_S)   |
               (BGE & ~LESS_S)   |
               (BNE & ~ADD_zero) |
