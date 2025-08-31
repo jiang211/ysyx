@@ -109,6 +109,7 @@ assign csr_in = ( {32{IDU_EXU_csw}} & (RS1_data)) |
                 ( {32{IDU_EXU_css}} & (csr_data | RS1_data)) ;
 
 ysyx_24070003_alu my_alu(
+    .clock          (clock      ),
     .rs1_data       (RS1_data   ),
     .rs2_data       (RS2_data   ),
     .imm_data       (imm_data        ),
@@ -152,7 +153,7 @@ wire [31:0] next_pc_jalr = RS1_data + imm_data;
 assign EXU_IFU_pc = (IDU_EXU_ecall || IDU_EXU_mret) ? csr_data : (IDU_EXU_jal) ? next_pc_jal :
                       (IDU_EXU_jalr) ? next_pc_jalr : (zero) ? next_pc_jal : pc_data + 4;
 
-//always @(posedge clk) begin EXU_IFU_STALL_done <= IDU_EXU_STALL; end
+
 
 always@(posedge clock)
 begin 

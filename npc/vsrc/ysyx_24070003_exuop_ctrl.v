@@ -4,15 +4,18 @@ module ysyx_24070003_exuop_ctrl(
     input [1:0]  alu_op,
     output reg [3:0] aluOp
 );
-`define ysyx_24070003_OP_ADD         4'b0000 // +
-`define ysyx_24070003_OP_SUB         4'b0001 // -
-`define ysyx_24070003_OP_SLL         4'b0010 // <<
-`define ysyx_24070003_OP_BLT         4'b0011 // <
-`define ysyx_24070003_OP_XOR         4'b0100 // ^
-`define ysyx_24070003_OP_SRL         4'b0101 // >>
-`define ysyx_24070003_OP_SRA         4'b0110 // >>>
-`define ysyx_24070003_OP_OR          4'b0111 // |
-`define ysyx_24070003_OP_AND         4'b1000 // &
+`define ysyx_24070003_OP_ADD         4'b0001 // +
+`define ysyx_24070003_OP_SUB         4'b0011 // -
+
+`define ysyx_24070003_OP_AND         4'b0100 // &
+`define ysyx_24070003_OP_OR          4'b0101 // |
+`define ysyx_24070003_OP_XOR         4'b0110 // ^
+
+`define ysyx_24070003_OP_SLL         4'b1100 // <<
+`define ysyx_24070003_OP_SRL         4'b1101 // >>
+`define ysyx_24070003_OP_SRA         4'b1110 // >>>
+
+`define ysyx_24070003_OP_BLT         4'b1000 // <
 `define ysyx_24070003_OP_BGE         4'b1001 // >=
 `define ysyx_24070003_OP_BNE         4'b1010 // !=
 `define ysyx_24070003_OP_BEQ         4'b1011 // ==
