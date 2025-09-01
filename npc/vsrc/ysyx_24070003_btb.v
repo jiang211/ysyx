@@ -12,7 +12,7 @@ module ysyx_24070003_btb(
 
 
 localparam WAY_NUM = 2;
-localparam INDEX_WIDTH = 2;
+localparam INDEX_WIDTH = 3;
 localparam ADDR_WIDTH = 32;
 localparam OFFSET_WITH = 2;
 localparam TAG_WIDTH = ADDR_WIDTH - OFFSET_WITH - INDEX_WIDTH;
