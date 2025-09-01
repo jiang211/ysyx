@@ -104,16 +104,7 @@ wire [31:0] csr_in;
 assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
 assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
 
-// assign csr_in = ( {32{IDU_EXU_csw}} & (RS1_data)) |
-//                 ( {32{IDU_EXU_csc}} & (RS1_data &csr_data)) |
-//                 ( {32{IDU_EXU_css}} & (csr_data | RS1_data)) ;
 
-wire [2:0] csr_op = {IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css};
-
-wire [31:0] csr_in = (csr_op == 3'b100) ? RS1_data        :
-                     (csr_op == 3'b010) ? RS1_data & csr_data :
-                     (csr_op == 3'b001) ? RS1_data | csr_data :
-                                        32'h0;   // 无效，理论上不会出现
 
 wire [31:0] alu_out = 32'b0;
 wire  zero = 1'b0;
@@ -140,7 +131,7 @@ assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jalr || btb_pre_err
 
 assign EXU_IDU_ready = LSU_EXU_ready;  
 
-assign EXU_BTB_PC = (IDU_EXU_jal || IDU_EXU_B_type) ? next_pc_jal : next_pc_jalr;
+
 assign EXU_BTB_updata_valid = (IDU_EXU_jal || IDU_EXU_B_type) && (IDU_EXU_valid && EXU_IDU_ready);
 
 always @(posedge clock) begin 
@@ -159,16 +150,22 @@ end
 wire [31:0] next_pc_jal = pc_data + imm_data;
 wire [31:0] next_pc_jalr = RS1_data + imm_data;
 
-wire [3:0] pc_sel = {IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr, zero};
-assign EXU_IFU_pc =
-            (pc_sel == 4'b1000) ? csr_data      :
-            (pc_sel == 4'b0100) ? next_pc_jal   :
-            (pc_sel == 4'b0010) ? next_pc_jalr  :
-            (pc_sel == 4'b0001) ? next_pc_jal   :
+wire [3:0] pc_sel = {IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal || zero, IDU_EXU_jalr};
+assign EXU_IFU_pc = //32'b0;
+            (pc_sel == 3'b100) ? csr_data      :
+            (pc_sel == 3'b010) ? next_pc_jal   :
+            (pc_sel == 3'b001) ? next_pc_jalr  :
                                   pc_data + 32'd4;
-// assign EXU_IFU_pc = (IDU_EXU_ecall || IDU_EXU_mret) ? csr_data : (IDU_EXU_jal) ? next_pc_jal :
-//                       (IDU_EXU_jalr) ? next_pc_jalr : (zero) ? next_pc_jal : pc_data + 4;
 
+wire [2:0] csr_op = {IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css};
+
+wire [31:0] csr_in =// 32'b0;
+                     (csr_op == 3'b100) ? RS1_data        :
+                     (csr_op == 3'b010) ? RS1_data & csr_data :
+                     (csr_op == 3'b001) ? RS1_data | csr_data :
+                                        32'h0;  
+
+assign EXU_BTB_PC = (IDU_EXU_jal || IDU_EXU_B_type) ? next_pc_jal : next_pc_jalr;
 
 
 always@(posedge clock)

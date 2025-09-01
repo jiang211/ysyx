@@ -110,7 +110,7 @@ assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2
 
 wire [2:0] csr_op = {IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css};
 
-assign  csr_in = (csr_op == 3'b100) ? RS1_data        :
+assign  csr_in =     (csr_op == 3'b100) ? RS1_data        :
                      (csr_op == 3'b010) ? RS1_data & csr_data :
                      (csr_op == 3'b001) ? RS1_data | csr_data :
                                         32'h0;   // 无效，理论上不会出现
