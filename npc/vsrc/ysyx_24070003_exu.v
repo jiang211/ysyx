@@ -138,7 +138,8 @@ assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jalr || btb_pre_err
 
 assign EXU_IDU_ready = LSU_EXU_ready;  
 
-assign EXU_BTB_PC = (pc_sel[3]) ? next_pc_jal : next_pc_jalr;
+///assign EXU_BTB_PC = (pc_sel[3]) ? next_pc_jal : next_pc_jalr;
+assign EXU_BTB_PC = next_pc;
 assign EXU_BTB_updata_valid = (IDU_EXU_jal || IDU_EXU_B_type) && (IDU_EXU_valid && EXU_IDU_ready);
 
 always @(posedge clock) begin 
@@ -152,16 +153,20 @@ always @(posedge clock) begin
         EXU_LSU_valid <= 1'b0;
     end
 end
+wire [31:0] pc_opdata1;
+wire [31:0] pc_opdata2;
 
-//wire [31:0] next_pc_seq = pc_data + 4;
-wire [31:0] next_pc_jal = pc_data + imm_data;
-wire [31:0] next_pc_jalr = RS1_data + imm_data;
+assign pc_opdata1 = (pc_sel[1] || pc_sel[3]) ? pc_data : RS1_data;
+assign pc_opdata2 = imm_data;
+wire [31:0] next_pc = pc_opdata1 + pc_opdata2;
+// wire [31:0] next_pc_jal = pc_data + imm_data;
+// wire [31:0] next_pc_jalr = RS1_data + imm_data;
 
 wire [3:0] pc_sel = {IDU_EXU_jal || IDU_EXU_B_type, IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal || zero, IDU_EXU_jalr};
 assign EXU_IFU_pc =
             (pc_sel[2]) ? csr_data      :
-            (pc_sel[1]) ? next_pc_jal   :
-            (pc_sel[0]) ? next_pc_jalr  :
+            (pc_sel[1] || pc_sel[0]) ? next_pc   :
+            //(pc_sel[0]) ? next_pc_jalr  :
                                   pc_data + 32'd4;
 // assign EXU_IFU_pc = (IDU_EXU_ecall || IDU_EXU_mret) ? csr_data : (IDU_EXU_jal) ? next_pc_jal :
 //                       (IDU_EXU_jalr) ? next_pc_jalr : (zero) ? next_pc_jal : pc_data + 4;
