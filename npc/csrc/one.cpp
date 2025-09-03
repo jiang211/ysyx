@@ -1,4 +1,4 @@
-//#define WAVE_ON  //
+#define WAVE_ON  //
 #include <common.h>
 #include <paddr.h>
 
