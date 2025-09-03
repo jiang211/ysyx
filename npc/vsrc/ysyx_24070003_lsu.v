@@ -102,7 +102,8 @@ assign LSU_IDU_REG_ADDR = EXU_LSU_rd;
 assign LSU_IDU_REG_WEN = EXU_LSU_reg && LSU_EXU_ready && EXU_LSU_valid;
 //assign LSU_IDU_REN   = EXU_LSU_ren && LSU_EXU_ready && EXU_LSU_valid;
 assign LSU_forward_data = LSU_WBU_DATA;
-
+wire EXU_LSU_lw,EXU_LSU_lh,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh;
+assign {EXU_LSU_lw,EXU_LSU_lh,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh} = EXU_LSU_RW_sign;
 parameter  IDLE = 0,
             START = 1,
             READ_START = 2,
@@ -125,20 +126,12 @@ reg [2:0] state;
     wire [31:0] lsu_rdata;
     wire [2:0] lsu_arsize;
     reg skip;
-    // input           EXU_LSU_lw,
-    // input           EXU_LSU_lh,
-    // input           EXU_LSU_lb,
-    // input           EXU_LSU_lbu,
-    // input           EXU_LSU_lhu,
-    // input           EXU_LSU_sw,
-    // input           EXU_LSU_sb,
-    // input           EXU_LSU_sh,
     wire skip1 = (((EXU_LSU_result >= 32'h10000000) && (EXU_LSU_result < 32'h30000000)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
     wire skip2 = (((EXU_LSU_result >= 32'h02000000) && (EXU_LSU_result < 32'h0200ffff)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
     wire EXU_skip = skip1 | skip2;
-    assign LSU_WDATA = ( {32{EXU_LSU_RW_sign[1]}} & {24'b0,rs2_data[7:0]}) |
-                   ( {32{EXU_LSU_RW_sign[0]}} & {16'b0,rs2_data[15:0]}) |
-                   ( {32{EXU_LSU_RW_sign[2]}} & rs2_data);
+    assign LSU_WDATA = ( {32{EXU_LSU_sb}} & {24'b0,rs2_data[7:0]}) |
+                   ( {32{EXU_LSU_sh}} & {16'b0,rs2_data[15:0]}) |
+                   ( {32{EXU_LSU_sw}} & rs2_data);
 
     assign lsu_rdata = ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b00) ? (LSU_RDATA >> 32'd0) :
                        ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b01) ? (LSU_RDATA >> 32'd8) :
@@ -146,26 +139,26 @@ reg [2:0] state;
                        ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b11) ? (LSU_RDATA >> 32'd24) : (LSU_RDATA >> 32'd0);
 
     //assign lsu_rdata_ = ((LSU_AXI4_ARADDR >= 32'h30000000) && (LSU_AXI4_ARADDR < 32'h40000000)) ? LSU_RDATA : lsu_rdata;
-    assign rdata = ( {32{EXU_LSU_RW_sign[5]}} & {{24{lsu_rdata[7]}},lsu_rdata[7:0]}) |
-                   ( {32{EXU_LSU_RW_sign[6]}} & {{16{lsu_rdata[15]}}, (lsu_rdata[15:0])}) |
-                   ( {32{EXU_LSU_RW_sign[7]}} & lsu_rdata) |
-                   ( {32{EXU_LSU_RW_sign[4]}} & {24'b0,lsu_rdata[7:0]}) |
-                   ( {32{EXU_LSU_RW_sign[3]}} & {16'b0,lsu_rdata[15:0]});
+    assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata[7]}},lsu_rdata[7:0]}) |
+                   ( {32{LSU_WBU_lh}} & {{16{lsu_rdata[15]}}, (lsu_rdata[15:0])}) |
+                   ( {32{LSU_WBU_lw}} & lsu_rdata) |
+                   ( {32{LSU_WBU_lbu}} & {24'b0,lsu_rdata[7:0]}) |
+                   ( {32{LSU_WBU_lhu}} & {16'b0,lsu_rdata[15:0]});
 
-    assign  LSU_WLEN = ( {4{EXU_LSU_RW_sign[1]}} & 4'b1 )  |
-                   ( {4{EXU_LSU_RW_sign[0]}} & 4'b11 )  |
-                   ( {4{EXU_LSU_RW_sign[2]}} & 4'b1111 ) ;
+    assign  LSU_WLEN = ( {4{EXU_LSU_sb}} & 4'b1 )  |
+                   ( {4{EXU_LSU_sh}} & 4'b11 )  |
+                   ( {4{EXU_LSU_sw}} & 4'b1111 ) ;
     wire [2:0] awsize;
 
-    assign  awsize = ( {3{EXU_LSU_RW_sign[1]}} & 3'b0 )  |
-                   ( {3{EXU_LSU_RW_sign[0]}} & 3'b01 )  |
-                   ( {3{EXU_LSU_RW_sign[2]}} & 3'b10 ) ;
+    assign  awsize = ( {3{EXU_LSU_sb}} & 3'b0 )  |
+                   ( {3{EXU_LSU_sh}} & 3'b01 )  |
+                   ( {3{EXU_LSU_sw}} & 3'b10 ) ;
 
-    assign lsu_arsize = ( {3{EXU_LSU_RW_sign[5]}} & 3'b0) |
-                   ( {3{EXU_LSU_RW_sign[6]}} & 3'b01) |
-                   ( {3{EXU_LSU_RW_sign[7]}} & 3'b10) |
-                   ( {3{EXU_LSU_RW_sign[4]}} & 3'b0) |
-                   ( {3{EXU_LSU_RW_sign[3]}} & 3'b01);
+    assign lsu_arsize = ( {3{LSU_WBU_lb}} & 3'b0) |
+                   ( {3{LSU_WBU_lh}} & 3'b01) |
+                   ( {3{LSU_WBU_lw}} & 3'b10) |
+                   ( {3{LSU_WBU_lbu}} & 3'b0) |
+                   ( {3{LSU_WBU_lhu}} & 3'b01);
     // wire is_sdram = ((LSU_AXI4_ARADDR >= 32'ha0000000) && (LSU_AXI4_ARADDR < 32'hc0000000));
     // assign lsu_arsize = (is_sdram) ? arsize : 3'b00;
     // always @(posedge clk) begin
@@ -238,6 +231,12 @@ always@(posedge clock) begin
         C_type <=  EXU_LSU_C_type;
         csr_rst <=  EXU_LSU_csr_rst;
         csr_in <=  EXU_LSU_csr_in;
+        lw <=  EXU_LSU_lw;
+        lh <=  EXU_LSU_lh;
+        lb <=  EXU_LSU_lb;
+        lbu <=  EXU_LSU_lbu;
+        lhu <=  EXU_LSU_lhu;
+        ren <=  EXU_LSU_ren;
         //wen <=  EXU_LSU_wen;
         pc <=  EXU_LSU_PC;
         dnpc <=  EXU_LSU_dnpc;
@@ -399,7 +398,7 @@ end
 //import "DPI-C" function void vpmem_read(input int raddr,input byte ren,output int rdata);
 //import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
 //reg [31:0] RDATAIN,WDATA;
-
+reg LSU_WBU_lb,LSU_WBU_lh,LSU_WBU_lw,LSU_WBU_lbu,LSU_WBU_lhu;
 always @(posedge clock) begin
     if(rst_n)begin
         //RDATAIN <= 32'b0;
@@ -418,7 +417,11 @@ always @(posedge clock) begin
         //LSU_WBU_pc <= 32'b0;
         LSU_REN      <= 1'b0;
         LSU_WBU_skip <= 1'b0;
-        
+        LSU_WBU_lb <= 1'b0;
+        LSU_WBU_lh <= 1'b0;
+        LSU_WBU_lw <= 1'b0;
+        LSU_WBU_lbu <= 1'b0;
+        LSU_WBU_lhu <= 1'b0;
         LSU_WBU_PC <= 32'b0;
         LSU_WBU_dnpc <= 32'b0;
     end else if((LSU_EXU_ready && EXU_LSU_valid) && (~(EXU_LSU_ren || EXU_LSU_wen))) begin
@@ -437,7 +440,11 @@ always @(posedge clock) begin
         LSU_WBU_csr_in <= EXU_LSU_csr_in;
         //LSU_WBU_JUMP <= EXU_LSU_JUMP;
         //LSU_WBU_pc <= EXU_IFU_pc;
-        
+        LSU_WBU_lb <= EXU_LSU_lb;
+        LSU_WBU_lh <= EXU_LSU_lh;
+        LSU_WBU_lw <= EXU_LSU_lw;
+        LSU_WBU_lbu <= EXU_LSU_lbu;
+        LSU_WBU_lhu <= EXU_LSU_lhu;
         LSU_WBU_PC <= EXU_LSU_PC;
         LSU_WBU_dnpc <= EXU_LSU_dnpc;
         LSU_WBU_skip <= EXU_skip ;
@@ -458,7 +465,11 @@ always @(posedge clock) begin
         LSU_WBU_csr_in <= csr_in;
         //LSU_WBU_JUMP <= EXU_LSU_JUMP;
         //LSU_WBU_pc <= EXU_IFU_pc;
-        
+        LSU_WBU_lb <= lb;
+        LSU_WBU_lh <= lh;
+        LSU_WBU_lw <= lw;
+        LSU_WBU_lbu <= lbu;
+        LSU_WBU_lhu <= lhu;
         LSU_WBU_PC <= pc;
         LSU_WBU_dnpc <= dnpc;
         LSU_WBU_skip <= skip ;
@@ -478,7 +489,11 @@ always @(posedge clock) begin
         //LSU_WBU_JUMP <= 1'b0;
         //LSU_WBU_pc <= 32'b0;
         LSU_REN      <= 1'b0;
-        
+        LSU_WBU_lb <= 1'b0;
+        LSU_WBU_lh <= 1'b0;
+        LSU_WBU_lw <= 1'b0;
+        LSU_WBU_lbu <= 1'b0;
+        LSU_WBU_lhu <= 1'b0;
         LSU_WBU_PC <= 32'b0;
         LSU_WBU_dnpc <= 32'b0;
         LSU_WBU_skip <= 1'b0;
