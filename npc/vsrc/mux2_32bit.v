@@ -9,8 +9,8 @@ module mux2_32bit(
         case(sel)
             2'b01: out = b;
             2'b10: out = a;
-            2'b11: out = a;
             default: out = default_data; // 或者可以是其他默认值，如32'b0
         endcase
     end
 endmodule
+
