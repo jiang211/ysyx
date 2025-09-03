@@ -101,22 +101,22 @@ wire zero;
 wire [31:0] alu_out;
 wire [31:0] csr_in;
 
-//assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
-//assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
-mux2_32bit my_mux2_32bit1(
-    .sel                ({IDU_EXU_exu_raw_rs1, IDU_EXU_lsu_raw_rs1}),
-    .a                  (EXU_LSU_alu_out),  
-    .b                  (LSU_forward_data),
-    .default_data       (rs1_data),
-    .out                (RS1_data)
-);
-mux2_32bit my_mux2_32bit2(
-    .sel                ({IDU_EXU_exu_raw_rs2, IDU_EXU_lsu_raw_rs2}),
-    .a                  (EXU_LSU_alu_out),  
-    .b                  (LSU_forward_data),
-    .default_data       (rs2_data),
-    .out                (RS2_data)
-);
+assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
+assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
+// mux2_32bit my_mux2_32bit1(
+//     .sel                ({IDU_EXU_exu_raw_rs1, IDU_EXU_lsu_raw_rs1}),
+//     .a                  (EXU_LSU_alu_out),  
+//     .b                  (LSU_forward_data),
+//     .default_data       (rs1_data),
+//     .out                (RS1_data)
+// );
+// mux2_32bit my_mux2_32bit2(
+//     .sel                ({IDU_EXU_exu_raw_rs2, IDU_EXU_lsu_raw_rs2}),
+//     .a                  (EXU_LSU_alu_out),  
+//     .b                  (LSU_forward_data),
+//     .default_data       (rs2_data),
+//     .out                (RS2_data)
+// );
 // assign csr_in = ( {32{IDU_EXU_csw}} & (RS1_data)) |
 //                 ( {32{IDU_EXU_csc}} & (RS1_data &csr_data)) |
 //                 ( {32{IDU_EXU_css}} & (csr_data | RS1_data)) ;
