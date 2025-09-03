@@ -232,7 +232,7 @@ always @(posedge clock or posedge reset) begin
             end
           end
           XIP_CLOSE:begin
-            if(penable_close&psel_close&wb_pready&wb_pwrite)begin
+            if(wb_pready)begin
               state <= XIP_RETURN;
             end
             else begin
@@ -240,7 +240,7 @@ always @(posedge clock or posedge reset) begin
             end
           end
           XIP_RETURN:begin
-            if(penable_return&psel_return&wb_pready)begin
+            if(wb_pready)begin
               state <= IDLE;
             end
             else begin
@@ -334,7 +334,7 @@ assign in_pready  = ((is_flash&(state==XIP_RETURN))
                   |(is_spi&(state==IDLE)))
                   &(wb_pready)
                   ;
-assign in_prdata  = ((state_r==IDLE)|(state_r==XIP_RETURN))?data_return:'b0;
+assign in_prdata  = data_return;
 assign in_pslverr = 'b0;
 spi_top u0_spi_top (
   .wb_clk_i(clock),
