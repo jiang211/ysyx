@@ -132,10 +132,10 @@ wire [31:0] opdata2;
 assign opdata1 = (alu_src1)? RS1_data : (U_type_1) ? 32'h00000000 : pc_data;
 //assign opdata2 = (alu_src2)? RS2_data : (J_type_1) ? 32'h00000004 : imm_data;
 mux2_32bit my_mux2_32bit3(
-    .sel                ({alu_src1, U_type_1}),
-    .a                  (RS1_data),  
-    .b                  (32'h00000000),
-    .default_data       (pc_data),
+    .sel                ({alu_src2, J_type_1}),
+    .a                  (RS2_data),  
+    .b                  (32'h00000004),
+    .default_data       (imm_data),
     .out                (opdata2)
 );
 
