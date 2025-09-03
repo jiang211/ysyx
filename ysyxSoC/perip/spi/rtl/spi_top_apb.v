@@ -224,7 +224,7 @@ always @(posedge clock or posedge reset) begin
             end
           end
           XIP_WAIT:begin
-            if((wb_prdata[8]=='b0)&&wb_pready)begin
+            if((wb_prdata[8]=='b0)&&data_valid)begin
               state <= XIP_CLOSE;
             end
             else begin
@@ -334,7 +334,7 @@ assign in_pready  = ((is_flash&(state==XIP_RETURN))
                   |(is_spi&(state==IDLE)))
                   &(wb_pready)
                   ;
-assign in_prdata  = data_return;
+assign in_prdata  = ((state_r==IDLE)|(state_r==XIP_RETURN))?data_return:'b0;
 assign in_pslverr = 'b0;
 spi_top u0_spi_top (
   .wb_clk_i(clock),
