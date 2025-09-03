@@ -11,7 +11,7 @@ VERILATOR_FLAGS += --coverage
 VERILATOR_FLAGS += --assert
 VERILATOR_FLAGS += --build
 VERILATOR_FLAGS += --trace
-
+VERILATOR_FLAGS += --Wno-UNUSED
 WORK_DIR = $(shell pwd)
 BUILD_DIR = $(WORK_DIR)/build
 OBJ_DIR = $(BUILD_DIR)/obj_dir

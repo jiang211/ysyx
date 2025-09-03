@@ -10,10 +10,10 @@
 #define likely(cond)   __builtin_expect(cond, 1)
 #define unlikely(cond) __builtin_expect(cond, 0)
 
-static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
+static uint8_t pmem[0x8000000] PG_ALIGN = {};
 
-uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
-paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
+uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - 0x80000000; }
+paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + 0x80000000; }
 
 static word_t pmem_read(paddr_t addr, int len) {
   
@@ -26,7 +26,7 @@ static word_t pmem_read(paddr_t addr, int len) {
 static void pmem_write(paddr_t addr, int len, word_t data) {
     host_write(guest_to_host(addr), len, data);
 #ifdef CONFIG_MTRACE
-//      printf("Write: (%08x) = %08lx  \n", addr, data);
+     //printf("Write: (%08x) = %08lx  \n", addr, data);
 #endif
 }
 

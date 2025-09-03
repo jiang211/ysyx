@@ -201,3 +201,101 @@ void engine_start() {
   sdb_mainloop();
 }
 
+
+const char *regs[] = {
+  "$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
+  "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
+  "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
+  "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
+};
+const char *csrs[] = {
+  "mepc", "mstatus", "mcause", "mtvec"
+};
+#define gpr(idx) (cpu.gpr[check_reg_idx(idx)])
+#define csr(idx) (cpu.csr[idx])
+word_t isa_reg_str2val(const char *s, bool *success) {
+    
+    for(int i = 0 ; i < 32 ; i ++){
+   	if(strcmp(regs[i], s) == 0){
+   	
+		return cpu.gpr[i];
+	}
+    }
+    *success = false;
+    return cpu.pc;
+}
+
+static inline bool difftest_check_reg(const char *name, vaddr_t pc, word_t ref, word_t dut) {
+    if (ref != dut) {
+        Log("%s is different after executing instruction ap pc = " FMT_WORD
+        ", right = " FMT_WORD ",wrong = " FMT_WORD ",diff = " FMT_WORD,
+        name, pc, ref, dut, ref ^ dut);
+        return false;
+    }
+    return true;
+}
+
+static inline int check_reg_idx(int idx){
+   assert(idx >= 0 && idx < 32) ;
+   return idx;
+}
+
+static const char* reg_name(int idx, int width) {
+  return regs[check_reg_idx(idx)];
+}
+
+bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
+  //printf("ref_pc:%x,dut_pc:%x\n", ref_r->pc, cpu.pc);
+  
+  for(int i=1; i<32; i++) {
+    if( difftest_check_reg( reg_name(i, 64), ref_r->pc, ref_r->gpr[check_reg_idx(i)], gpr(i) ) == false )
+      return false;
+  }
+  //printf("ref_pc:%x,dut_pc:%x\n", ref_r->pc, cpu.pc);
+  if( difftest_check_reg( "pc", pc, ref_r->pc, cpu.pc ) == false ){return false;}
+  return true ; 
+}
+
+
+void isa_reg_display() {
+  int length = sizeof(regs)/sizeof(regs[0]);
+  for (int i = 0; i < length; i++) {
+    printf("%d:%s\t%x\n", i+1, regs[i], gpr(i));
+  }
+  for (int i = 0; i < 4; i++) {
+    printf("%d:%s\t%x\n", i+1, csrs[i], csr(i));
+  }
+  printf("%d:%s\t%x\n", 33, "pc", cpu.pc);
+}
+
+
+
+
+static const uint32_t img [] = {
+  0x70010117,  // auipc t0,0
+  0x04812683,  // sb  zero,16(t0)
+  0x04012603,  // lbu a0,16(t0)
+  0x00012503,  // lbu a0,16(t0)
+  0xffd68293,  // lbu a0,16(t0)
+  0x03012683,
+  0x00812083,
+  0x00100073,  // ebreak (used as nemu_trap)
+  0xdeadbeef,  // some data
+};
+
+static void restart() {  
+  /* Set the initial program counter. */
+  cpu.pc = 0x30000000;
+  printf("Reset PC: 0x%08x\n", cpu.pc);
+  /* The zero register is always 0. */
+  cpu.gpr[0] = 0;
+  cpu.csr[1] = 0x1800;
+}
+
+
+void init_isa() {
+  /* Load build-in image. */
+  memcpy(guest_to_host(0x30000000), img, sizeof(img));
+  /* Initialize this vertual computer system. */
+  restart();
+}

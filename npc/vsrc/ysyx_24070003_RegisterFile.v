@@ -1,8 +1,8 @@
-module RegisterFile #(
-    parameter ADDR_WIDTH = 5,  
+module ysyx_24070003_RegisterFile #(
+    parameter ADDR_WIDTH = 4,  
     parameter DATA_WIDTH = 32
 ) (
-    input clk,
+    input clock,
     input [DATA_WIDTH-1:0] wdata,
     input [ADDR_WIDTH-1:0] waddr,
     input wen,
@@ -16,12 +16,12 @@ module RegisterFile #(
     input [ADDR_WIDTH-1:0] raddr2
 );
 
-    reg [DATA_WIDTH-1:0] rf[31:0];
-    import "DPI-C" function void set_gpr_ptr(input logic [31:0] a []);
-    initial set_gpr_ptr(rf); 
+    reg [DATA_WIDTH-1:0] rf[15:0];
+    // import "DPI-C" function void set_gpr_ptr(input logic [31:0] a []);
+    // initial set_gpr_ptr(rf); 
 
     
-    always @(posedge clk) begin
+    always @(posedge clock) begin
         if (wen & waddr != 0) rf[waddr] <= wdata; 
     end
     

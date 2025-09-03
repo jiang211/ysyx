@@ -1,5 +1,5 @@
-module wbu(
-    input clk,
+module ysyx_24070003_wbu(
+    input clock,
     input rst_n,
     //input LSU_WBU_JUMP,
     //output reg WBU_IFU_JUMP,

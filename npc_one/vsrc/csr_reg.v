@@ -15,17 +15,10 @@ module csr_reg #(
 );
 
     reg [DATA_WIDTH-1:0] csr[3:0];
-    reg clk_reg;
-    wire clk_neg;
-    always@(posedge clk)
-    begin 
-        clk_reg <= clk;
-    end
-    assign clk_neg = ~clk & clk_reg;
     import "DPI-C" function void set_csr_ptr(input logic [31:0] a []);
     initial set_csr_ptr(csr); // set the pointer to the CSR array
     initial csr[1] = 'h1800;
-    always @(posedge clk_neg) begin
+    always @(posedge clk) begin
         if (ecall) begin 
             csr[2] <= 'd11; 
             csr[0] <= pc; 

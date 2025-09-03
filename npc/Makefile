@@ -13,6 +13,7 @@ VERILATOR_FLAGS += --MMD
 #VERILATOR_FLAGS += --coverage
 #VERILATOR_FLAGS += --assert
 VERILATOR_FLAGS += --build
+#VERILATOR_FLAGS += --lint-only
 VERILATOR_FLAGS += --trace-fst
 VERILATOR_FLAGS += -I$(YSYXSOC)/perip/uart16550/rtl
 VERILATOR_FLAGS += -I$(YSYXSOC)/perip/spi/rtl
@@ -135,8 +136,8 @@ run: $(BIN)
 
 PERF_FILE = PERF.md
 SIM_LOG = $(BUILD_DIR)/sim.log
-TIME_FILE = /home/jx/ysyx-workbench/yosys-sta/result/ysyx_24070003_cpu/ysyx_24070003_cpu.rpt
-FACE_FILE = /home/jx/ysyx-workbench/yosys-sta/result/ysyx_24070003_cpu/synth_stat.txt
+TIME_FILE = /home/jx/ysyx-workbench/yosys-sta/result/ysyx_24070003_/ysyx_24070003.rpt
+FACE_FILE = /home/jx/ysyx-workbench/yosys-sta/result/ysyx_24070003/synth_stat.txt
 #  要先在yosys-sta下运行出综合文件，再运行perf.sh脚本
 # 初始化性能记录文件（首次运行时创建表头）
 init-perf:

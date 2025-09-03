@@ -2,7 +2,7 @@
 #include <getopt.h>
 #include <common.h>
 #include <paddr.h>
-
+#include <time.h>
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
@@ -126,5 +126,46 @@ void init_monitor(int argc, char** argv) {
 
   /* Display welcome message. */
   welcome();
+}
+
+static uint64_t boot_time = 0;
+
+static uint64_t get_time_internal() {
+
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC_COARSE, &now);
+    uint64_t us = now.tv_sec * 1000000 + now.tv_nsec / 1000 ;
+
+    return us;
+}
+
+uint64_t get_time() {
+    if (boot_time == 0) boot_time = get_time_internal();
+    uint64_t now = get_time_internal();
+    return now - boot_time;
+}
+
+void init_rand() {
+  srand(get_time_internal());
+}
+
+extern uint64_t g_nr_guest_inst;
+FILE *log_fp = NULL;
+
+void init_log(const char *log_file) {
+  log_fp = stdout;
+  if (log_file != NULL) {
+    FILE *fp = fopen(log_file, "w");
+    Assert(fp, "Can not open '%s'", log_file);
+    log_fp = fp;
+  }
+  Log("Log is written to %s", log_file ? log_file : "stdout");
+}
+
+bool log_enable() {
+  
+    //return  (g_nr_guest_inst >= CONFIG_TRACE_START) && (g_nr_guest_inst <= CONFIG_TRACE_END);
+    return  (g_nr_guest_inst >= 1) && (g_nr_guest_inst <= 10000);
+  
 }
 

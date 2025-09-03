@@ -1,4 +1,4 @@
-module btb(
+module ysyx_24070003_btb(
     input clock,
     input reset,
     input [31:0] cur_pc,
@@ -12,7 +12,7 @@ module btb(
 
 
 localparam WAY_NUM = 2;
-localparam INDEX_WIDTH = 3;
+localparam INDEX_WIDTH = 2;
 localparam ADDR_WIDTH = 32;
 localparam OFFSET_WITH = 2;
 localparam TAG_WIDTH = ADDR_WIDTH - OFFSET_WITH - INDEX_WIDTH;
@@ -23,7 +23,7 @@ wire [INDEX_WIDTH-1:0] update_index;
 wire [TAG_WIDTH-1:0] update_tag;
 wire [WAY_NUM-1:0] hit;
 wire [WAY_NUM-1:0] update_hit;
-wire cur_hit;
+//wire cur_hit;
 wire upd_hit;
 
 reg [TAG_WIDTH-1:0] btb_tag [2 ** INDEX_WIDTH -1:0][WAY_NUM-1:0];     // 标签存储
@@ -81,4 +81,3 @@ always @(posedge clock) begin
 end
 
 endmodule
-

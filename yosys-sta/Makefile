@@ -2,7 +2,7 @@ PROJ_PATH = $(shell pwd)
 SHELL := /bin/bash
 
 O ?= $(PROJ_PATH)/result
-DESIGN ?= ysyx_24070003_cpu
+DESIGN ?= ysyx_24070003_alu
 SDC_FILE ?= $(PROJ_PATH)/scripts/default.sdc
 #RTL_FILES ?= $(shell find $(PROJ_PATH)/example -name "*.v")
 RTL_FILES ?= $(shell find $(NPC_HOME)/vsrc -name "*.v")

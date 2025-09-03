@@ -12,11 +12,11 @@
 //#endif
 //_______________________________end of the CONFIG_TRACE parameters--------------------------
 
-#define CONFIG_DIFFTEST
+//#define CONFIG_DIFFTEST
 
 #define CONFIG_PC_RESET_OFFSET 0x0
 
-#define CONFIG_MSIZE 0x1000          // memory size
-#define CONFIG_MBASE 0x30000000         // memory base address
+#define CONFIG_MSIZE 0x8000000          // memory size
+#define CONFIG_MBASE 0x80000000         // memory base address
 
 #endif
