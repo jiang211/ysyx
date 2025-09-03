@@ -224,7 +224,7 @@ always @(posedge clock or posedge reset) begin
             end
           end
           XIP_WAIT:begin
-            if((wb_prdata[8]=='b0)&&wb_pready)begin
+            if((wb_prdata[8]=='b0)&&data_valid)begin
               state <= XIP_CLOSE;
             end
             else begin
@@ -260,7 +260,7 @@ always @(posedge clock or posedge reset) begin
       w_cnt<='b0;
     end
     else if(state==XIP_WREG)begin
-      if(wb_pwrite&wb_psel&wb_penable&wb_pready)begin
+      if(wb_pready)begin
         w_cnt <= w_cnt + 1;
       end
       else begin
@@ -273,59 +273,23 @@ always @(posedge clock or posedge reset) begin
   end
   
 
-  reg   penable_wait,penable_return,penable_close,psel_wait,psel_return,psel_close;
   reg   data_valid;
   always @(posedge clock or posedge reset) begin
     if(reset)begin
-      penable_wait <= 'b0;
-      psel_wait    <= 'b0;
       data_valid   <= 'b0;  
     end
-    else if(penable_wait&psel_wait&wb_pready)begin
-      penable_wait <= 'b0;
-      psel_wait    <= 'b0;
+    else if(wb_pready)begin
       data_valid   <= 'b1; 
     end
     else if(state==XIP_WAIT)begin
-      penable_wait <= 'b1;
-      psel_wait    <= 'b1;
       data_valid   <= 'b0; 
     end
     else begin
-      penable_wait <= penable_wait;
-      psel_wait    <= psel_wait;
       data_valid   <= 'b0; 
     end
 
   end
-  always @(posedge clock or posedge reset) begin
-    if(reset)begin
-      penable_return <= 'b0;
-      psel_return    <= 'b0; 
-    end
-    else if(state==XIP_RETURN)begin
-      penable_return <= 'b1;
-      psel_return    <= 'b1; 
-    end
-    else if(penable_return&psel_return&wb_pready)begin
-      penable_return <= 'b0;
-      psel_return    <= 'b0; 
-    end
-  end
-  always @(posedge clock or posedge reset) begin
-    if(reset)begin
-      penable_close <= 'b0;
-      psel_close    <= 'b0; 
-    end
-    else if(penable_close&psel_close&wb_pwrite&wb_pready)begin
-      penable_close <= 'b0;
-      psel_close    <= 'b0; 
-    end
-    else if(state==XIP_CLOSE)begin
-      penable_close <= 'b1;
-      psel_close    <= 'b1; 
-    end
-  end
+  
 ////////////////////////////////////////////////////////////////////////////
   reg[2:0]  state_r;
   wire[31:0] data_return = (state==XIP_RETURN)?{wb_prdata[7:0],wb_prdata[15:8],wb_prdata[23:16],wb_prdata[31:24]}:wb_prdata;
