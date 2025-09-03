@@ -104,13 +104,13 @@ always @(posedge clock or posedge reset) begin
   always @(*) begin
     case (state)
       IDLE       :begin
-        wb_paddr  = 'b0;
-        wb_psel   = 'b0; 
-        wb_penable= 'b0; 
-        wb_pprot  = 'b0; 
-        wb_pwrite = 'b0; 
-        wb_pwdata = 'b0; 
-        wb_pstrb  = 'b0; 
+        wb_paddr  = is_spi?mspi_paddr  :'b0;
+        wb_psel   = is_spi?mspi_psel   :'b0; 
+        wb_penable= is_spi?mspi_penable:'b0; 
+        wb_pprot  = is_spi?mspi_pprot  :'b0; 
+        wb_pwrite = is_spi?mspi_pwrite :'b0; 
+        wb_pwdata = is_spi?mspi_pwdata :'b0; 
+        wb_pstrb  = is_spi?mspi_pstrb  :'b0; 
       end
       XIP_WREG   :begin
         wb_paddr =({32{(w_cnt=='b0)}}&(SPI_BASE+32'h4)
@@ -155,19 +155,39 @@ always @(posedge clock or posedge reset) begin
         wb_pstrb   = 'b0;
       end
       default:begin
-        wb_paddr  = 'b0;
-        wb_psel   = 'b0; 
-        wb_penable= 'b0; 
-        wb_pprot  = 'b0; 
-        wb_pwrite = 'b0; 
-        wb_pwdata = 'b0; 
-        wb_pstrb  = 'b0; 
+        wb_paddr  = is_spi?mspi_paddr  :'b0;
+        wb_psel   = is_spi?mspi_psel   :'b0; 
+        wb_penable= is_spi?mspi_penable:'b0; 
+        wb_pprot  = is_spi?mspi_pprot  :'b0; 
+        wb_pwrite = is_spi?mspi_pwrite :'b0; 
+        wb_pwdata = is_spi?mspi_pwdata :'b0; 
+        wb_pstrb  = is_spi?mspi_pstrb  :'b0; 
       end 
     endcase
   end
   
 
- 
+  //to sync signal
+  always @(posedge clock or posedge reset) begin
+    if(reset)begin
+      mspi_paddr   <= 'b0;
+      mspi_psel    <= 'b0;
+      mspi_penable <= 'b0;
+      mspi_pprot   <= 'b0;
+      mspi_pwrite  <= 'b0;
+      mspi_pwdata  <= 'b0;
+      mspi_pstrb   <= 'b0;
+    end
+    else if(state==IDLE)begin
+      mspi_paddr   <= in_paddr  ;
+      mspi_psel    <= in_psel   ;
+      mspi_penable <= in_penable;
+      mspi_pprot   <= in_pprot  ;
+      mspi_pwrite  <= in_pwrite ;
+      mspi_pwdata  <= in_pwdata ;
+      mspi_pstrb   <= in_pstrb  ;
+    end
+  end
 
   always @(posedge clock or posedge reset) begin
     if(reset)begin
