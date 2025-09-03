@@ -129,8 +129,8 @@ always @(posedge clock or posedge reset) begin
       end
       XIP_WAIT   :begin
         wb_paddr   = SPI_BASE+32'h10;
-        wb_psel    = psel_wait;
-        wb_penable = penable_wait;
+        wb_psel    = 'b1;
+        wb_penable = 'b1;
         wb_pprot   = 'b1;
         wb_pwrite  = 'b0;
         wb_pwdata  = 'b0;
@@ -138,8 +138,8 @@ always @(posedge clock or posedge reset) begin
       end
       XIP_CLOSE:begin
         wb_paddr   = (SPI_BASE+32'h18);
-        wb_psel    = psel_close;
-        wb_penable = penable_close;
+        wb_psel    = 'b1;
+        wb_penable = 'b1;
         wb_pprot   = 'b1;
         wb_pwrite  = 'b1;
         wb_pwdata  = 'b0;
@@ -147,8 +147,8 @@ always @(posedge clock or posedge reset) begin
       end
       XIP_RETURN :begin
         wb_paddr   = SPI_BASE;
-        wb_psel    = psel_return;
-        wb_penable = penable_return;
+        wb_psel    = 'b1;
+        wb_penable = 'b1;
         wb_pprot   = 'b1;
         wb_pwrite  = 'b0;
         wb_pwdata  = 'b0;
@@ -254,10 +254,7 @@ always @(posedge clock or posedge reset) begin
 
   //XIP_WREG
   reg[2:0]  w_cnt;
-  reg[31:0] reg1,reg2,reg3,reg4;
-  reg       pwrite1,pwrite2,pwrite3,pwrite4;
-  reg       penable1,penable2,penable3,penable4;
-  reg       psel1,psel2,psel3,psel4;
+  
   always @(posedge clock or posedge reset) begin
     if(reset)begin
       w_cnt<='b0;
@@ -274,96 +271,7 @@ always @(posedge clock or posedge reset) begin
       w_cnt <= 'b0;
     end
   end
-  always @(posedge clock or posedge reset) begin
-    if(reset)begin
-      pwrite1  <= 'b0;
-      penable1 <= 'b0;
-      psel1    <= 'b0;
-    end
-    else if(pwrite1&psel1&penable1&wb_pready)begin
-      pwrite1  <= 'b0;
-      penable1 <= 'b0;
-      psel1    <= 'b0;
-    end
-    else if((w_cnt=='b0)&&(state==XIP_WREG))begin
-      pwrite1  <= 'b1;
-      penable1 <= 'b1;
-      psel1    <= 'b1;
-    end
-
-    else begin
-      pwrite1  <= pwrite1;
-      penable1 <= penable1;
-      psel1    <= psel1;
-    end
-  end
-  always @(posedge clock or posedge reset) begin
-    if(reset)begin
-      pwrite2  <= 'b0;
-      penable2 <= 'b0;
-      psel2    <= 'b0;
-    end
-    else if(pwrite2&psel2&penable2&wb_pready)begin
-      pwrite2  <= 'b0;
-      penable2 <= 'b0;
-      psel2    <= 'b0;
-    end
-    else if((w_cnt=='d1)&&(state==XIP_WREG))begin
-      pwrite2  <= 'b1;
-      penable2 <= 'b1;
-      psel2    <= 'b1;
-    end
-    else begin
-      pwrite2  <= pwrite2;
-      penable2 <= penable2;
-      psel2    <= psel2;
-    end
-  end
-  always @(posedge clock or posedge reset) begin
-    if(reset)begin
-      pwrite3  <= 'b0;
-      penable3 <= 'b0;
-      psel3    <= 'b0;
-    end
-    else if(pwrite3&psel3&penable3&wb_pready)begin
-      pwrite3  <= 'b0;
-      penable3 <= 'b0;
-      psel3    <= 'b0;
-    end
-    else if((w_cnt=='d2)&&(state==XIP_WREG))begin
-      pwrite3  <= 'b1;
-      penable3 <= 'b1;
-      psel3    <= 'b1;
-    end
-
-    else begin
-      pwrite3  <= pwrite3;
-      penable3 <= penable3;
-      psel3    <= psel3;
-    end
-  end
-  always @(posedge clock or posedge reset) begin
-    if(reset)begin
-      pwrite4  <= 'b0;
-      penable4 <= 'b0;
-      psel4    <= 'b0;
-    end
-    else if(pwrite4&psel4&penable4&wb_pready)begin
-      pwrite4  <= 'b0;
-      penable4 <= 'b0;
-      psel4    <= 'b0;
-    end
-    else if((w_cnt=='d3)&&(state==XIP_WREG))begin
-      pwrite4  <= 'b1;
-      penable4 <= 'b1;
-      psel4    <= 'b1;
-    end
-    else begin
-      pwrite4  <= pwrite4;
-      penable4 <= penable4;
-      psel4    <= psel4;
-    end
-  end
+  
 
   reg   penable_wait,penable_return,penable_close,psel_wait,psel_return,psel_close;
   reg   data_valid;
