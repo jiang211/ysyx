@@ -553,7 +553,7 @@ ysyx_24070003_clint my_clint(
 );
 
 
-wire [7:0] IDU_EXU_RW_sign,EXU_LSU_RW_sign;
+wire [8:0] IDU_EXU_RW_sign,EXU_LSU_RW_sign;
 ysyx_24070003_idu my_idu(
    // .EXU_IFU_flush                (EXU_IFU_flush      ),
     .clock                            (clock              ),
@@ -582,7 +582,7 @@ ysyx_24070003_idu my_idu(
     .IDU_EXU_branch                 (branch             ),
    // .IDU_EXU_mem_to_reg           (mem_to_reg         ),
     .IDU_EXU_mem_read               (mem_read           ),
-    .IDU_EXU_mem_write              (mem_write          ),    
+    //.IDU_EXU_mem_write              (mem_write          ),    
     .IDU_EXU_reg_write              (reg_write          ),
     .IDU_EXU_jal                    (IDU_EXU_jal        ),
     .IDU_EXU_jalr                   (IDU_EXU_jalr       ),
@@ -635,7 +635,7 @@ ysyx_24070003_idu my_idu(
 );  
 
 
-wire [165:0] EXU_LSU_data;
+
 ysyx_24070003_exu my_exu(
     .IDU_EXU_rd                     (rd                 ),
     .clock                            (clock              ),
@@ -650,7 +650,7 @@ ysyx_24070003_exu my_exu(
     .IDU_EXU_ebreak                 (IDU_EXU_ebreak     ),
     .IDU_EXU_csr_rst                (IDU_EXU_csr_rst    ),
     .IDU_EXU_ren                    (mem_read           ),
-    .IDU_EXU_wen                    (mem_write          ),
+    //.IDU_EXU_wen                    (mem_write          ),
     .IDU_EXU_reg                    (reg_write          ),
     .IDU_EXU_jal                    (IDU_EXU_jal        ),
     .IDU_EXU_jalr                   (IDU_EXU_jalr       ),
@@ -690,7 +690,7 @@ ysyx_24070003_exu my_exu(
     .alu_op                         (alu_op             ),
     .EXU_LSU_rd                     (EXU_LSU_rd         ),   
     .EXU_LSU_ren                    (EXU_LSU_ren        ),
-    .EXU_LSU_wen                    (EXU_LSU_wen        ),
+    //.EXU_LSU_wen                    (EXU_LSU_wen        ),
     .EXU_LSU_reg                    (EXU_LSU_reg        ),
     .EXU_LSU_ebreak                 (EXU_LSU_ebreak     ),
     //.EXU_IFU_jal                  (EXU_IFU_jal        ),
@@ -704,19 +704,18 @@ ysyx_24070003_exu my_exu(
     // .EXU_LSU_sb                     (EXU_LSU_sb         ),
     // .EXU_LSU_sh                     (EXU_LSU_sh         ),
     .EXU_LSU_RW_sign                (EXU_LSU_RW_sign),
-    .EXU_LSU_data                    (EXU_LSU_data),
-    // .EXU_LSU_csr_data               (EXU_LSU_csr_data   ),
-    // .EXU_LSU_ecall                  (EXU_LSU_ecall      ),
-    // .EXU_LSU_mret                   (EXU_LSU_mret       ),
-    // .EXU_LSU_csr_rst                (EXU_LSU_csr_rst    ),
-    // .EXU_LSU_C_type                 (EXU_LSU_C_type     ),
-    // .EXU_LSU_csr_in                 (EXU_LSU_csr_in     ),
-     .EXU_IFU_pc                     (EXU_IFU_pc         ),
+    .EXU_LSU_csr_data               (EXU_LSU_csr_data   ),
+    .EXU_LSU_ecall                  (EXU_LSU_ecall      ),
+    .EXU_LSU_mret                   (EXU_LSU_mret       ),
+    .EXU_LSU_csr_rst                (EXU_LSU_csr_rst    ),
+    .EXU_LSU_C_type                 (EXU_LSU_C_type     ),
+    .EXU_LSU_csr_in                 (EXU_LSU_csr_in     ),
+    .EXU_IFU_pc                     (EXU_IFU_pc         ),
     //.EXU_IFU_STALL_done           (EXU_IFU_STALL_done ),
     .EXU_flush                      (flush              ),
-    // .EXU_LSU_RS2DATA                (EXU_LSU_RS2DATA    ),
-    // .EXU_LSU_PC                     (EXU_LSU_PC         ),
-    // .EXU_LSU_dnpc                   (EXU_LSU_dnpc       ),
+    .EXU_LSU_RS2DATA                (EXU_LSU_RS2DATA    ),
+    .EXU_LSU_PC                     (EXU_LSU_PC         ),
+    .EXU_LSU_dnpc                   (EXU_LSU_dnpc       ),
     //.EXU_LSU_IMM                    (EXU_LSU_IMM        ),
 
     .EXU_IDU_REG_ADDR               (EXU_IDU_REG_ADDR   )     ,
@@ -734,10 +733,9 @@ ysyx_24070003_lsu my_lsu(
     //.LSU_WBU_pc                   (LSU_WBU_pc         ),
     //.EXU_LSU_JUMP                 (EXU_IFU_JUMP       )  ,
     //.LSU_WBU_JUMP                 (LSU_WBU_JUMP       ),
-    // .EXU_LSU_dnpc                   (EXU_LSU_dnpc       ),
-    // .EXU_LSU_PC                     (EXU_LSU_PC         ),
+    .EXU_LSU_dnpc                   (EXU_LSU_dnpc       ),
+    .EXU_LSU_PC                     (EXU_LSU_PC         ),
     .EXU_LSU_RW_sign                (EXU_LSU_RW_sign),
-    .EXU_LSU_data                   (EXU_LSU_data),
     // .EXU_LSU_lw                     (EXU_LSU_lw         ),
     // .EXU_LSU_lh                     (EXU_LSU_lh         ),
     // .EXU_LSU_lb                     (EXU_LSU_lb         ),
@@ -746,14 +744,14 @@ ysyx_24070003_lsu my_lsu(
     // .EXU_LSU_sw                     (EXU_LSU_sw         ),
     // .EXU_LSU_sb                     (EXU_LSU_sb         ),
     // .EXU_LSU_sh                     (EXU_LSU_sh         ),
-    // .EXU_LSU_csr_data               (EXU_LSU_csr_data   ),
-    // .EXU_LSU_csr_in                 (EXU_LSU_csr_in     ),
-    // .EXU_LSU_ecall                  (EXU_LSU_ecall      ),
-    // .EXU_LSU_mret                   (EXU_LSU_mret       ),
-    // .EXU_LSU_C_type                 (EXU_LSU_C_type     ),
-    // .EXU_LSU_csr_rst                (EXU_LSU_csr_rst    ),
+    .EXU_LSU_csr_data               (EXU_LSU_csr_data   ),
+    .EXU_LSU_csr_in                 (EXU_LSU_csr_in     ),
+    .EXU_LSU_ecall                  (EXU_LSU_ecall      ),
+    .EXU_LSU_mret                   (EXU_LSU_mret       ),
+    .EXU_LSU_C_type                 (EXU_LSU_C_type     ),
+    .EXU_LSU_csr_rst                (EXU_LSU_csr_rst    ),
     .EXU_LSU_ren                    (EXU_LSU_ren        ),
-    .EXU_LSU_wen                    (EXU_LSU_wen        ),
+    //.EXU_LSU_wen                    (EXU_LSU_wen        ),
     //.IDU_EXU_ren                  (mem_read           ),
     //.IDU_EXU_wen                  (mem_write          ),
     .EXU_LSU_reg                    (EXU_LSU_reg        ),
@@ -768,7 +766,7 @@ ysyx_24070003_lsu my_lsu(
     .rst_n                          (reset              ),
     .LSU_WBU_PC                     (LSU_WBU_PC         ),
     //.alu_result                   (alu_out            ),
-    // .rs2_data                       (EXU_LSU_RS2DATA    ),
+    .rs2_data                       (EXU_LSU_RS2DATA    ),
    // .rdata                        (rdata              ),
     .LSU_WBU_csr_data               (LSU_WBU_csr_data   ),
     .LSU_WBU_ecall                  (LSU_WBU_ecall      ),
@@ -905,33 +903,33 @@ always @(posedge clock ) begin
         total_count <= total_count + 1;
     end
 end
-always @(posedge clock ) begin
-    if(EXU_LSU_ebreak) begin
-        $display("total_count               = %040d\n",total_count);
-        $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
-        $display("lsu_count                 = %040d\n",lsu_count);
-        $display("ifu_count                 = %040d\n",ifu_count);
-        $display("calcu_type_count          = %040d\n",calcu_type_count);
-        $display("Jump_type_count           = %040d\n",Jump_type_count);
-        $display("BJump_type_count          = %040d\n",BJump_type_count);
-        $display("LOAD_type_count           = %040d\n",LOAD_type_count);
-        $display("STORE_type_count          = %040d\n",STORE_type_count);
-        $display("C_type_count              = %040d\n",C_type_count);
-        $display("lsu_average_count         = %040d\n",lsu_during_count/lsu_count);
-        $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
-        $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
-        $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
-        $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
-        $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
-        $display("total_access              = %040d\n",total_access);
-        $display("access_time               = %040d\n",access_time);
-        $display("miss_penalty              = %040d\n",miss_penalty);
-    end
-end
-import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
-reg [31:0] dpi_monitor_data[0:5];
-// 初始化时绑定指针
-initial set_monitor_ptr(dpi_monitor_data);
+// always @(posedge clock ) begin
+//     if(EXU_LSU_ebreak) begin
+//         $display("total_count               = %040d\n",total_count);
+//         $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
+//         $display("lsu_count                 = %040d\n",lsu_count);
+//         $display("ifu_count                 = %040d\n",ifu_count);
+//         $display("calcu_type_count          = %040d\n",calcu_type_count);
+//         $display("Jump_type_count           = %040d\n",Jump_type_count);
+//         $display("BJump_type_count          = %040d\n",BJump_type_count);
+//         $display("LOAD_type_count           = %040d\n",LOAD_type_count);
+//         $display("STORE_type_count          = %040d\n",STORE_type_count);
+//         $display("C_type_count              = %040d\n",C_type_count);
+//         $display("lsu_average_count         = %040d\n",lsu_during_count/lsu_count);
+//         $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
+//         $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
+//         $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
+//         $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
+//         $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
+//         $display("total_access              = %040d\n",total_access);
+//         $display("access_time               = %040d\n",access_time);
+//         $display("miss_penalty              = %040d\n",miss_penalty);
+//     end
+// end
+// import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
+// reg [31:0] dpi_monitor_data[0:5];
+// // 初始化时绑定指针
+// initial set_monitor_ptr(dpi_monitor_data);
 assign dpi_monitor_data[0] = {31'b0,difftest_valid};
 assign dpi_monitor_data[1] = TO_top_pc;
 assign dpi_monitor_data[2] = TO_top_dnpc;

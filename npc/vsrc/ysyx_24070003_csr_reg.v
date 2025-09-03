@@ -26,9 +26,9 @@ module ysyx_24070003_csr_reg #(
         csr[4] = 32'h79737978; // zero register
         csr[5] = 32'h016e38bf; // zero register
     end
-     import "DPI-C" function void set_csr_ptr(input logic [31:0] a []);
-     initial set_csr_ptr(csr); // set the pointer to the CSR array
-    initial csr[1] = 'h1800;
+    //  import "DPI-C" function void set_csr_ptr(input logic [31:0] a []);
+    //  initial set_csr_ptr(csr); // set the pointer to the CSR array
+    // initial csr[1] = 'h1800;
     always @(posedge clock) begin
         if (ecall) begin 
             csr[2] <= 'd11; 
