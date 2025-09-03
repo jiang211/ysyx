@@ -117,16 +117,10 @@ always @(posedge clock or posedge reset) begin
                   |{32{(w_cnt=='d1)}}&(SPI_BASE+32'h14)
                   |{32{(w_cnt=='d2)}}&(SPI_BASE+32'h18)
                   |{32{(w_cnt=='d3)}}&(SPI_BASE+32'h10));
-        wb_psel   = ((w_cnt=='b0)&(psel1)
-                  |(w_cnt=='d1)&  (psel2)
-                  |(w_cnt=='d2)&  (psel3)
-                  |(w_cnt=='d3)&  (psel4)); 
+        wb_psel   = 'b1; 
         wb_penable= 'b1;
         wb_pprot  = 'b1  ; 
-        wb_pwrite = ((w_cnt=='b0)&(pwrite1)
-                  |(w_cnt=='d1)&(pwrite2)
-                  |(w_cnt=='d2)&(pwrite3)
-                  |(w_cnt=='d3)&(pwrite4));
+        wb_pwrite = 'b1;
         wb_pwdata = ({32{(w_cnt=='b0)}}&({8'h03,flash_paddr[23:2],2'b0})
                   |{32{(w_cnt=='d1)}}&(32'h1)
                   |{32{(w_cnt=='d2)}}&(32'h1)
