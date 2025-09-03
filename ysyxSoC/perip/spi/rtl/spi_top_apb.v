@@ -71,7 +71,7 @@ assign in_prdata  = data[31:0];
   parameter   XIP_CLOSE   = 3'b100;
 
 
-always @(posedge clock or posedge reset) begin
+always @(posedge clock) begin
     if(reset)begin
       state_r <= 'b0;
     end
