@@ -139,7 +139,7 @@ assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jalr || btb_pre_err
 assign EXU_IDU_ready = LSU_EXU_ready;  
 
 assign EXU_BTB_PC = (IDU_EXU_jal || IDU_EXU_B_type) ? next_pc_jal : next_pc_jalr;
-assign EXU_BTB_updata_valid = (IDU_EXU_jal || IDU_EXU_B_type) && (IDU_EXU_valid && EXU_IDU_ready);
+assign EXU_BTB_updata_valid = (IDU_EXU_jal || (IDU_EXU_B_type & ~zero)) && (IDU_EXU_valid && EXU_IDU_ready);
 
 always @(posedge clock) begin 
     if(rstn) begin
