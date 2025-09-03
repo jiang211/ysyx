@@ -104,34 +104,43 @@ wire [31:0] csr_in;
 assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
 assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
 
+// assign csr_in = ( {32{IDU_EXU_csw}} & (RS1_data)) |
+//                 ( {32{IDU_EXU_csc}} & (RS1_data &csr_data)) |
+//                 ( {32{IDU_EXU_css}} & (csr_data | RS1_data)) ;
 
+wire [2:0] csr_op = {IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css};
 
-wire [31:0] alu_out = 32'b0;
-wire  zero = 1'b0;
-// ysyx_24070003_alu my_alu(
-//     .clock          (clock      ),
-//     .rs1_data       (RS1_data   ),
-//     .rs2_data       (RS2_data   ),
-//     .imm_data       (imm_data        ),
-//     .pc_data        (pc_data       ),
-//     .alu_src1       (alu_src1   ),
-//     .alu_src2       (alu_src2   ),
-//     .branch         (branch     ),   
-//     .J_type_1       (J_type_1   ),
-//     .u_alu_type     (u_alu_type ),
-//     //.mul_high       (mul_high   ),
-//     .U_type_1       (U_type_1   ),
-//     .alu_crtl       (alu_op      ),
-//     .alu_out        (alu_out    ),
-//     .zero           (zero       )
-// );
+assign  csr_in =     (csr_op == 3'b100) ? RS1_data        :
+                     (csr_op == 3'b010) ? RS1_data & csr_data :
+                     (csr_op == 3'b001) ? RS1_data | csr_data :
+                                        32'h0;   // 无效，理论上不会出现
+// assign alu_out = 'd0;
+// assign zero = 'd0;
+ysyx_24070003_alu my_alu(
+    .clock          (clock      ),
+    .rs1_data       (RS1_data   ),
+    .rs2_data       (RS2_data   ),
+    .imm_data       (imm_data        ),
+    .pc_data        (pc_data       ),
+    .alu_src1       (alu_src1   ),
+    .alu_src2       (alu_src2   ),
+    .branch         (branch     ),   
+    .J_type_1       (J_type_1   ),
+    .u_alu_type     (u_alu_type ),
+    //.mul_high       (mul_high   ),
+    .U_type_1       (U_type_1   ),
+    .alu_crtl       (alu_op      ),
+    .alu_out        (alu_out    ),
+    .zero           (zero       )
+);
 
 wire btb_pre_error = (IDU_EXU_pre_dnpc != EXU_IFU_pc) && (IDU_EXU_jal || IDU_EXU_B_type);
 assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jalr || btb_pre_error) && (IDU_EXU_valid && EXU_IDU_ready);
 
 assign EXU_IDU_ready = LSU_EXU_ready;  
 
-
+///assign EXU_BTB_PC = (pc_sel[3]) ? next_pc_jal : next_pc_jalr;
+assign EXU_BTB_PC = next_pc;
 assign EXU_BTB_updata_valid = (IDU_EXU_jal || IDU_EXU_B_type) && (IDU_EXU_valid && EXU_IDU_ready);
 
 always @(posedge clock) begin 
@@ -145,27 +154,21 @@ always @(posedge clock) begin
         EXU_LSU_valid <= 1'b0;
     end
 end
+wire [31:0] pc_opdata1;
+wire [31:0] pc_opdata2;
 
-//wire [31:0] next_pc_seq = pc_data + 4;
-wire [31:0] next_pc_jal = pc_data + imm_data;
-wire [31:0] next_pc_jalr = RS1_data + imm_data;
+assign pc_opdata1 = (pc_sel[1] || pc_sel[3]) ? pc_data : RS1_data;
+assign pc_opdata2 = imm_data;
+wire [31:0] next_pc = pc_opdata1 + pc_opdata2;
+// wire [31:0] next_pc_jal = pc_data + imm_data;
+// wire [31:0] next_pc_jalr = RS1_data + imm_data;
 
-wire [3:0] pc_sel = {IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal || zero, IDU_EXU_jalr};
-assign EXU_IFU_pc = //32'b0;
-            (pc_sel == 3'b100) ? csr_data      :
-            (pc_sel == 3'b010) ? next_pc_jal   :
-            (pc_sel == 3'b001) ? next_pc_jalr  :
+wire [3:0] pc_sel = {IDU_EXU_jal || IDU_EXU_B_type, IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal || zero, IDU_EXU_jalr};
+assign EXU_IFU_pc =
+            (pc_sel[2]) ? csr_data      :
+            (pc_sel[1] || pc_sel[0]) ? next_pc   :
                                   pc_data + 32'd4;
 
-wire [2:0] csr_op = {IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css};
-
-wire [31:0] csr_in =// 32'b0;
-                     (csr_op == 3'b100) ? RS1_data        :
-                     (csr_op == 3'b010) ? RS1_data & csr_data :
-                     (csr_op == 3'b001) ? RS1_data | csr_data :
-                                        32'h0;  
-
-assign EXU_BTB_PC = (IDU_EXU_jal || IDU_EXU_B_type) ? next_pc_jal : next_pc_jalr;
 
 
 always@(posedge clock)

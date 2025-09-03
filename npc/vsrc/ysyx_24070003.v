@@ -544,13 +544,11 @@ ysyx_24070003_clint my_clint(
 
     // AXI-Lite4 Read Address Channel
     .AXI4_CLINT_ARADDR              (LSU_AXI4_ARADDR    ),
-    .AXI4_CLINT_ARVALID             (LSU_AXI4_ARVALID   ),
     .AXI4_CLINT_ARREADY             (AXI4_CLINT_ARREADY ),
     
     // AXI-Lite4 Read Data Channel
     .AXI4_CLINT_RDATA               (AXI4_CLINT_RDATA   ),
-    .AXI4_CLINT_RVALID              (AXI4_CLINT_RVALID  ),
-    .AXI4_CLINT_RREADY              (LSU_AXI4_RREADY    )
+    .AXI4_CLINT_RVALID              (AXI4_CLINT_RVALID  )
 );
 
 
