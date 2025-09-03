@@ -3,20 +3,21 @@ module ysyx_24070003_wbu(
     input rst_n,
     //input LSU_WBU_JUMP,
     //output reg WBU_IFU_JUMP,
-    input [31:0] LSU_WBU_PC,
-    input [31:0] LSU_WBU_dnpc,
+    // input [31:0] LSU_WBU_PC,
+    // input [31:0] LSU_WBU_dnpc,
     input        LSU_WBU_skip,
    // output reg [31:0] WBU_IFU_pc,
 
     input LSU_WBU_valid,
     output LSU_WBU_ready,
     input LSU_WBU_reg,
-    input [31:0] LSU_WBU_csr_data,
-    input [31:0] LSU_WBU_csr_in,
-    input [2:0]  LSU_WBU_csr_rst,
-    input LSU_WBU_ecall,
-    input LSU_WBU_mret,
-    input LSU_WBU_C_type,
+    input [133:0] LSU_WBU_data,
+    // input [31:0] LSU_WBU_csr_data,
+    // input [31:0] LSU_WBU_csr_in,
+    // input [2:0]  LSU_WBU_csr_rst,
+    // input LSU_WBU_ecall,
+    // input LSU_WBU_mret,
+    // input LSU_WBU_C_type,
  //   input LSU_WBU_jal,
    // input LSU_WBU_jalr,
     //input [31:0]data_in,
@@ -35,8 +36,11 @@ module ysyx_24070003_wbu(
 );
 
 //wire [4:0] csr_addr;
+wire [31:0] LSU_WBU_csr_data,LSU_WBU_csr_in,LSU_WBU_PC,LSU_WBU_dnpc;
+wire LSU_WBU_ecall,LSU_WBU_mret,LSU_WBU_C_type;
+wire [2:0] LSU_WBU_csr_rst;
 wire csr_en;
-
+assign  {LSU_WBU_csr_data,LSU_WBU_ecall,LSU_WBU_mret,LSU_WBU_C_type,LSU_WBU_csr_rst,LSU_WBU_csr_in,LSU_WBU_PC,LSU_WBU_dnpc} = LSU_WBU_data;
 //assign csr_addr = (LSU_WBU_ecall) ? 'd3 : (LSU_WBU_mret) ? 'd0 :LSU_WBU_csr_rst;
 
 
