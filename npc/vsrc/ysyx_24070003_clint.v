@@ -12,7 +12,7 @@ module ysyx_24070003_clint #(
     
     // AXI-Lite4 Read Data Channel
     output  [DATA_WIDTH-1:0] AXI4_CLINT_RDATA,
-    output                   AXI4_CLINT_RVALID,
+    output                   AXI4_CLINT_RVALID
     //output reg [1:0]       AXI4_SRAM_BRESP 
 );
     //reg [DATA_WIDTH-1:0] mem [0:2**ADDR_WIDTH-1];

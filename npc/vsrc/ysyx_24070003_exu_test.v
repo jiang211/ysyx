@@ -101,9 +101,23 @@ wire zero;
 wire [31:0] alu_out;
 wire [31:0] csr_in;
 
-assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
-assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
+// assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
+// assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
+mux2_32bit my_mux2_32bit1(
+    .sel                ({IDU_EXU_exu_raw_rs1, IDU_EXU_lsu_raw_rs1}),
+    .a                  (EXU_LSU_alu_out),  
+    .b                  (LSU_forward_data),
+    .default_data       (rs1_data),
+    .out                (RS1_data)
+);
 
+mux2_32bit my_mux2_32bit2(
+    .sel                ({IDU_EXU_exu_raw_rs2, IDU_EXU_lsu_raw_rs2}),
+    .a                  (EXU_LSU_alu_out),  
+    .b                  (LSU_forward_data),
+    .default_data       (rs2_data),
+    .out                (RS2_data)
+);
 // assign csr_in = ( {32{IDU_EXU_csw}} & (RS1_data)) |
 //                 ( {32{IDU_EXU_csc}} & (RS1_data &csr_data)) |
 //                 ( {32{IDU_EXU_css}} & (csr_data | RS1_data)) ;
@@ -114,20 +128,30 @@ assign  csr_in =     (csr_op == 3'b100) ? RS1_data        :
                      (csr_op == 3'b010) ? RS1_data & csr_data :
                      (csr_op == 3'b001) ? RS1_data | csr_data :
                                         32'h0;   // 无效，理论上不会出现
-
+wire [31:0] opdata1;
+wire [31:0] opdata2;
+assign opdata1 = (alu_src1)? rs1_data : (U_type_1) ? 32'h00000000 : pc_data;
+assign opdata2 = (alu_src2)? rs2_data : (J_type_1) ? 32'h00000004 : imm_data;
+mux2_32bit my_mux2_32bit3(
+    .sel                ({alu_src1, U_type_1}),
+    .a                  (RS1_data),  
+    .b                  (32'h00000000),
+    .default_data       (pc_data),
+    .out                (opdata1)
+);
+mux2_32bit my_mux2_32bit4(
+    .sel                ({alu_src2, J_type_1}),
+    .a                  (rs2_data),  
+    .b                  (32'h00000004),
+    .default_data       (imm_data),
+    .out                (opdata2)
+);
 ysyx_24070003_alu my_alu(
     .clock          (clock      ),
-    .rs1_data       (RS1_data   ),
-    .rs2_data       (RS2_data   ),
-    .imm_data       (imm_data        ),
-    .pc_data        (pc_data       ),
-    .alu_src1       (alu_src1   ),
-    .alu_src2       (alu_src2   ),
-    .branch         (branch     ),   
-    .J_type_1       (J_type_1   ),
+    .opdata1        (opdata1   ),
+    .opdata2        (opdata2   ),
+    .branch         (branch     ), 
     .u_alu_type     (u_alu_type ),
-    //.mul_high       (mul_high   ),
-    .U_type_1       (U_type_1   ),
     .alu_crtl       (alu_op      ),
     .alu_out        (alu_out    ),
     .zero           (zero       )
@@ -176,20 +200,20 @@ begin
     //EXU_IFU_zero              <=        1'b0;
     EXU_LSU_alu_out           <=        32'b0;
     EXU_LSU_rd                <=        5'b0;
-    // EXU_LSU_ren               <=        1'b0;
-    // EXU_LSU_wen               <=        1'b0;
-    // //EXU_LSU_reg               <=        1'b0;
-    // EXU_LSU_ebreak               <=        1'b0;
-    // //EXU_IFU_jal               <=        1'b0;
-    // //EXU_IFU_jalr               <=        1'b0;
-    // EXU_LSU_lw               <=        1'b0;
-    // EXU_LSU_lh               <=        1'b0;
-    // EXU_LSU_lb               <=        1'b0;
-    // EXU_LSU_lbu               <=        1'b0;
-    // EXU_LSU_lhu               <=        1'b0;
-    // EXU_LSU_sw               <=        1'b0;
-    // EXU_LSU_sb               <=        1'b0;
-    // EXU_LSU_sh               <=        1'b0;
+    EXU_LSU_ren               <=        1'b0;
+    EXU_LSU_wen               <=        1'b0;
+    //EXU_LSU_reg               <=        1'b0;
+    EXU_LSU_ebreak               <=        1'b0;
+    //EXU_IFU_jal               <=        1'b0;
+    //EXU_IFU_jalr               <=        1'b0;
+    EXU_LSU_lw               <=        1'b0;
+    EXU_LSU_lh               <=        1'b0;
+    EXU_LSU_lb               <=        1'b0;
+    EXU_LSU_lbu               <=        1'b0;
+    EXU_LSU_lhu               <=        1'b0;
+    EXU_LSU_sw               <=        1'b0;
+    EXU_LSU_sb               <=        1'b0;
+    EXU_LSU_sh               <=        1'b0;
     EXU_LSU_csr_data           <=        32'b0;
     EXU_LSU_ecall               <=        1'b0;
     EXU_LSU_mret               <=        1'b0;

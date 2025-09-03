@@ -1,25 +1,14 @@
 module ysyx_24070003_alu(
     input clock,
-    input [31:0] rs1_data,
-    input [31:0] rs2_data,
-    input [31:0] imm_data,
-    input [31:0] pc_data,
-    input alu_src1,
-    input alu_src2,
+    input [31:0] opdata1,
+    input [31:0] opdata2,
     input branch,
     input u_alu_type,
-    //input mul_high,
-    input U_type_1,
-    input J_type_1,
     input [3:0] alu_crtl,
     output reg [31:0] alu_out,
     output  zero
 );
 
-wire [31:0] opdata1;
-wire [31:0] opdata2;
-assign opdata1 = (alu_src1)? rs1_data : (U_type_1) ? 32'h00000000 : pc_data;
-assign opdata2 = (alu_src2)? rs2_data : (J_type_1) ? 32'h00000004 : imm_data;
 
 wire [1:0] logic_ctl;
 wire [1:0] shift_ctl;
@@ -82,7 +71,7 @@ assign BLT = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  & ~alu_crtl[0]);
 assign BGE = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  &  alu_crtl[0]);
 assign BNE = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  & ~alu_crtl[0]);
 assign BEQ = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  &  alu_crtl[0]);
-assign zero = (BLT & & branch  &  LESS_S)   |
+assign zero = (BLT &  branch  &  LESS_S)   |
               (BGE & ~LESS_S)   |
               (BNE & ~ADD_zero) |
               (BEQ &  ADD_zero) ;

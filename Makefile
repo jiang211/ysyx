@@ -1,4 +1,4 @@
-STUID = 2023010201031
+STUID = ysyx_24070003
 STUNAME = 江贤
 
 # DO NOT modify the following code!!!
