@@ -26,7 +26,7 @@ module ysyx_24070003_idu(
     output reg IDU_EXU_branch        ,
    // output reg IDU_EXU_mem_to_reg    ,
     output reg IDU_EXU_mem_read      ,
-    output reg IDU_EXU_mem_write     ,
+    //output reg IDU_EXU_mem_write     ,
     output reg IDU_EXU_reg_write     ,
     output reg IDU_EXU_jal           ,
     output reg IDU_EXU_jalr          ,
@@ -38,7 +38,7 @@ module ysyx_24070003_idu(
     // output reg IDU_EXU_sw            ,
     // output reg IDU_EXU_sb            ,
     // output reg IDU_EXU_sh            ,
-    output reg [7:0] IDU_EXU_RW_sign,
+    output reg [8:0] IDU_EXU_RW_sign,
     output reg [2:0]IDU_EXU_csr_op,
     output reg IDU_EXU_ebreak        ,
     output reg IDU_EXU_ecall         ,
@@ -167,8 +167,8 @@ wire sw   = (S_type && funct3 == 3'b010);
 wire sb   = (S_type && funct3 == 3'b000);
 wire sh   = (S_type && funct3 == 3'b001);
 
-wire [7:0] rw_sign;
-assign rw_sign = {lh,lw,lb,lbu,lhu,sw,sb,sh};
+wire [8:0] rw_sign;
+assign rw_sign = {mem_write,lh,lw,lb,lbu,lhu,sw,sb,sh};
 // wire remu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b111);
 // wire mulh = (R_type && funct7 == 7'b0000001 && funct3 == 3'b001);
 // wire mulhu= (R_type && funct7 == 7'b0000001 && funct3 == 3'b011);
@@ -283,7 +283,7 @@ begin
     IDU_EXU_branch              <=        1'b0;
  //   IDU_EXU_mem_to_reg          <=        1'b0;    
     IDU_EXU_mem_read            <=        1'b0;
-    IDU_EXU_mem_write           <=        1'b0;     
+    //IDU_EXU_mem_write           <=        1'b0;     
     IDU_EXU_reg_write           <=        1'b0;   
     IDU_EXU_jal                 <=        1'b0;
     IDU_EXU_jalr                <=        1'b0;
@@ -336,7 +336,7 @@ begin
     IDU_EXU_branch              <=        1'b0;
  //   IDU_EXU_mem_to_reg          <=        1'b0;    
     IDU_EXU_mem_read            <=        1'b0;
-    IDU_EXU_mem_write           <=        1'b0;     
+    //IDU_EXU_mem_write           <=        1'b0;     
     IDU_EXU_reg_write           <=        1'b0;   
     IDU_EXU_jal                 <=        1'b0;
     IDU_EXU_jalr                <=        1'b0;
@@ -388,7 +388,7 @@ begin
     IDU_EXU_branch              <=        branch       ;
    // IDU_EXU_mem_to_reg          <=        mem_to_reg   ;    
     IDU_EXU_mem_read            <=        mem_read     ;
-    IDU_EXU_mem_write           <=        mem_write    ;     
+    //IDU_EXU_mem_write           <=        mem_write    ;     
     IDU_EXU_reg_write           <=        reg_write    ;   
     IDU_EXU_jal                 <=        jal          ;
     IDU_EXU_jalr                <=        jalr   ;
@@ -435,7 +435,7 @@ begin
     IDU_EXU_branch              <=  IDU_EXU_branch      ;
    // IDU_EXU_mem_to_reg          <=/ IDU_EXU_mem_to_reg    
     IDU_EXU_mem_read            <=  IDU_EXU_mem_read    ;
-    IDU_EXU_mem_write           <=  IDU_EXU_mem_write      ;
+    //IDU_EXU_mem_write           <=  IDU_EXU_mem_write      ;
     IDU_EXU_reg_write           <=  IDU_EXU_reg_write    ;
     IDU_EXU_jal                 <=  IDU_EXU_jal         ;
     IDU_EXU_jalr                <=  IDU_EXU_jalr        ;

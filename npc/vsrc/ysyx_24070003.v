@@ -326,7 +326,7 @@ wire [2:0]                           WBU_CSR_ADDR                   ;
 wire [2:0]                           LSU_WBU_csr_rst                ;
 wire [2:0]                           WBU_CSR_RADDR                  ;
 wire [2:0]                           LSU_AXI4_wsize                 ;   
-wire [2:0]                           csr_op                         ;
+
 //wire [5:0]                           funct7                         ;
 wire [1:0]                           resp                           ;
 wire [7:0]                           ICACHE_AXI4_arlen              ;
@@ -553,7 +553,8 @@ ysyx_24070003_clint my_clint(
 );
 
 
-wire [7:0] IDU_EXU_RW_sign,EXU_LSU_RW_sign;
+wire [8:0] IDU_EXU_RW_sign,EXU_LSU_RW_sign;
+wire [2:0]                           csr_op                         ;
 ysyx_24070003_idu my_idu(
    // .EXU_IFU_flush                (EXU_IFU_flush      ),
     .clock                            (clock              ),
@@ -582,7 +583,7 @@ ysyx_24070003_idu my_idu(
     .IDU_EXU_branch                 (branch             ),
    // .IDU_EXU_mem_to_reg           (mem_to_reg         ),
     .IDU_EXU_mem_read               (mem_read           ),
-    .IDU_EXU_mem_write              (mem_write          ),    
+    //.IDU_EXU_mem_write              (mem_write          ),    
     .IDU_EXU_reg_write              (reg_write          ),
     .IDU_EXU_jal                    (IDU_EXU_jal        ),
     .IDU_EXU_jalr                   (IDU_EXU_jalr       ),
@@ -650,7 +651,7 @@ ysyx_24070003_exu my_exu(
     .IDU_EXU_ebreak                 (IDU_EXU_ebreak     ),
     .IDU_EXU_csr_rst                (IDU_EXU_csr_rst    ),
     .IDU_EXU_ren                    (mem_read           ),
-    .IDU_EXU_wen                    (mem_write          ),
+    //.IDU_EXU_wen                    (mem_write          ),
     .IDU_EXU_reg                    (reg_write          ),
     .IDU_EXU_jal                    (IDU_EXU_jal        ),
     .IDU_EXU_jalr                   (IDU_EXU_jalr       ),
@@ -690,7 +691,7 @@ ysyx_24070003_exu my_exu(
     .alu_op                         (alu_op             ),
     .EXU_LSU_rd                     (EXU_LSU_rd         ),   
     .EXU_LSU_ren                    (EXU_LSU_ren        ),
-    .EXU_LSU_wen                    (EXU_LSU_wen        ),
+    //.EXU_LSU_wen                    (EXU_LSU_wen        ),
     .EXU_LSU_reg                    (EXU_LSU_reg        ),
     .EXU_LSU_ebreak                 (EXU_LSU_ebreak     ),
     //.EXU_IFU_jal                  (EXU_IFU_jal        ),
@@ -751,7 +752,7 @@ ysyx_24070003_lsu my_lsu(
     .EXU_LSU_C_type                 (EXU_LSU_C_type     ),
     .EXU_LSU_csr_rst                (EXU_LSU_csr_rst    ),
     .EXU_LSU_ren                    (EXU_LSU_ren        ),
-    .EXU_LSU_wen                    (EXU_LSU_wen        ),
+    //.EXU_LSU_wen                    (EXU_LSU_wen        ),
     //.IDU_EXU_ren                  (mem_read           ),
     //.IDU_EXU_wen                  (mem_write          ),
     .EXU_LSU_reg                    (EXU_LSU_reg        ),

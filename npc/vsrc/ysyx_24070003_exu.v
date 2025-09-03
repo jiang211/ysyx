@@ -7,7 +7,7 @@ module ysyx_24070003_exu(
     input       LSU_EXU_ready,
     output      reg EXU_LSU_valid,
     input IDU_EXU_ren,
-    input IDU_EXU_wen,
+    //input IDU_EXU_wen,
     input IDU_EXU_reg,
     input IDU_EXU_ebreak,
     input IDU_EXU_jal,
@@ -20,7 +20,7 @@ module ysyx_24070003_exu(
     // input IDU_EXU_sw,
     // input IDU_EXU_sb,
     // input IDU_EXU_sh,
-    input [7:0] IDU_EXU_RW_sign,
+    input [8:0] IDU_EXU_RW_sign,
     input [2:0] csr_op,
     input [31:0] csr_data,
     input [31:0] IDU_EXU_pre_dnpc,
@@ -55,7 +55,7 @@ module ysyx_24070003_exu(
     input [4:0] IDU_EXU_rd,
     output[4:0] EXU_LSU_rd,
     output reg EXU_LSU_ren,
-    output reg EXU_LSU_wen,
+    //output reg EXU_LSU_wen,
     output reg EXU_LSU_reg,
     output reg EXU_LSU_ebreak,
     //output reg EXU_IFU_jal,
@@ -68,7 +68,7 @@ module ysyx_24070003_exu(
     // output reg EXU_LSU_sw,
     // output reg EXU_LSU_sb,
     // output reg EXU_LSU_sh,
-    output reg [7:0]  EXU_LSU_RW_sign,
+    output reg [8:0]  EXU_LSU_RW_sign,
     output reg [31:0] EXU_LSU_csr_data,
     output reg [31:0] EXU_LSU_csr_in,
     output     [31:0] EXU_IFU_pc,
@@ -102,6 +102,7 @@ wire [31:0] alu_out;
 wire [31:0] csr_in;
 
 assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
+//MuxKeyInternal #(2, 2, 32, 1) i0 (RS1_data, {IDU_EXU_exu_raw_rs1,IDU_EXU_lsu_raw_rs1}, EXU_LSU_alu_out, {2'b00,rs1_data,2'b01,LSU_forward_data});
 assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
 
 // assign csr_in = ( {32{IDU_EXU_csw}} & (RS1_data)) |
@@ -175,7 +176,7 @@ begin
     EXU_LSU_alu_out           <=        32'b0;
     EXU_LSU_rd                <=        5'b0;
     EXU_LSU_ren               <=        1'b0;
-    EXU_LSU_wen               <=        1'b0;
+    //EXU_LSU_wen               <=        1'b0;
     //EXU_LSU_reg               <=        1'b0;
     EXU_LSU_ebreak               <=        1'b0;
     //EXU_IFU_jal               <=        1'b0;
@@ -206,7 +207,7 @@ begin
     //EXU_IFU_zero              <=        zero;
     EXU_LSU_rd                <=        IDU_EXU_rd;
     EXU_LSU_ren               <=        IDU_EXU_ren;
-    EXU_LSU_wen               <=        IDU_EXU_wen;
+    //EXU_LSU_wen               <=        IDU_EXU_wen;
     EXU_LSU_reg               <=        IDU_EXU_reg;
     EXU_LSU_ebreak               <=        IDU_EXU_ebreak;
     EXU_LSU_RW_sign             <=      IDU_EXU_RW_sign;
@@ -237,7 +238,7 @@ begin
     EXU_LSU_alu_out           <=        EXU_LSU_alu_out;
     EXU_LSU_rd                <=        EXU_LSU_rd;
     EXU_LSU_ren               <=        EXU_LSU_ren;
-    EXU_LSU_wen               <=        EXU_LSU_wen;
+    //EXU_LSU_wen               <=        EXU_LSU_wen;
     //EXU_LSU_reg               <=        1'b0;
     EXU_LSU_ebreak               <=        EXU_LSU_ebreak;
     //EXU_IFU_jal               <=        1'b0;
