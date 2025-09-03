@@ -12,14 +12,15 @@ module ysyx_24070003_exu(
     input IDU_EXU_ebreak,
     input IDU_EXU_jal,
     input IDU_EXU_jalr,
-    input IDU_EXU_lw,
-    input IDU_EXU_lh,
-    input IDU_EXU_lb,
-    input IDU_EXU_lbu,
-    input IDU_EXU_lhu,
-    input IDU_EXU_sw,
-    input IDU_EXU_sb,
-    input IDU_EXU_sh,
+    // input IDU_EXU_lw,
+    // input IDU_EXU_lh,
+    // input IDU_EXU_lb,
+    // input IDU_EXU_lbu,
+    // input IDU_EXU_lhu,
+    // input IDU_EXU_sw,
+    // input IDU_EXU_sb,
+    // input IDU_EXU_sh,
+    input [7:0] IDU_EXU_RW_sign,
     input [2:0] csr_op,
     input [31:0] csr_data,
     input [31:0] IDU_EXU_pre_dnpc,
@@ -59,14 +60,15 @@ module ysyx_24070003_exu(
     output reg EXU_LSU_ebreak,
     //output reg EXU_IFU_jal,
     //output reg EXU_IFU_jalr,
-    output reg EXU_LSU_lw,
-    output reg EXU_LSU_lh,
-    output reg EXU_LSU_lb,
-    output reg EXU_LSU_lbu,
-    output reg EXU_LSU_lhu,
-    output reg EXU_LSU_sw,
-    output reg EXU_LSU_sb,
-    output reg EXU_LSU_sh,
+    // output reg EXU_LSU_lw,
+    // output reg EXU_LSU_lh,
+    // output reg EXU_LSU_lb,
+    // output reg EXU_LSU_lbu,
+    // output reg EXU_LSU_lhu,
+    // output reg EXU_LSU_sw,
+    // output reg EXU_LSU_sb,
+    // output reg EXU_LSU_sh,
+    output reg [7:0]  EXU_LSU_RW_sign,
     output reg [31:0] EXU_LSU_csr_data,
     output reg [31:0] EXU_LSU_csr_in,
     output     [31:0] EXU_IFU_pc,
@@ -178,14 +180,15 @@ begin
     EXU_LSU_ebreak               <=        1'b0;
     //EXU_IFU_jal               <=        1'b0;
     //EXU_IFU_jalr               <=        1'b0;
-    EXU_LSU_lw               <=        1'b0;
-    EXU_LSU_lh               <=        1'b0;
-    EXU_LSU_lb               <=        1'b0;
-    EXU_LSU_lbu               <=        1'b0;
-    EXU_LSU_lhu               <=        1'b0;
-    EXU_LSU_sw               <=        1'b0;
-    EXU_LSU_sb               <=        1'b0;
-    EXU_LSU_sh               <=        1'b0;
+    // EXU_LSU_lw               <=        1'b0;
+    // EXU_LSU_lh               <=        1'b0;
+    // EXU_LSU_lb               <=        1'b0;
+    // EXU_LSU_lbu               <=        1'b0;
+    // EXU_LSU_lhu               <=        1'b0;
+    // EXU_LSU_sw               <=        1'b0;
+    // EXU_LSU_sb               <=        1'b0;
+    // EXU_LSU_sh               <=        1'b0;
+    EXU_LSU_RW_sign            <=        8'b0;
     EXU_LSU_csr_data           <=        32'b0;
     EXU_LSU_ecall               <=        1'b0;
     EXU_LSU_mret               <=        1'b0;
@@ -206,16 +209,17 @@ begin
     EXU_LSU_wen               <=        IDU_EXU_wen;
     EXU_LSU_reg               <=        IDU_EXU_reg;
     EXU_LSU_ebreak               <=        IDU_EXU_ebreak;
+    EXU_LSU_RW_sign             <=      IDU_EXU_RW_sign;
     //EXU_IFU_jal               <=        IDU_EXU_jal;
     //EXU_IFU_jalr               <=        IDU_EXU_jalr;
-    EXU_LSU_lw               <=        IDU_EXU_lw;
-    EXU_LSU_lh               <=        IDU_EXU_lh;
-    EXU_LSU_lb               <=        IDU_EXU_lb;
-    EXU_LSU_lbu               <=        IDU_EXU_lbu;
-    EXU_LSU_lhu               <=        IDU_EXU_lhu;
-    EXU_LSU_sw               <=        IDU_EXU_sw;
-    EXU_LSU_sb               <=        IDU_EXU_sb;
-    EXU_LSU_sh               <=        IDU_EXU_sh;
+    // EXU_LSU_lw               <=        IDU_EXU_lw;
+    // EXU_LSU_lh               <=        IDU_EXU_lh;
+    // EXU_LSU_lb               <=        IDU_EXU_lb;
+    // EXU_LSU_lbu               <=        IDU_EXU_lbu;
+    // EXU_LSU_lhu               <=        IDU_EXU_lhu;
+    // EXU_LSU_sw               <=        IDU_EXU_sw;
+    // EXU_LSU_sb               <=        IDU_EXU_sb;
+    // EXU_LSU_sh               <=        IDU_EXU_sh;
     EXU_LSU_csr_data           <=        csr_data;
     EXU_LSU_ecall               <=        IDU_EXU_ecall;
     EXU_LSU_mret               <=        IDU_EXU_mret;
@@ -238,14 +242,15 @@ begin
     EXU_LSU_ebreak               <=        EXU_LSU_ebreak;
     //EXU_IFU_jal               <=        1'b0;
     //EXU_IFU_jalr               <=        1'b0;
-    EXU_LSU_lw               <=        EXU_LSU_lw;
-    EXU_LSU_lh               <=        EXU_LSU_lh;
-    EXU_LSU_lb               <=        EXU_LSU_lb;
-    EXU_LSU_lbu               <=        EXU_LSU_lbu;
-    EXU_LSU_lhu               <=        EXU_LSU_lhu;
-    EXU_LSU_sw               <=        EXU_LSU_sw;
-    EXU_LSU_sb               <=        EXU_LSU_sb;
-    EXU_LSU_sh               <=        EXU_LSU_sh;
+    // EXU_LSU_lw               <=        EXU_LSU_lw;
+    // EXU_LSU_lh               <=        EXU_LSU_lh;
+    // EXU_LSU_lb               <=        EXU_LSU_lb;
+    // EXU_LSU_lbu               <=        EXU_LSU_lbu;
+    // EXU_LSU_lhu               <=        EXU_LSU_lhu;
+    // EXU_LSU_sw               <=        EXU_LSU_sw;
+    // EXU_LSU_sb               <=        EXU_LSU_sb;
+    // EXU_LSU_sh               <=        EXU_LSU_sh;
+    EXU_LSU_RW_sign            <=       EXU_LSU_RW_sign;
     EXU_LSU_csr_data           <=        EXU_LSU_csr_data;
     EXU_LSU_ecall               <=        EXU_LSU_ecall;
     EXU_LSU_mret               <=        EXU_LSU_mret;

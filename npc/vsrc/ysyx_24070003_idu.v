@@ -30,14 +30,15 @@ module ysyx_24070003_idu(
     output reg IDU_EXU_reg_write     ,
     output reg IDU_EXU_jal           ,
     output reg IDU_EXU_jalr          ,
-    output reg IDU_EXU_lw            ,
-    output reg IDU_EXU_lh            ,
-    output reg IDU_EXU_lb            ,
-    output reg IDU_EXU_lbu           ,
-    output reg IDU_EXU_lhu           ,
-    output reg IDU_EXU_sw            ,
-    output reg IDU_EXU_sb            ,
-    output reg IDU_EXU_sh            ,
+    // output reg IDU_EXU_lw            ,
+    // output reg IDU_EXU_lh            ,
+    // output reg IDU_EXU_lb            ,
+    // output reg IDU_EXU_lbu           ,
+    // output reg IDU_EXU_lhu           ,
+    // output reg IDU_EXU_sw            ,
+    // output reg IDU_EXU_sb            ,
+    // output reg IDU_EXU_sh            ,
+    output reg [7:0] IDU_EXU_RW_sign,
     output reg [2:0]IDU_EXU_csr_op,
     output reg IDU_EXU_ebreak        ,
     output reg IDU_EXU_ecall         ,
@@ -166,7 +167,8 @@ wire sw   = (S_type && funct3 == 3'b010);
 wire sb   = (S_type && funct3 == 3'b000);
 wire sh   = (S_type && funct3 == 3'b001);
 
-
+wire [7:0] rw_sign;
+assign rw_sign = {lh,lw,lb,lbu,lhu,sw,sb,sh};
 // wire remu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b111);
 // wire mulh = (R_type && funct7 == 7'b0000001 && funct3 == 3'b001);
 // wire mulhu= (R_type && funct7 == 7'b0000001 && funct3 == 3'b011);
@@ -285,14 +287,15 @@ begin
     IDU_EXU_reg_write           <=        1'b0;   
     IDU_EXU_jal                 <=        1'b0;
     IDU_EXU_jalr                <=        1'b0;
-    IDU_EXU_lw                  <=        1'b0;  
-    IDU_EXU_lh                  <=        1'b0;
-    IDU_EXU_lb                  <=        1'b0;    
-    IDU_EXU_lbu                 <=        1'b0;
-    IDU_EXU_lhu                 <=        1'b0;     
-    IDU_EXU_sw                  <=        1'b0;   
-    IDU_EXU_sb                  <=        1'b0;
-    IDU_EXU_sh                  <=        1'b0;
+    IDU_EXU_RW_sign             <=        8'b0;
+    // IDU_EXU_lw                  <=        1'b0;  
+    // IDU_EXU_lh                  <=        1'b0;
+    // IDU_EXU_lb                  <=        1'b0;    
+    // IDU_EXU_lbu                 <=        1'b0;
+    // IDU_EXU_lhu                 <=        1'b0;     
+    // IDU_EXU_sw                  <=        1'b0;   
+    // IDU_EXU_sb                  <=        1'b0;
+    // IDU_EXU_sh                  <=        1'b0;
     IDU_EXU_csr_op              <=        3'b0;  
     IDU_EXU_ebreak              <=        1'b0;
     IDU_EXU_ecall               <=        1'b0;     
@@ -337,14 +340,15 @@ begin
     IDU_EXU_reg_write           <=        1'b0;   
     IDU_EXU_jal                 <=        1'b0;
     IDU_EXU_jalr                <=        1'b0;
-    IDU_EXU_lw                  <=        1'b0;  
-    IDU_EXU_lh                  <=        1'b0;
-    IDU_EXU_lb                  <=        1'b0;    
-    IDU_EXU_lbu                 <=        1'b0;
-    IDU_EXU_lhu                 <=        1'b0;     
-    IDU_EXU_sw                  <=        1'b0;   
-    IDU_EXU_sb                  <=        1'b0;
-    IDU_EXU_sh                  <=        1'b0;
+    // IDU_EXU_lw                  <=        1'b0;  
+    // IDU_EXU_lh                  <=        1'b0;
+    // IDU_EXU_lb                  <=        1'b0;    
+    // IDU_EXU_lbu                 <=        1'b0;
+    // IDU_EXU_lhu                 <=        1'b0;     
+    // IDU_EXU_sw                  <=        1'b0;   
+    // IDU_EXU_sb                  <=        1'b0;
+    // IDU_EXU_sh                  <=        1'b0;
+    IDU_EXU_RW_sign             <=        8'b0;
     IDU_EXU_csr_op              <=        3'b0;     
     IDU_EXU_ebreak              <=        1'b0;
     IDU_EXU_ecall               <=        1'b0;     
@@ -388,14 +392,15 @@ begin
     IDU_EXU_reg_write           <=        reg_write    ;   
     IDU_EXU_jal                 <=        jal          ;
     IDU_EXU_jalr                <=        jalr   ;
-    IDU_EXU_lw                  <=        lw     ;  
-    IDU_EXU_lh                  <=        lh     ;
-    IDU_EXU_lb                  <=        lb     ;    
-    IDU_EXU_lbu                 <=        lbu    ;
-    IDU_EXU_lhu                 <=        lhu    ;     
-    IDU_EXU_sw                  <=        sw     ;   
-    IDU_EXU_sb                  <=        sb     ;
-    IDU_EXU_sh                  <=        sh     ;
+    IDU_EXU_RW_sign             <=        rw_sign;
+    // IDU_EXU_lw                  <=        lw     ;  
+    // IDU_EXU_lh                  <=        lh     ;
+    // IDU_EXU_lb                  <=        lb     ;    
+    // IDU_EXU_lbu                 <=        lbu    ;
+    // IDU_EXU_lhu                 <=        lhu    ;     
+    // IDU_EXU_sw                  <=        sw     ;   
+    // IDU_EXU_sb                  <=        sb     ;
+    // IDU_EXU_sh                  <=        sh     ;
     IDU_EXU_csr_op              <=        csr_op;     
     IDU_EXU_ebreak              <=        ebreak    ;
     IDU_EXU_ecall               <=        ecall     ;     
@@ -434,14 +439,15 @@ begin
     IDU_EXU_reg_write           <=  IDU_EXU_reg_write    ;
     IDU_EXU_jal                 <=  IDU_EXU_jal         ;
     IDU_EXU_jalr                <=  IDU_EXU_jalr        ;
-    IDU_EXU_lw                  <=  IDU_EXU_lw          ;
-    IDU_EXU_lh                  <=  IDU_EXU_lh          ;
-    IDU_EXU_lb                  <=  IDU_EXU_lb          ;
-    IDU_EXU_lbu                 <=  IDU_EXU_lbu         ;
-    IDU_EXU_lhu                 <=  IDU_EXU_lhu         ;
-    IDU_EXU_sw                  <=  IDU_EXU_sw          ;
-    IDU_EXU_sb                  <=  IDU_EXU_sb          ;
-    IDU_EXU_sh                  <=  IDU_EXU_sh        ;  
+    IDU_EXU_RW_sign             <=  IDU_EXU_RW_sign;
+    // IDU_EXU_lw                  <=  IDU_EXU_lw          ;
+    // IDU_EXU_lh                  <=  IDU_EXU_lh          ;
+    // IDU_EXU_lb                  <=  IDU_EXU_lb          ;
+    // IDU_EXU_lbu                 <=  IDU_EXU_lbu         ;
+    // IDU_EXU_lhu                 <=  IDU_EXU_lhu         ;
+    // IDU_EXU_sw                  <=  IDU_EXU_sw          ;
+    // IDU_EXU_sb                  <=  IDU_EXU_sb          ;
+    // IDU_EXU_sh                  <=  IDU_EXU_sh        ;  
     IDU_EXU_csr_op              <=        IDU_EXU_csr_op;  
     IDU_EXU_ebreak              <=  IDU_EXU_ebreak    ;  
     IDU_EXU_ecall               <=  IDU_EXU_ecall     ;  

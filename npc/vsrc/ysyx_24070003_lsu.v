@@ -10,14 +10,15 @@ module ysyx_24070003_lsu(
     output           LSU_EXU_ready,
     output     reg      LSU_WBU_valid,
     input           LSU_WBU_ready,
-    input           EXU_LSU_lw,
-    input           EXU_LSU_lh,
-    input           EXU_LSU_lb,
-    input           EXU_LSU_lbu,
-    input           EXU_LSU_lhu,
-    input           EXU_LSU_sw,
-    input           EXU_LSU_sb,
-    input           EXU_LSU_sh,
+    input       [7:0] EXU_LSU_RW_sign,
+    // input           EXU_LSU_lw,
+    // input           EXU_LSU_lh,
+    // input           EXU_LSU_lb,
+    // input           EXU_LSU_lbu,
+    // input           EXU_LSU_lhu,
+    // input           EXU_LSU_sw,
+    // input           EXU_LSU_sb,
+    // input           EXU_LSU_sh,
     input      [31:0] EXU_LSU_PC,
     input      [31:0] EXU_LSU_dnpc,
     input      [31:0] EXU_LSU_csr_data,
@@ -101,7 +102,8 @@ assign LSU_IDU_REG_ADDR = EXU_LSU_rd;
 assign LSU_IDU_REG_WEN = EXU_LSU_reg && LSU_EXU_ready && EXU_LSU_valid;
 //assign LSU_IDU_REN   = EXU_LSU_ren && LSU_EXU_ready && EXU_LSU_valid;
 assign LSU_forward_data = LSU_WBU_DATA;
-
+wire EXU_LSU_lh,EXU_LSU_lw,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh;
+assign {EXU_LSU_lh,EXU_LSU_lw,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh} = EXU_LSU_RW_sign;
 parameter  IDLE = 0,
             START = 1,
             READ_START = 2,
