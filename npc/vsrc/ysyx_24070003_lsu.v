@@ -11,6 +11,8 @@ module ysyx_24070003_lsu(
     output     reg      LSU_WBU_valid,
     input           LSU_WBU_ready,
     input       [7:0] EXU_LSU_RW_sign,
+    input [165:0] EXU_LSU_data,
+    
     // input           EXU_LSU_lw,
     // input           EXU_LSU_lh,
     // input           EXU_LSU_lb,
@@ -19,14 +21,15 @@ module ysyx_24070003_lsu(
     // input           EXU_LSU_sw,
     // input           EXU_LSU_sb,
     // input           EXU_LSU_sh,
-    input      [31:0] EXU_LSU_PC,
-    input      [31:0] EXU_LSU_dnpc,
-    input      [31:0] EXU_LSU_csr_data,
-    input      [31:0] EXU_LSU_csr_in,
-    input           EXU_LSU_ecall,
-    input           EXU_LSU_mret,
-    input           EXU_LSU_C_type,
-    input      [2:0] EXU_LSU_csr_rst,
+    // input      [31:0] EXU_LSU_PC,
+    // input      [31:0] EXU_LSU_dnpc,
+    // input      [31:0] EXU_LSU_csr_data,
+    // input      [31:0] EXU_LSU_csr_in,
+    //    input    [31:0] rs2_data,
+    // input           EXU_LSU_ecall,
+    // input           EXU_LSU_mret,
+    // input           EXU_LSU_C_type,
+    // input      [2:0] EXU_LSU_csr_rst,
 
     input           EXU_LSU_ren,
     input           EXU_LSU_wen,
@@ -40,7 +43,7 @@ module ysyx_24070003_lsu(
     output      [31:0] LSU_WBU_PC,
     input    [4:0]  EXU_LSU_rd,
     //input    [31:0] alu_result,
-    input    [31:0] rs2_data,
+ 
     output   reg    LSU_WBU_reg,
     output   reg    LSU_WBU_ebreak,
     //output   [31:0] rdata,
@@ -97,7 +100,10 @@ module ysyx_24070003_lsu(
     //output                  LSU_IDU_REN
       //input  [1:0]                LSU_AXI4_BRESP
 );
-
+wire[31:0] EXU_LSU_csr_data,EXU_LSU_csr_in,rs2_data,EXU_LSU_PC,EXU_LSU_dnpc;
+wire EXU_LSU_ecall,EXU_LSU_mret,EXU_LSU_C_type;
+wire [2:0] EXU_LSU_csr_rst;
+assign {EXU_LSU_csr_data,EXU_LSU_ecall,EXU_LSU_mret,EXU_LSU_C_type,EXU_LSU_csr_rst,EXU_LSU_csr_in,rs2_data,EXU_LSU_PC,EXU_LSU_dnpc} = EXU_LSU_data;
 assign LSU_IDU_REG_ADDR = EXU_LSU_rd;
 assign LSU_IDU_REG_WEN = EXU_LSU_reg && LSU_EXU_ready && EXU_LSU_valid;
 //assign LSU_IDU_REN   = EXU_LSU_ren && LSU_EXU_ready && EXU_LSU_valid;
