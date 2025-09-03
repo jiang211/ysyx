@@ -113,27 +113,24 @@ always @(posedge clock or posedge reset) begin
         wb_pstrb  = is_spi?mspi_pstrb  :'b0; 
       end
       XIP_WREG   :begin
-        wb_paddr =({32{(wreg_cnt=='b0)}}&(SPI_BASE+32'h4)
-                  |{32{(wreg_cnt=='d1)}}&(SPI_BASE+32'h14)
-                  |{32{(wreg_cnt=='d2)}}&(SPI_BASE+32'h18)
-                  |{32{(wreg_cnt=='d3)}}&(SPI_BASE+32'h10));
-        wb_psel   = ((wreg_cnt=='b0)&(psel1)
-                  |(wreg_cnt=='d1)&  (psel2)
-                  |(wreg_cnt=='d2)&  (psel3)
-                  |(wreg_cnt=='d3)&  (psel4)); 
-        wb_penable= ((wreg_cnt=='b0)&(penable1)
-                  |(wreg_cnt=='d1)  &(penable2)
-                  |(wreg_cnt=='d2)  &(penable3)
-                  |(wreg_cnt=='d3)  &(penable4));
+        wb_paddr =({32{(w_cnt=='b0)}}&(SPI_BASE+32'h4)
+                  |{32{(w_cnt=='d1)}}&(SPI_BASE+32'h14)
+                  |{32{(w_cnt=='d2)}}&(SPI_BASE+32'h18)
+                  |{32{(w_cnt=='d3)}}&(SPI_BASE+32'h10));
+        wb_psel   = ((w_cnt=='b0)&(psel1)
+                  |(w_cnt=='d1)&  (psel2)
+                  |(w_cnt=='d2)&  (psel3)
+                  |(w_cnt=='d3)&  (psel4)); 
+        wb_penable= 'b1;
         wb_pprot  = 'b1  ; 
-        wb_pwrite = ((wreg_cnt=='b0)&(pwrite1)
-                  |(wreg_cnt=='d1)&(pwrite2)
-                  |(wreg_cnt=='d2)&(pwrite3)
-                  |(wreg_cnt=='d3)&(pwrite4));
-        wb_pwdata = ({32{(wreg_cnt=='b0)}}&({8'h03,flash_paddr[23:2],2'b0})
-                  |{32{(wreg_cnt=='d1)}}&(32'h1)
-                  |{32{(wreg_cnt=='d2)}}&(32'h1)
-                  |{32{(wreg_cnt=='d3)}}&(32'h540));
+        wb_pwrite = ((w_cnt=='b0)&(pwrite1)
+                  |(w_cnt=='d1)&(pwrite2)
+                  |(w_cnt=='d2)&(pwrite3)
+                  |(w_cnt=='d3)&(pwrite4));
+        wb_pwdata = ({32{(w_cnt=='b0)}}&({8'h03,flash_paddr[23:2],2'b0})
+                  |{32{(w_cnt=='d1)}}&(32'h1)
+                  |{32{(w_cnt=='d2)}}&(32'h1)
+                  |{32{(w_cnt=='d3)}}&(32'h540));
         wb_pstrb  = 'hf; 
       end
       XIP_WAIT   :begin
@@ -225,7 +222,7 @@ always @(posedge clock or posedge reset) begin
               end
           end
           XIP_WREG: begin
-            if(wreg_cnt==3'd4)begin
+            if(w_cnt==3'd4)begin
               state <= XIP_WAIT;
             end
             else begin
@@ -262,25 +259,25 @@ always @(posedge clock or posedge reset) begin
   end
 
   //XIP_WREG
-  reg[2:0]  wreg_cnt;
+  reg[2:0]  w_cnt;
   reg[31:0] reg1,reg2,reg3,reg4;
   reg       pwrite1,pwrite2,pwrite3,pwrite4;
   reg       penable1,penable2,penable3,penable4;
   reg       psel1,psel2,psel3,psel4;
   always @(posedge clock or posedge reset) begin
     if(reset)begin
-      wreg_cnt<='b0;
+      w_cnt<='b0;
     end
     else if(state==XIP_WREG)begin
       if(wb_pwrite&wb_psel&wb_penable&wb_pready)begin
-        wreg_cnt <= wreg_cnt + 1;
+        w_cnt <= w_cnt + 1;
       end
       else begin
-        wreg_cnt <= wreg_cnt;
+        w_cnt <= w_cnt;
       end
     end
     else begin
-      wreg_cnt <= 'b0;
+      w_cnt <= 'b0;
     end
   end
   always @(posedge clock or posedge reset) begin
@@ -294,7 +291,7 @@ always @(posedge clock or posedge reset) begin
       penable1 <= 'b0;
       psel1    <= 'b0;
     end
-    else if((wreg_cnt=='b0)&&(state==XIP_WREG))begin
+    else if((w_cnt=='b0)&&(state==XIP_WREG))begin
       pwrite1  <= 'b1;
       penable1 <= 'b1;
       psel1    <= 'b1;
@@ -317,12 +314,11 @@ always @(posedge clock or posedge reset) begin
       penable2 <= 'b0;
       psel2    <= 'b0;
     end
-    else if((wreg_cnt=='d1)&&(state==XIP_WREG))begin
+    else if((w_cnt=='d1)&&(state==XIP_WREG))begin
       pwrite2  <= 'b1;
       penable2 <= 'b1;
       psel2    <= 'b1;
     end
-
     else begin
       pwrite2  <= pwrite2;
       penable2 <= penable2;
@@ -340,7 +336,7 @@ always @(posedge clock or posedge reset) begin
       penable3 <= 'b0;
       psel3    <= 'b0;
     end
-    else if((wreg_cnt=='d2)&&(state==XIP_WREG))begin
+    else if((w_cnt=='d2)&&(state==XIP_WREG))begin
       pwrite3  <= 'b1;
       penable3 <= 'b1;
       psel3    <= 'b1;
@@ -363,7 +359,7 @@ always @(posedge clock or posedge reset) begin
       penable4 <= 'b0;
       psel4    <= 'b0;
     end
-    else if((wreg_cnt=='d3)&&(state==XIP_WREG))begin
+    else if((w_cnt=='d3)&&(state==XIP_WREG))begin
       pwrite4  <= 'b1;
       penable4 <= 'b1;
       psel4    <= 'b1;

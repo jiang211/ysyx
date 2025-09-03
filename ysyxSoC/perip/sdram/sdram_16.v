@@ -36,7 +36,7 @@ reg [12:0] Line_Address[0:3];
   
   assign dq = (dout_en == 16'hffff) ? dout : 16'bz;
   reg [2:0] CAS;
-  reg [2:0] Brust_Length;
+  reg [2:0] brust;
 
 
   reg [1:0] L_Bank;
@@ -51,9 +51,9 @@ reg [12:0] Line_Address[0:3];
   reg [15:0] W_Data;
   wire [21:0] raddr = {Line_Address[L_Bank], R_Address};
   wire [21:0] waddr = {Line_Address[L_Bank], W_Address};
-  wire [3:0] Length = (Brust_Length == 3'b011) ? 4'd8 :
-                    (Brust_Length == 3'b010) ? 4'd4 :
-                    (Brust_Length == 3'b001) ? 4'd2 :4'd1;
+  wire [3:0] Length = (brust == 3'b011) ? 4'd8 :
+                    (brust == 3'b010) ? 4'd4 :
+                    (brust == 3'b001) ? 4'd2 :4'd1;
 
   assign dout_en = read_flag ? 16'hffff : 16'd0;
 
@@ -80,10 +80,10 @@ reg [12:0] Line_Address[0:3];
   always @(posedge clk) begin
     if (!cke) begin
       CAS  <= 3'd0;
-      Brust_Length <= 3'd0;
+      brust <= 3'd0;
     end else if (!cs & (cmd == CMD_LOAD_MODE)) begin
       CAS  <= a[6:4];
-      Brust_Length <= a[2:0];
+      brust <= a[2:0];
     end
   end
 

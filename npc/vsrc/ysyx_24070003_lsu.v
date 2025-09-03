@@ -122,7 +122,6 @@ reg [2:0] state;
     wire [3:0] lsu_wstrb;
     wire [31:0] lsu_wdata;
     wire [31:0] lsu_rdata;
-    wire [31:0] lsu_rdata_;
     wire [2:0] lsu_arsize;
     reg skip;
     wire skip1 = (((EXU_LSU_result >= 32'h10000000) && (EXU_LSU_result < 32'h30000000)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
@@ -137,12 +136,11 @@ reg [2:0] state;
                        ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b10) ? (LSU_RDATA >> 32'd16) :
                        ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b11) ? (LSU_RDATA >> 32'd24) : (LSU_RDATA >> 32'd0);
 
-    assign lsu_rdata_ = lsu_rdata;
-    assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata_[7]}},lsu_rdata_[7:0]}) |
-                   ( {32{LSU_WBU_lh}} & {{16{lsu_rdata_[15]}}, (lsu_rdata_[15:0])}) |
-                   ( {32{LSU_WBU_lw}} & lsu_rdata_) |
-                   ( {32{LSU_WBU_lbu}} & {24'b0,lsu_rdata_[7:0]}) |
-                   ( {32{LSU_WBU_lhu}} & {16'b0,lsu_rdata_[15:0]});
+    assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata[7]}},lsu_rdata[7:0]}) |
+                   ( {32{LSU_WBU_lh}} & {{16{lsu_rdata[15]}}, (lsu_rdata[15:0])}) |
+                   ( {32{LSU_WBU_lw}} & lsu_rdata) |
+                   ( {32{LSU_WBU_lbu}} & {24'b0,lsu_rdata[7:0]}) |
+                   ( {32{LSU_WBU_lhu}} & {16'b0,lsu_rdata[15:0]});
 
     assign  LSU_WLEN = ( {4{EXU_LSU_sb}} & 4'b1 )  |
                    ( {4{EXU_LSU_sh}} & 4'b11 )  |
