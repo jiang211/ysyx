@@ -224,7 +224,7 @@ always @(posedge clock or posedge reset) begin
             end
           end
           XIP_WAIT:begin
-            if((wb_prdata[8]=='b0)&&data_valid)begin
+            if((wb_prdata[8]=='b0)&&wb_pready)begin
               state <= XIP_CLOSE;
             end
             else begin
