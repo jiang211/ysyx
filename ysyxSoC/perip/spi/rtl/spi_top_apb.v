@@ -130,7 +130,7 @@ always @(posedge clock or posedge reset) begin
                   |(wreg_cnt=='d1)&(pwrite2)
                   |(wreg_cnt=='d2)&(pwrite3)
                   |(wreg_cnt=='d3)&(pwrite4));
-        wb_pwdata = ({32{(wreg_cnt=='b0)}}&({8'h03,flash_paddr[23:0]})
+        wb_pwdata = ({32{(wreg_cnt=='b0)}}&({8'h03,flash_paddr[23:2],2'b0})
                   |{32{(wreg_cnt=='d1)}}&(32'h1)
                   |{32{(wreg_cnt=='d2)}}&(32'h1)
                   |{32{(wreg_cnt=='d3)}}&(32'h540));
