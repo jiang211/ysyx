@@ -70,7 +70,7 @@ ysyx_24070003_Adder Adder(.A(opdata1),
 			.ADD_zero(ADD_zero),
 			.ADD_result(ADD_result));
 
-//assign ALU_OverFlow = ADD_OverFlow & Ovctr;
+
 
 //********************************************************
 //**************************slt op************************
@@ -125,7 +125,7 @@ endmodule
 //*************************************************************
 //***********************************adder*********************
 
-//`define ALGORITHM
+
 module ysyx_24070003_Adder(input [31:0] A,
              input [31:0] B,
 			 input Cin,

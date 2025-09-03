@@ -166,10 +166,7 @@ wire [3:0] pc_sel = {IDU_EXU_jal || IDU_EXU_B_type, IDU_EXU_ecall || IDU_EXU_mre
 assign EXU_IFU_pc =
             (pc_sel[2]) ? csr_data      :
             (pc_sel[1] || pc_sel[0]) ? next_pc   :
-            //(pc_sel[0]) ? next_pc_jalr  :
                                   pc_data + 32'd4;
-// assign EXU_IFU_pc = (IDU_EXU_ecall || IDU_EXU_mret) ? csr_data : (IDU_EXU_jal) ? next_pc_jal :
-//                       (IDU_EXU_jalr) ? next_pc_jalr : (zero) ? next_pc_jal : pc_data + 4;
 
 
 
