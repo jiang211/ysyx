@@ -61,28 +61,11 @@ assign in_prdata  = data[31:0];
   wire [31:0] wb_prdata  ; 
   wire        wb_pslverr ;
   reg [31:0]  wb_paddr   ; 
-  //normal addr 0x10001000--0x10001fff;
-  reg [31:0] mspi_paddr   ;  
-  reg        mspi_psel    ;
-  reg        mspi_penable ;   
-  reg [2:0]  mspi_pprot   ; 
-  reg        mspi_pwrite  ; 
-  reg [31:0] mspi_pwdata  ; 
-  reg [3:0]  mspi_pstrb   ; 
+ 
   
     //flash read
   //XIP addr
-  reg  [31:0] flash_paddr   ; 
-  //
-  wire        flash_psel    ;
-  wire        flash_penable ;   
-  wire [2:0]  flash_pprot   ; 
-  wire        flash_pwrite  ; 
-  wire [31:0] flash_pwdata  ; 
-  wire [3:0]  flash_pstrb   ; 
-  wire        flash_pready  ; 
-  wire [31:0] flash_prdata  ; 
-  wire        flash_pslverr ;  
+ 
   reg[2:0]    state;
   parameter   IDLE        = 3'b000;
   parameter   XIP_WREG    = 3'b001;
@@ -104,13 +87,13 @@ always @(posedge clock or posedge reset) begin
   always @(*) begin
     case (state)
       IDLE       :begin
-        wb_paddr  = is_spi?mspi_paddr  :'b0;
-        wb_psel   = is_spi?mspi_psel   :'b0; 
-        wb_penable= is_spi?mspi_penable:'b0; 
-        wb_pprot  = is_spi?mspi_pprot  :'b0; 
-        wb_pwrite = is_spi?mspi_pwrite :'b0; 
-        wb_pwdata = is_spi?mspi_pwdata :'b0; 
-        wb_pstrb  = is_spi?mspi_pstrb  :'b0; 
+        wb_paddr  = 'b0;
+        wb_psel   = 'b0; 
+        wb_penable= 'b0; 
+        wb_pprot  = 'b0; 
+        wb_pwrite = 'b0; 
+        wb_pwdata = 'b0; 
+        wb_pstrb  = 'b0; 
       end
       XIP_WREG   :begin
         wb_paddr =({32{(w_cnt=='b0)}}&(SPI_BASE+32'h4)
@@ -121,7 +104,7 @@ always @(posedge clock or posedge reset) begin
         wb_penable= 'b1;
         wb_pprot  = 'b1  ; 
         wb_pwrite = 'b1;
-        wb_pwdata = ({32{(w_cnt=='b0)}}&({8'h03,flash_paddr[23:2],2'b0})
+        wb_pwdata = ({32{(w_cnt=='b0)}}&({8'h03,in_paddr[23:2],2'b0})
                   |{32{(w_cnt=='d1)}}&(32'h1)
                   |{32{(w_cnt=='d2)}}&(32'h1)
                   |{32{(w_cnt=='d3)}}&(32'h540));
@@ -155,48 +138,17 @@ always @(posedge clock or posedge reset) begin
         wb_pstrb   = 'b0;
       end
       default:begin
-        wb_paddr  = is_spi?mspi_paddr  :'b0;
-        wb_psel   = is_spi?mspi_psel   :'b0; 
-        wb_penable= is_spi?mspi_penable:'b0; 
-        wb_pprot  = is_spi?mspi_pprot  :'b0; 
-        wb_pwrite = is_spi?mspi_pwrite :'b0; 
-        wb_pwdata = is_spi?mspi_pwdata :'b0; 
-        wb_pstrb  = is_spi?mspi_pstrb  :'b0; 
+        wb_paddr  = 'b0;
+        wb_psel   = 'b0; 
+        wb_penable= 'b0; 
+        wb_pprot  = 'b0; 
+        wb_pwrite = 'b0; 
+        wb_pwdata = 'b0; 
+        wb_pstrb  = 'b0; 
       end 
     endcase
   end
   
-
-  //to sync signal
-  always @(posedge clock or posedge reset) begin
-    if(reset)begin
-      mspi_paddr   <= 'b0;
-      mspi_psel    <= 'b0;
-      mspi_penable <= 'b0;
-      mspi_pprot   <= 'b0;
-      mspi_pwrite  <= 'b0;
-      mspi_pwdata  <= 'b0;
-      mspi_pstrb   <= 'b0;
-    end
-    else if(state==IDLE)begin
-      mspi_paddr   <= in_paddr  ;
-      mspi_psel    <= in_psel   ;
-      mspi_penable <= in_penable;
-      mspi_pprot   <= in_pprot  ;
-      mspi_pwrite  <= in_pwrite ;
-      mspi_pwdata  <= in_pwdata ;
-      mspi_pstrb   <= in_pstrb  ;
-    end
-  end
-
-  always @(posedge clock or posedge reset) begin
-    if(reset)begin
-      flash_paddr <='b0;
-    end
-    else if(is_flash)begin
-      flash_paddr <= in_paddr;
-    end
-  end
   //fsm
   always @(posedge clock or posedge reset) begin
     if(reset)begin
@@ -224,7 +176,7 @@ always @(posedge clock or posedge reset) begin
             end
           end
           XIP_WAIT:begin
-            if((wb_prdata[8]=='b0)&&data_valid)begin
+            if((wb_prdata[8]=='b0)&&wb_pready)begin
               state <= XIP_CLOSE;
             end
             else begin
@@ -273,59 +225,7 @@ always @(posedge clock or posedge reset) begin
   end
   
 
-  reg   penable_wait,penable_return,penable_close,psel_wait,psel_return,psel_close;
-  reg   data_valid;
-  always @(posedge clock or posedge reset) begin
-    if(reset)begin
-      penable_wait <= 'b0;
-      psel_wait    <= 'b0;
-      data_valid   <= 'b0;  
-    end
-    else if(penable_wait&psel_wait&wb_pready)begin
-      penable_wait <= 'b0;
-      psel_wait    <= 'b0;
-      data_valid   <= 'b1; 
-    end
-    else if(state==XIP_WAIT)begin
-      penable_wait <= 'b1;
-      psel_wait    <= 'b1;
-      data_valid   <= 'b0; 
-    end
-    else begin
-      penable_wait <= penable_wait;
-      psel_wait    <= psel_wait;
-      data_valid   <= 'b0; 
-    end
-
-  end
-  always @(posedge clock or posedge reset) begin
-    if(reset)begin
-      penable_return <= 'b0;
-      psel_return    <= 'b0; 
-    end
-    else if(state==XIP_RETURN)begin
-      penable_return <= 'b1;
-      psel_return    <= 'b1; 
-    end
-    else if(penable_return&psel_return&wb_pready)begin
-      penable_return <= 'b0;
-      psel_return    <= 'b0; 
-    end
-  end
-  always @(posedge clock or posedge reset) begin
-    if(reset)begin
-      penable_close <= 'b0;
-      psel_close    <= 'b0; 
-    end
-    else if(penable_close&psel_close&wb_pwrite&wb_pready)begin
-      penable_close <= 'b0;
-      psel_close    <= 'b0; 
-    end
-    else if(state==XIP_CLOSE)begin
-      penable_close <= 'b1;
-      psel_close    <= 'b1; 
-    end
-  end
+  
 ////////////////////////////////////////////////////////////////////////////
   reg[2:0]  state_r;
   wire[31:0] data_return = (state==XIP_RETURN)?{wb_prdata[7:0],wb_prdata[15:8],wb_prdata[23:16],wb_prdata[31:24]}:wb_prdata;
