@@ -429,7 +429,7 @@ always @(posedge clock) begin
         //RDATAIN <= rdata_in;
         //WDATA   <= wdata;
         LSU_WBU_result <= EXU_LSU_result;
-        LSU_REN      <= 1'b0;
+        LSU_REN      <= EXU_LSU_ren;
         LSU_WBU_rd <= EXU_LSU_rd;
         LSU_WBU_reg<= EXU_LSU_reg;
         LSU_WBU_ebreak<= EXU_LSU_ebreak;
@@ -454,7 +454,7 @@ always @(posedge clock) begin
         //RDATAIN <= rdata_in;
         //WDATA   <= wdata;
         // LSU_WBU_result <= result;
-        LSU_REN      <= ren;
+        //LSU_REN      <= ren;
         // LSU_WBU_rd <= rd;
         // LSU_WBU_reg<= reg_en;
         // LSU_WBU_ebreak<= ebreak;
