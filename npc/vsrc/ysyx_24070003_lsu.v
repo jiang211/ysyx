@@ -455,9 +455,9 @@ always @(posedge clock) begin
         //WDATA   <= wdata;
         LSU_WBU_result <= result;
         LSU_REN      <= ren;
-        LSU_WBU_rd <= rd;
-        LSU_WBU_reg<= reg_en;
-        LSU_WBU_ebreak<= ebreak;
+        // LSU_WBU_rd <= rd;
+        // LSU_WBU_reg<= reg_en;
+        // LSU_WBU_ebreak<= ebreak;
         LSU_WBU_csr_data <= csr_data;
         LSU_WBU_ecall <= ecall;
         LSU_WBU_mret <= mret;
