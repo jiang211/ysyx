@@ -466,11 +466,11 @@ always @(posedge clock) begin
         // LSU_WBU_csr_in <= csr_in;
         //LSU_WBU_JUMP <= EXU_LSU_JUMP;
         //LSU_WBU_pc <= EXU_IFU_pc;
-        LSU_WBU_lb <= lb;
-        LSU_WBU_lh <= lh;
-        LSU_WBU_lw <= lw;
-        LSU_WBU_lbu <= lbu;
-        LSU_WBU_lhu <= lhu;
+        // LSU_WBU_lb <= lb;
+        // LSU_WBU_lh <= lh;
+        // LSU_WBU_lw <= lw;
+        // LSU_WBU_lbu <= lbu;
+        // LSU_WBU_lhu <= lhu;
         // LSU_WBU_PC <= pc;
         // LSU_WBU_dnpc <= dnpc;
         //LSU_WBU_skip <= skip ;
