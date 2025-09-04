@@ -178,7 +178,7 @@ reg [2:0] state;
                        ((EXU_LSU_result[1:0] & 2'b11) == 2'b11) ? (LSU_WDATA << 32'd24) : (LSU_WDATA << 32'd0);
     //wire [31:0] LSU_WBU_DATA;
     reg [31:0] LSU_WBU_result;
-    assign LSU_WBU_DATA = (LSU_REN) ? rdata : result;
+    assign LSU_WBU_DATA = (LSU_REN) ? rdata : LSU_WBU_result;
 
 
     //assign addr = alu_result;
