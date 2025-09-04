@@ -1,4 +1,4 @@
-module ysyx_24070003_lsu(
+module ysyx_24070003_lsu_test(
     input           clock,
     input           rst_n,
    // input           EXU_LSU_JUMP,
@@ -84,10 +84,6 @@ module ysyx_24070003_lsu(
     output reg                  LSU_AXI4_BREADY,
     output reg                  LSU_AXI_wlast,
     output reg [2:0]            LSU_AXI4_wsize,
-    output reg [63:0]           lsu_count,
-    output reg [63:0]           lsu_during_count,
-    output reg [63:0]           lsu_load_count,
-    output reg [63:0]           lsu_store_count,
     output reg [2:0]            LSU_AXI4_ARSIZE,
 
 
@@ -171,6 +167,8 @@ reg [2:0] state;
                        ((EXU_LSU_result[1:0] & 2'b11) == 2'b01) ? (LSU_WLEN << 2'd1) :
                        ((EXU_LSU_result[1:0] & 2'b11) == 2'b10) ? (LSU_WLEN << 2'd2) :
                        ((EXU_LSU_result[1:0] & 2'b11) == 2'b11) ? (LSU_WLEN << 2'd3) : (LSU_WLEN << 2'd0);
+
+    
 
     assign lsu_wdata = ((EXU_LSU_result[1:0] & 2'b11) == 2'b00) ? (LSU_WDATA << 32'd0) :
                        ((EXU_LSU_result[1:0] & 2'b11) == 2'b01) ? (LSU_WDATA << 32'd8) :
@@ -260,10 +258,6 @@ always @(posedge clock) begin
         LSU_WBU_valid <= 1'b0;
 
         LSU_AXI_wlast <= 1'b0;
-        lsu_count <=  64'd0;
-        lsu_during_count <= 64'd0;
-        lsu_load_count <= 64'd0;
-        lsu_store_count <= 64'd0;
         LSU_AXI4_ARSIZE <= 3'b0;
     end
     else begin
@@ -293,9 +287,6 @@ always @(posedge clock) begin
             
             START: begin
                 if(LSU_AXI4_AWVALID && LSU_AXI4_AWREADY && LSU_AXI4_WVALID && LSU_AXI4_WREADY) begin
-                            lsu_during_count <= lsu_during_count + 1'b1;
-                            lsu_store_count <= lsu_store_count + 1'b1;
-                            lsu_count <= lsu_count + 1'b1;
                             LSU_AXI_wlast <= 1'b1;
                             state <= WRITE_DATA;
                             LSU_AXI4_AWVALID <= 1'b0;
@@ -309,8 +300,6 @@ always @(posedge clock) begin
                             state <= WRITE_WIRE_2;
                             LSU_AXI4_WVALID <= 1'b0;
                 end else if(LSU_AXI4_ARVALID && LSU_AXI4_ARREADY) begin
-                            lsu_load_count <= lsu_load_count + 1'b1;
-                            lsu_during_count <= lsu_during_count + 1'b1;
                             LSU_AXI4_RREADY <= 1'b1;
                             state <= READ_START;
                             LSU_AXI4_ARVALID <= 1'b0;
@@ -323,14 +312,12 @@ always @(posedge clock) begin
                 // 发送读地址
                 
                 if (LSU_AXI4_RREADY && LSU_AXI4_RVALID) begin
-                    lsu_count <= lsu_count + 1'b1;
                     LSU_AXI4_RREADY <= 1'b0;
                     LSU_RDATA <= LSU_AXI4_RDATA;
                     state <= IDLE;
                 end
                 else begin
                     lsu_during_count <= lsu_during_count + 1'b1;
-                    lsu_load_count <= lsu_load_count + 1'b1;
                     state <= READ_START;
                 end
             end
@@ -340,7 +327,6 @@ always @(posedge clock) begin
                 // 发送写地址
                 
                 if(LSU_AXI4_WVALID && LSU_AXI4_WREADY ) begin
-                    lsu_count <= lsu_count + 1'b1;
                     LSU_AXI_wlast <= 1'b1;
                     state <= WRITE_WIRE_2;
                     LSU_AXI4_WVALID <= 1'b0;
@@ -371,8 +357,6 @@ always @(posedge clock) begin
                 end
                 else begin
                     state <= WRITE_DATA;
-                    lsu_during_count <= lsu_during_count + 1'b1;
-                    lsu_store_count <= lsu_store_count + 1'b1;
                 end
             end
             
@@ -396,9 +380,7 @@ always @(posedge clock) begin
     end
 end
 
-//import "DPI-C" function void vpmem_read(input int raddr,input byte ren,output int rdata);
-//import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input int wdata,input byte wen);
-//reg [31:0] RDATAIN,WDATA;
+
 reg LSU_WBU_lb,LSU_WBU_lh,LSU_WBU_lw,LSU_WBU_lbu,LSU_WBU_lhu;
 always @(posedge clock) begin
     if(rst_n)begin
