@@ -22,16 +22,16 @@ module ysyx_24070003_wbu(
     //input [31:0]data_in,
     input [31:0] LSU_WBU_result,
     input [4:0] addr,
-    output reg [31:0]WBU_REG_DATA,
-    output reg [4:0]WBU_REG_ADDR,
-    output reg [31:0]WBU_CSR_DATA,
-    output reg [2:0]WBU_CSR_ADDR,
-    output reg WBU_wen,
-    output reg WBU_CSR_WEN,
-    output reg WBU_ECALL,
-    output reg [31:0] PC_DATA,
-    output reg [31:0] DNPC_DATA,
-    output reg WBU_TOP_skip
+    output  [31:0]WBU_REG_DATA,
+    output  [4:0]WBU_REG_ADDR,
+    output  [31:0]WBU_CSR_DATA,
+    output  [2:0]WBU_CSR_ADDR,
+    output  WBU_wen,
+    output  WBU_CSR_WEN,
+    output  WBU_ECALL,
+    output  [31:0] PC_DATA,
+    output  [31:0] DNPC_DATA,
+    output  WBU_TOP_skip
 );
 
 //wire [4:0] csr_addr;
@@ -40,13 +40,13 @@ wire csr_en;
 //assign csr_addr = (LSU_WBU_ecall) ? 'd3 : (LSU_WBU_mret) ? 'd0 :LSU_WBU_csr_rst;
 
 
-assign csr_en = LSU_WBU_C_type&(~LSU_WBU_mret)&(~LSU_WBU_ecall);
+
 assign WBU_wen = LSU_WBU_reg;
 assign WBU_REG_DATA = (LSU_WBU_C_type) ? LSU_WBU_csr_data : LSU_WBU_result;
 assign WBU_REG_ADDR = addr;
 assign WBU_CSR_DATA = LSU_WBU_csr_in;
 assign WBU_CSR_ADDR = LSU_WBU_csr_rst;
-assign WBU_CSR_WEN    = csr_en;
+assign WBU_CSR_WEN    = LSU_WBU_C_type&(~LSU_WBU_mret)&(~LSU_WBU_ecall);
 assign WBU_ECALL      = LSU_WBU_ecall;
 assign PC_DATA        = LSU_WBU_PC;
 assign DNPC_DATA      = LSU_WBU_dnpc;

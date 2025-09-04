@@ -41,13 +41,13 @@ module ysyx_24070003_exu(
     input [31:0] rs2_data,
     input [31:0] imm_data,
     input [31:0] pc_data,
-    input alu_src1,
-    input alu_src2,
+    input [1:0] alu_src1,
+    input [1:0] alu_src2,
     input branch,
     input u_alu_type,
     //input mul_high,
-    input U_type_1,
-    input J_type_1,
+    //input U_type_1,
+    //input J_type_1,
     
     output  [31:0] EXU_LSU_alu_out,
     //output  EXU_IFU_zero,
@@ -117,8 +117,8 @@ assign  csr_in =     (csr_op == 3'b100) ? RS1_data        :
                                         32'h0;   // 无效，理论上不会出现
 wire [31:0] opdata1;
 wire [31:0] opdata2;
-assign opdata1 = (alu_src1)? RS1_data : (U_type_1) ? 32'h00000000 : pc_data;
-assign opdata2 = (alu_src2)? RS2_data : (J_type_1) ? 32'h00000004 : imm_data;
+assign opdata1 = (alu_src1 == 2'b10)? RS1_data : (alu_src1 == 2'b01) ? 32'h00000000 : pc_data;
+assign opdata2 = (alu_src2 == 2'b10)? RS2_data : (alu_src2 == 2'b01) ? 32'h00000004 : imm_data;
 
 
 ysyx_24070003_alu my_alu(
