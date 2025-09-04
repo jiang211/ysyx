@@ -471,8 +471,8 @@ always @(posedge clock) begin
         LSU_WBU_lw <= lw;
         LSU_WBU_lbu <= lbu;
         LSU_WBU_lhu <= lhu;
-        LSU_WBU_PC <= pc;
-        LSU_WBU_dnpc <= dnpc;
+        // LSU_WBU_PC <= pc;
+        // LSU_WBU_dnpc <= dnpc;
         LSU_WBU_skip <= skip ;
     end 
 end
