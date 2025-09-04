@@ -15,13 +15,7 @@ module ysyx_24070003_csr_reg #(
 );
 
     reg [DATA_WIDTH-1:0] csr[5:0];
-    // reg clk_reg;
-    // wire clk_neg;
-    // always@(posedge clock)
-    // begin 
-    //     clk_reg <= clock;
-    // end
-    // assign clk_neg = ~clock & clk_reg;
+    
     initial begin
         csr[4] = 32'h79737978; // zero register
         csr[5] = 32'h016e38bf; // zero register

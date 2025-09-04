@@ -1,4 +1,4 @@
-module ysyx_24070003_idu(
+module ysyx_24070003_idu_test(
     input wire [31:0] INSTR,
     input wire [31:0] IFU_IDU_PC,
     input [31:0]IFU_IDU_pre_dnpc,
@@ -21,8 +21,8 @@ module ysyx_24070003_idu(
     output reg [3:0]IDU_EXU_alu_op ,       
     output reg IDU_EXU_u_alu_type    ,
     //output reg IDU_EXU_mul_high      ,
-    output reg [1:0] IDU_EXU_alu_src1      ,
-    output reg [1:0] IDU_EXU_alu_src2      ,
+    output reg IDU_EXU_alu_src1      ,
+    output reg IDU_EXU_alu_src2      ,
     output reg IDU_EXU_branch        ,
    // output reg IDU_EXU_mem_to_reg    ,
     output reg IDU_EXU_mem_read      ,
@@ -43,8 +43,8 @@ module ysyx_24070003_idu(
     output reg IDU_EXU_ebreak        ,
     output reg IDU_EXU_ecall         ,
     output reg IDU_EXU_mret          ,
-    //output reg IDU_EXU_U_type_1      ,
-    //output reg IDU_EXU_J_type_1      ,
+    output reg IDU_EXU_U_type_1      ,
+    output reg IDU_EXU_J_type_1      ,
     output reg IDU_EXU_B_type      ,
     //output reg IDU_EXU_pcsrc         ,
     output reg IDU_EXU_C_type        ,
@@ -57,12 +57,7 @@ module ysyx_24070003_idu(
     output reg IDU_EXU_lsu_raw_rs1,
     output reg IDU_EXU_lsu_raw_rs2,
 
-    output reg [63:0] calcu_type_count,
-    output reg [63:0] Jump_type_count,
-    output reg [63:0] BJump_type_count,
-    output reg [63:0] LOAD_type_count,
-    output reg [63:0] STORE_type_count,
-    output reg [63:0] C_type_count,
+   
 
     input         exu_reg_write_en,
     input  [4:0]  exu_rd_addr,
@@ -278,8 +273,8 @@ begin
     IDU_EXU_alu_op              <=        4'b0;     
     IDU_EXU_u_alu_type          <=        1'b0;   
     //IDU_EXU_mul_high            <=        1'b0;
-    IDU_EXU_alu_src1            <=        2'b0;
-    IDU_EXU_alu_src2            <=        2'b0;  
+    IDU_EXU_alu_src1            <=        1'b0;
+    IDU_EXU_alu_src2            <=        1'b0;  
     IDU_EXU_branch              <=        1'b0;
  //   IDU_EXU_mem_to_reg          <=        1'b0;    
     IDU_EXU_mem_read            <=        1'b0;
@@ -300,8 +295,8 @@ begin
     IDU_EXU_ebreak              <=        1'b0;
     IDU_EXU_ecall               <=        1'b0;     
     IDU_EXU_mret                <=        1'b0;   
-    //IDU_EXU_U_type_1            <=        1'b0;
-    //IDU_EXU_J_type_1            <=        1'b0;
+    IDU_EXU_U_type_1            <=        1'b0;
+    IDU_EXU_J_type_1            <=        1'b0;
     //IDU_EXU_pcsrc               <=        1'b0;  
     IDU_EXU_C_type              <=        1'b0;
     IDU_EXU_B_type              <=        1'b0;
@@ -313,12 +308,7 @@ begin
     //IDU_EXU_STALL               <=        1'b0;
     IDU_EXU_PC                  <=        32'b0;
     IDU_EXU_pre_dnpc                <=        32'b0;
-    calcu_type_count               <=        64'b0;
-    Jump_type_count               <=        64'b0;
-    BJump_type_count               <=        64'b0;
-    C_type_count               <=        64'b0;
-    LOAD_type_count               <=        64'b0;
-    STORE_type_count               <=        64'b0;
+
     end
     else if(stall || flush)begin
    // IDU_EXU_opcode        <=        opcode   ;     
@@ -331,8 +321,8 @@ begin
     IDU_EXU_alu_op              <=        4'b0;     
     IDU_EXU_u_alu_type          <=        1'b0;   
     //IDU_EXU_mul_high            <=        1'b0;
-    IDU_EXU_alu_src1            <=       2'b0;
-    IDU_EXU_alu_src2            <=        2'b0;  
+    IDU_EXU_alu_src1            <=        1'b0;
+    IDU_EXU_alu_src2            <=        1'b0;  
     IDU_EXU_branch              <=        1'b0;
  //   IDU_EXU_mem_to_reg          <=        1'b0;    
     IDU_EXU_mem_read            <=        1'b0;
@@ -353,8 +343,8 @@ begin
     IDU_EXU_ebreak              <=        1'b0;
     IDU_EXU_ecall               <=        1'b0;     
     IDU_EXU_mret                <=        1'b0;   
-    //IDU_EXU_U_type_1            <=        1'b0;
-    //IDU_EXU_J_type_1            <=        1'b0;
+    IDU_EXU_U_type_1            <=        1'b0;
+    IDU_EXU_J_type_1            <=        1'b0;
     //IDU_EXU_pcsrc               <=        1'b0;  
     IDU_EXU_C_type              <=        1'b0;
     IDU_EXU_B_type              <=        1'b0;
@@ -368,12 +358,7 @@ begin
     IDU_EXU_lsu_raw_rs2           <=        1'b0;
     end
     else if(IFU_IDU_valid && IDU_IFU_ready)begin
-        if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
-        else if(J_type) begin Jump_type_count <= Jump_type_count + 1'b1; end
-        else if(B_type) begin BJump_type_count <= BJump_type_count + 1'b1; end
-        else if(C_type) begin C_type_count <= C_type_count + 1'b1; end
-        else if(I_type_3) begin LOAD_type_count <= LOAD_type_count + 1'b1; end
-        else if(S_type) begin STORE_type_count <= STORE_type_count + 1'b1; end
+        
    // IDU_EXU_opcode        <=        opcode   ;     
     IDU_EXU_rd            <=        rd       ;
     IDU_EXU_rs1           <=        rs1      ;  
@@ -383,8 +368,8 @@ begin
     IDU_EXU_alu_op              <=        aluop;     
     IDU_EXU_u_alu_type          <=        u_alu_type;   
     //IDU_EXU_mul_high            <=        mul_high     ;
-    IDU_EXU_alu_src1            <=        {alu_src1, U_type_1}    ;
-    IDU_EXU_alu_src2            <=        {alu_src2, J_type_1}    ;  
+    IDU_EXU_alu_src1            <=        alu_src1     ;
+    IDU_EXU_alu_src2            <=        alu_src2     ;  
     IDU_EXU_branch              <=        branch       ;
    // IDU_EXU_mem_to_reg          <=        mem_to_reg   ;    
     IDU_EXU_mem_read            <=        mem_read     ;
@@ -405,8 +390,8 @@ begin
     IDU_EXU_ebreak              <=        ebreak    ;
     IDU_EXU_ecall               <=        ecall     ;     
     IDU_EXU_mret                <=        mret      ;   
-    // IDU_EXU_U_type_1            <=        U_type_1  ;
-    // IDU_EXU_J_type_1            <=        J_type_1  ;
+    IDU_EXU_U_type_1            <=        U_type_1  ;
+    IDU_EXU_J_type_1            <=        J_type_1  ;
     //IDU_EXU_pcsrc               <=        pcsrc     ;  
     IDU_EXU_C_type              <=        C_type    ;
     IDU_EXU_B_type              <=        B_type    ;
@@ -452,8 +437,8 @@ begin
     IDU_EXU_ebreak              <=  IDU_EXU_ebreak    ;  
     IDU_EXU_ecall               <=  IDU_EXU_ecall     ;  
     IDU_EXU_mret                <=  IDU_EXU_mret      ;  
-    //IDU_EXU_U_type_1            <=  IDU_EXU_U_type_1  ;  
-    //IDU_EXU_J_type_1            <=  IDU_EXU_J_type_1  ;  
+    IDU_EXU_U_type_1            <=  IDU_EXU_U_type_1  ;  
+    IDU_EXU_J_type_1            <=  IDU_EXU_J_type_1  ;  
     //IDU_EXU_pcsrc               <=//IDU_EXU_pcsrc   ;  
     IDU_EXU_C_type              <=  IDU_EXU_C_type    ;  
     IDU_EXU_B_type              <=  IDU_EXU_B_type    ;

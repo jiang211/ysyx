@@ -156,8 +156,8 @@ wire [31:0]                          LSU_RDATA                      ;
 
 wire                                 u_alu_type                     ;
 wire                                 mul_high                       ;
-wire                                 alu_src1                       ;
-wire                                 alu_src2                       ;
+wire [1:0]                                alu_src1                       ;
+wire [1:0]                                alu_src2                       ;
 wire                                 U_type_1                       ;  
 wire                                 J_type_1                       ;
 wire                                 ebreak                         ;
@@ -600,8 +600,8 @@ ysyx_24070003_idu my_idu(
     .IDU_EXU_ebreak                 (IDU_EXU_ebreak     ),
     .IDU_EXU_ecall                  (IDU_EXU_ecall      ),
     .IDU_EXU_mret                   (IDU_EXU_mret       ),
-    .IDU_EXU_U_type_1               (U_type_1           ),
-    .IDU_EXU_J_type_1               (J_type_1           ),
+    //.IDU_EXU_U_type_1               (U_type_1           ),
+    //.IDU_EXU_J_type_1               (J_type_1           ),
    // .IDU_EXU_pcsrc                (pcsrc              ),
     .IDU_EXU_C_type                 (IDU_EXU_C_type     ),
     .IDU_EXU_B_type                 (IDU_EXU_B_type     ),
@@ -681,10 +681,10 @@ ysyx_24070003_exu my_exu(
     .alu_src1                       (alu_src1           ),
     .alu_src2                       (alu_src2           ),
     .branch                         (branch             ),   
-    .J_type_1                       (J_type_1           ),
+    //.J_type_1                       (J_type_1           ),
     .u_alu_type                     (u_alu_type         ),
     //.mul_high                       (mul_high           ),
-    .U_type_1                       (U_type_1           ),
+    //.U_type_1                       (U_type_1           ),
     
     .EXU_LSU_alu_out                (alu_out            ),
     //.EXU_IFU_zero                 (EXU_IFU_zero       ),

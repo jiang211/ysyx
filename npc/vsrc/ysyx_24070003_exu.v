@@ -41,13 +41,13 @@ module ysyx_24070003_exu(
     input [31:0] rs2_data,
     input [31:0] imm_data,
     input [31:0] pc_data,
-    input alu_src1,
-    input alu_src2,
+    input [1:0] alu_src1,
+    input [1:0] alu_src2,
     input branch,
     input u_alu_type,
     //input mul_high,
-    input U_type_1,
-    input J_type_1,
+    //input U_type_1,
+    //input J_type_1,
     
     output  [31:0] EXU_LSU_alu_out,
     //output  EXU_IFU_zero,
@@ -101,10 +101,25 @@ wire zero;
 wire [31:0] alu_out;
 wire [31:0] csr_in;
 
-assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
+//assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
+ysyx_24070003_mux4_32bit my(
+    .sel            ({IDU_EXU_exu_raw_rs1,IDU_EXU_lsu_raw_rs1}),
+    .a              (rs1_data), 
+    .b              (LSU_forward_data),
+    .c              (EXU_LSU_alu_out),
+    .d              (EXU_LSU_alu_out),
+    .out            (RS1_data)
+);
 //MuxKeyInternal #(2, 2, 32, 1) i0 (RS1_data, {IDU_EXU_exu_raw_rs1,IDU_EXU_lsu_raw_rs1}, EXU_LSU_alu_out, {2'b00,rs1_data,2'b01,LSU_forward_data});
-assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
-
+//assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
+ysyx_24070003_mux4_32bit my1(
+    .sel            ({IDU_EXU_exu_raw_rs2,IDU_EXU_lsu_raw_rs2}),
+    .a              (rs2_data), 
+    .b              (LSU_forward_data),
+    .c              (EXU_LSU_alu_out),
+    .d              (EXU_LSU_alu_out),
+    .out            (RS2_data)
+);
 // assign csr_in = ( {32{IDU_EXU_csw}} & (RS1_data)) |
 //                 ( {32{IDU_EXU_csc}} & (RS1_data &csr_data)) |
 //                 ( {32{IDU_EXU_css}} & (csr_data | RS1_data)) ;
@@ -117,8 +132,8 @@ assign  csr_in =     (csr_op == 3'b100) ? RS1_data        :
                                         32'h0;   // 无效，理论上不会出现
 wire [31:0] opdata1;
 wire [31:0] opdata2;
-assign opdata1 = (alu_src1)? RS1_data : (U_type_1) ? 32'h00000000 : pc_data;
-assign opdata2 = (alu_src2)? RS2_data : (J_type_1) ? 32'h00000004 : imm_data;
+assign opdata1 = (alu_src1 == 2'b10)? RS1_data : (alu_src1 == 2'b01) ? 32'h00000000 : pc_data;
+assign opdata2 = (alu_src2 == 2'b10)? RS2_data : (alu_src2 == 2'b01) ? 32'h00000004 : imm_data;
 
 
 ysyx_24070003_alu my_alu(
