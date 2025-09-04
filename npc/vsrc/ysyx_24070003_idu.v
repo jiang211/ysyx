@@ -28,8 +28,8 @@ module ysyx_24070003_idu(
     output reg IDU_EXU_mem_read      ,
     //output reg IDU_EXU_mem_write     ,
     output reg IDU_EXU_reg_write     ,
-    output reg IDU_EXU_jal           ,
-    output reg IDU_EXU_jalr          ,
+    //output reg IDU_EXU_jal           ,
+    //output reg IDU_EXU_jalr          ,
     // output reg IDU_EXU_lw            ,
     // output reg IDU_EXU_lh            ,
     // output reg IDU_EXU_lb            ,
@@ -41,11 +41,12 @@ module ysyx_24070003_idu(
     output reg [8:0] IDU_EXU_RW_sign,
     output reg [2:0]IDU_EXU_csr_op,
     output reg IDU_EXU_ebreak        ,
-    output reg IDU_EXU_ecall         ,
-    output reg IDU_EXU_mret          ,
+    ///output reg IDU_EXU_ecall         ,
+    ///output reg IDU_EXU_mret          ,
     //output reg IDU_EXU_U_type_1      ,
     //output reg IDU_EXU_J_type_1      ,
-    output reg IDU_EXU_B_type      ,
+    //output reg IDU_EXU_B_type      ,
+    output reg [4:0] IDU_EXU_PC_sel,
     //output reg IDU_EXU_pcsrc         ,
     output reg IDU_EXU_C_type        ,
     //output reg IDU_EXU_STALL         ,
@@ -264,7 +265,7 @@ always @(posedge clock) begin
 end
 
 assign IDU_EXU_valid = idu_exu_valid ;
-
+wire [4:0] pc_sel = {jal || B_type, ecall ,mret, jal, jalr};
 always@(posedge clock)
 begin 
    if((rst_n ))begin
@@ -285,8 +286,8 @@ begin
     IDU_EXU_mem_read            <=        1'b0;
     //IDU_EXU_mem_write           <=        1'b0;     
     IDU_EXU_reg_write           <=        1'b0;   
-    IDU_EXU_jal                 <=        1'b0;
-    IDU_EXU_jalr                <=        1'b0;
+    //IDU_EXU_jal                 <=        1'b0;
+    //IDU_EXU_jalr                <=        1'b0;
     IDU_EXU_RW_sign             <=        8'b0;
     // IDU_EXU_lw                  <=        1'b0;  
     // IDU_EXU_lh                  <=        1'b0;
@@ -298,13 +299,14 @@ begin
     // IDU_EXU_sh                  <=        1'b0;
     IDU_EXU_csr_op              <=        3'b0;  
     IDU_EXU_ebreak              <=        1'b0;
-    IDU_EXU_ecall               <=        1'b0;     
-    IDU_EXU_mret                <=        1'b0;   
+    //IDU_EXU_ecall               <=        1'b0;     
+    //IDU_EXU_mret                <=        1'b0;   
     //IDU_EXU_U_type_1            <=        1'b0;
     //IDU_EXU_J_type_1            <=        1'b0;
     //IDU_EXU_pcsrc               <=        1'b0;  
     IDU_EXU_C_type              <=        1'b0;
-    IDU_EXU_B_type              <=        1'b0;
+   // IDU_EXU_B_type              <=        1'b0;
+    IDU_EXU_PC_sel              <=        5'b0;
     IDU_EXU_exu_raw_rs1           <=        1'b0;
     IDU_EXU_exu_raw_rs2           <=        1'b0;
     IDU_EXU_lsu_raw_rs1           <=        1'b0;
@@ -338,8 +340,8 @@ begin
     IDU_EXU_mem_read            <=        1'b0;
     //IDU_EXU_mem_write           <=        1'b0;     
     IDU_EXU_reg_write           <=        1'b0;   
-    IDU_EXU_jal                 <=        1'b0;
-    IDU_EXU_jalr                <=        1'b0;
+    //IDU_EXU_jal                 <=        1'b0;
+    //IDU_EXU_jalr                <=        1'b0;
     // IDU_EXU_lw                  <=        1'b0;  
     // IDU_EXU_lh                  <=        1'b0;
     // IDU_EXU_lb                  <=        1'b0;    
@@ -351,13 +353,14 @@ begin
     IDU_EXU_RW_sign             <=        8'b0;
     IDU_EXU_csr_op              <=        3'b0;     
     IDU_EXU_ebreak              <=        1'b0;
-    IDU_EXU_ecall               <=        1'b0;     
-    IDU_EXU_mret                <=        1'b0;   
+    //IDU_EXU_ecall               <=        1'b0;     
+    //IDU_EXU_mret                <=        1'b0;   
     //IDU_EXU_U_type_1            <=        1'b0;
     //IDU_EXU_J_type_1            <=        1'b0;
     //IDU_EXU_pcsrc               <=        1'b0;  
     IDU_EXU_C_type              <=        1'b0;
-    IDU_EXU_B_type              <=        1'b0;
+    //IDU_EXU_B_type              <=        1'b0;
+    IDU_EXU_PC_sel              <=        5'b0;
     //IDU_EXU_STALL               <=        1'b0;
     IDU_EXU_PC                  <=        32'b0;
     IDU_EXU_pre_dnpc                <=        32'b0;
@@ -390,8 +393,8 @@ begin
     IDU_EXU_mem_read            <=        mem_read     ;
     //IDU_EXU_mem_write           <=        mem_write    ;     
     IDU_EXU_reg_write           <=        reg_write    ;   
-    IDU_EXU_jal                 <=        jal          ;
-    IDU_EXU_jalr                <=        jalr   ;
+    //IDU_EXU_jal                 <=        jal          ;
+    //IDU_EXU_jalr                <=        jalr   ;
     IDU_EXU_RW_sign             <=        rw_sign;
     // IDU_EXU_lw                  <=        lw     ;  
     // IDU_EXU_lh                  <=        lh     ;
@@ -403,13 +406,14 @@ begin
     // IDU_EXU_sh                  <=        sh     ;
     IDU_EXU_csr_op              <=        csr_op;     
     IDU_EXU_ebreak              <=        ebreak    ;
-    IDU_EXU_ecall               <=        ecall     ;     
-    IDU_EXU_mret                <=        mret      ;   
+   // IDU_EXU_ecall               <=        ecall     ;     
+    //IDU_EXU_mret                <=        mret      ;   
     // IDU_EXU_U_type_1            <=        U_type_1  ;
     // IDU_EXU_J_type_1            <=        J_type_1  ;
     //IDU_EXU_pcsrc               <=        pcsrc     ;  
     IDU_EXU_C_type              <=        C_type    ;
-    IDU_EXU_B_type              <=        B_type    ;
+    //IDU_EXU_B_type              <=        B_type    ;
+    IDU_EXU_PC_sel              <=        pc_sel;
     //IDU_EXU_STALL               <=        IFU_IDU_STALL;
     IDU_EXU_PC                  <=        IFU_IDU_PC;
     IDU_EXU_pre_dnpc                <=        IFU_IDU_pre_dnpc;
@@ -437,8 +441,8 @@ begin
     IDU_EXU_mem_read            <=  IDU_EXU_mem_read    ;
     //IDU_EXU_mem_write           <=  IDU_EXU_mem_write      ;
     IDU_EXU_reg_write           <=  IDU_EXU_reg_write    ;
-    IDU_EXU_jal                 <=  IDU_EXU_jal         ;
-    IDU_EXU_jalr                <=  IDU_EXU_jalr        ;
+   // IDU_EXU_jal                 <=  IDU_EXU_jal         ;
+    //IDU_EXU_jalr                <=  IDU_EXU_jalr        ;
     IDU_EXU_RW_sign             <=  IDU_EXU_RW_sign;
     // IDU_EXU_lw                  <=  IDU_EXU_lw          ;
     // IDU_EXU_lh                  <=  IDU_EXU_lh          ;
@@ -450,13 +454,14 @@ begin
     // IDU_EXU_sh                  <=  IDU_EXU_sh        ;  
     IDU_EXU_csr_op              <=        IDU_EXU_csr_op;  
     IDU_EXU_ebreak              <=  IDU_EXU_ebreak    ;  
-    IDU_EXU_ecall               <=  IDU_EXU_ecall     ;  
-    IDU_EXU_mret                <=  IDU_EXU_mret      ;  
+    //IDU_EXU_ecall               <=  IDU_EXU_ecall     ;  
+    //IDU_EXU_mret                <=  IDU_EXU_mret      ;  
     //IDU_EXU_U_type_1            <=  IDU_EXU_U_type_1  ;  
     //IDU_EXU_J_type_1            <=  IDU_EXU_J_type_1  ;  
     //IDU_EXU_pcsrc               <=//IDU_EXU_pcsrc   ;  
     IDU_EXU_C_type              <=  IDU_EXU_C_type    ;  
-    IDU_EXU_B_type              <=  IDU_EXU_B_type    ;
+    //IDU_EXU_B_type              <=  IDU_EXU_B_type    ;
+    IDU_EXU_PC_sel              <=        IDU_EXU_PC_sel;
     //IDU_EXU_STALL               <=//IDU_EXU_STALL   ;  
     IDU_EXU_PC                  <=  IDU_EXU_PC        ;  
     IDU_EXU_pre_dnpc                <=  IDU_EXU_pre_dnpc      ;  

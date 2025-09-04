@@ -10,8 +10,8 @@ module ysyx_24070003_exu(
     //input IDU_EXU_wen,
     input IDU_EXU_reg,
     input IDU_EXU_ebreak,
-    input IDU_EXU_jal,
-    input IDU_EXU_jalr,
+    //input IDU_EXU_jal,
+    //input IDU_EXU_jalr,
     // input IDU_EXU_lw,
     // input IDU_EXU_lh,
     // input IDU_EXU_lb,
@@ -31,10 +31,11 @@ module ysyx_24070003_exu(
     input IDU_EXU_lsu_raw_rs2,
     input [31:0] LSU_forward_data,
 
-    input IDU_EXU_ecall,
-    input IDU_EXU_mret,
+    //input IDU_EXU_ecall,
+    //input IDU_EXU_mret,
     input IDU_EXU_C_type,
-    input IDU_EXU_B_type,
+    //input IDU_EXU_B_type,
+    input [4:0] IDU_EXU_PC_sel,
     input [2:0] IDU_EXU_csr_rst,
     
     input [31:0] rs1_data,
@@ -147,14 +148,14 @@ ysyx_24070003_alu my_alu(
     .zero           (zero       )
 );
 
-wire btb_pre_error = (IDU_EXU_pre_dnpc != EXU_IFU_pc) && (IDU_EXU_jal || IDU_EXU_B_type);
-assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jalr || btb_pre_error) && (IDU_EXU_valid && EXU_IDU_ready);
+wire btb_pre_error = (IDU_EXU_pre_dnpc != EXU_IFU_pc) && (IDU_EXU_PC_sel[4]);
+assign EXU_flush = (IDU_EXU_PC_sel[3] || IDU_EXU_PC_sel[2] || IDU_EXU_PC_sel[1] || btb_pre_error) && (IDU_EXU_valid && EXU_IDU_ready);
 
 assign EXU_IDU_ready = LSU_EXU_ready;  
 
 ///assign EXU_BTB_PC = (pc_sel[3]) ? next_pc_jal : next_pc_jalr;
 assign EXU_BTB_PC = next_pc;
-assign EXU_BTB_updata_valid = (IDU_EXU_jal || IDU_EXU_B_type) && (IDU_EXU_valid && EXU_IDU_ready);
+assign EXU_BTB_updata_valid = (IDU_EXU_PC_sel[4]) && (IDU_EXU_valid && EXU_IDU_ready);
 
 always @(posedge clock) begin 
     if(rstn) begin
@@ -170,16 +171,16 @@ end
 wire [31:0] pc_opdata1;
 wire [31:0] pc_opdata2;
 
-assign pc_opdata1 = (pc_sel[1] || pc_sel[3] || zero) ? pc_data : RS1_data;
+assign pc_opdata1 = (IDU_EXU_PC_sel[1] || IDU_EXU_PC_sel[4] || zero) ? pc_data : RS1_data;
 assign pc_opdata2 = imm_data;
 wire [31:0] next_pc = pc_opdata1 + pc_opdata2;
 // wire [31:0] next_pc_jal = pc_data + imm_data;
 // wire [31:0] next_pc_jalr = RS1_data + imm_data;
 
-wire [3:0] pc_sel = {IDU_EXU_jal || IDU_EXU_B_type, IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr};
+//wire [4:0] pc_sel = {IDU_EXU_jal || IDU_EXU_B_type, IDU_EXU_ecall ,IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr};
 assign EXU_IFU_pc =
-            (pc_sel[2]) ? csr_data      :
-            (pc_sel[1] || pc_sel[0] || zero) ? next_pc   :
+            (IDU_EXU_PC_sel[2] || IDU_EXU_PC_sel[3]) ? csr_data      :
+            (IDU_EXU_PC_sel[1] || IDU_EXU_PC_sel[0] || zero) ? next_pc   :
                                   pc_data + 32'd4;
 
 
@@ -237,8 +238,8 @@ begin
     // EXU_LSU_sb               <=        IDU_EXU_sb;
     // EXU_LSU_sh               <=        IDU_EXU_sh;
     EXU_LSU_csr_data           <=        csr_data;
-    EXU_LSU_ecall               <=        IDU_EXU_ecall;
-    EXU_LSU_mret               <=        IDU_EXU_mret;
+    EXU_LSU_ecall               <=        IDU_EXU_PC_sel[3];
+    EXU_LSU_mret               <=        IDU_EXU_PC_sel[2];
     EXU_LSU_C_type               <=        IDU_EXU_C_type;
     EXU_LSU_csr_rst               <=        IDU_EXU_csr_rst;
     EXU_LSU_csr_in               <=        csr_in;
