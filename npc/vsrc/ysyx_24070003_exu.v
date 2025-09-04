@@ -149,7 +149,7 @@ ysyx_24070003_alu my_alu(
 );
 
 wire btb_pre_error = (IDU_EXU_pre_dnpc != EXU_IFU_pc) && (IDU_EXU_PC_sel[4]);
-assign EXU_flush = (IDU_EXU_PC_sel[3] || IDU_EXU_PC_sel[2] || IDU_EXU_PC_sel[1] || btb_pre_error) && (IDU_EXU_valid && EXU_IDU_ready);
+assign EXU_flush = (IDU_EXU_PC_sel[3] || IDU_EXU_PC_sel[2] || IDU_EXU_PC_sel[0] || btb_pre_error) && (IDU_EXU_valid && EXU_IDU_ready);
 
 assign EXU_IDU_ready = LSU_EXU_ready;  
 
