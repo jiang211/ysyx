@@ -425,7 +425,7 @@ always @(posedge clock) begin
         LSU_WBU_lhu <= 1'b0;
         LSU_WBU_PC <= 32'b0;
         LSU_WBU_dnpc <= 32'b0;
-    end else if((LSU_EXU_ready && EXU_LSU_valid) && (~(EXU_LSU_ren || EXU_LSU_wen))) begin
+    end else if((LSU_EXU_ready && EXU_LSU_valid) ) begin
         //RDATAIN <= rdata_in;
         //WDATA   <= wdata;
         LSU_WBU_result <= EXU_LSU_result;
@@ -458,12 +458,12 @@ always @(posedge clock) begin
         // LSU_WBU_rd <= rd;
         // LSU_WBU_reg<= reg_en;
         // LSU_WBU_ebreak<= ebreak;
-        LSU_WBU_csr_data <= csr_data;
-        LSU_WBU_ecall <= ecall;
-        LSU_WBU_mret <= mret;
-        LSU_WBU_C_type <= C_type;
-        LSU_WBU_csr_rst <= csr_rst;
-        LSU_WBU_csr_in <= csr_in;
+        // LSU_WBU_csr_data <= csr_data;
+        // LSU_WBU_ecall <= ecall;
+        // LSU_WBU_mret <= mret;
+        // LSU_WBU_C_type <= C_type;
+        // LSU_WBU_csr_rst <= csr_rst;
+        // LSU_WBU_csr_in <= csr_in;
         //LSU_WBU_JUMP <= EXU_LSU_JUMP;
         //LSU_WBU_pc <= EXU_IFU_pc;
         LSU_WBU_lb <= lb;
