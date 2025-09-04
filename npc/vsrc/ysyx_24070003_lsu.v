@@ -196,54 +196,54 @@ reg lw,lh,lb,lbu,lhu,ren;
 
 assign LSU_IFU_stall = (state != IDLE);
 
-always@(posedge clock) begin
-    if(rst_n) begin
-        rd <=  5'd0;
-        result <=  32'd0;
-        reg_en <=  1'b0;
-        ebreak <=  1'b0;
-        csr_data <=  32'd0;
-        ecall <=  1'b0;
-        mret <=  1'b0;
-        C_type <=  1'b0;
-        csr_rst <=  3'b0;
-        csr_in <=  32'd0;
-        lw <=  1'b0;
-        lh <=  1'b0;
-        lb <=  1'b0;
-        lbu <=  1'b0;
-        lhu <=  1'b0;
-        ren <=  1'b0;
-        //wen <=  1'b0;
-        pc <=  32'd0;
-        dnpc <=  32'd0;
-        skip <=  1'b0;
+// always@(posedge clock) begin
+//     if(rst_n) begin
+//         rd <=  5'd0;
+//         result <=  32'd0;
+//         reg_en <=  1'b0;
+//         ebreak <=  1'b0;
+//         csr_data <=  32'd0;
+//         ecall <=  1'b0;
+//         mret <=  1'b0;
+//         C_type <=  1'b0;
+//         csr_rst <=  3'b0;
+//         csr_in <=  32'd0;
+//         lw <=  1'b0;
+//         lh <=  1'b0;
+//         lb <=  1'b0;
+//         lbu <=  1'b0;
+//         lhu <=  1'b0;
+//         ren <=  1'b0;
+//         //wen <=  1'b0;
+//         pc <=  32'd0;
+//         dnpc <=  32'd0;
+//         skip <=  1'b0;
         
-    end
-    else if(LSU_EXU_ready && EXU_LSU_valid) begin
+//     end
+//     else if(LSU_EXU_ready && EXU_LSU_valid) begin
     
-        rd <=  EXU_LSU_rd;
-        result <=  EXU_LSU_result;
-        reg_en <=  EXU_LSU_reg;
-        ebreak <=  EXU_LSU_ebreak;
-        csr_data <=  EXU_LSU_csr_data;
-        ecall <=  EXU_LSU_ecall;
-        mret <=  EXU_LSU_mret;
-        C_type <=  EXU_LSU_C_type;
-        csr_rst <=  EXU_LSU_csr_rst;
-        csr_in <=  EXU_LSU_csr_in;
-        lw <=  EXU_LSU_lw;
-        lh <=  EXU_LSU_lh;
-        lb <=  EXU_LSU_lb;
-        lbu <=  EXU_LSU_lbu;
-        lhu <=  EXU_LSU_lhu;
-        ren <=  EXU_LSU_ren;
-        //wen <=  EXU_LSU_wen;
-        pc <=  EXU_LSU_PC;
-        dnpc <=  EXU_LSU_dnpc;
-        skip <=  EXU_skip;
-    end
-end
+//         rd <=  EXU_LSU_rd;
+//         result <=  EXU_LSU_result;
+//         reg_en <=  EXU_LSU_reg;
+//         ebreak <=  EXU_LSU_ebreak;
+//         csr_data <=  EXU_LSU_csr_data;
+//         ecall <=  EXU_LSU_ecall;
+//         mret <=  EXU_LSU_mret;
+//         C_type <=  EXU_LSU_C_type;
+//         csr_rst <=  EXU_LSU_csr_rst;
+//         csr_in <=  EXU_LSU_csr_in;
+//         lw <=  EXU_LSU_lw;
+//         lh <=  EXU_LSU_lh;
+//         lb <=  EXU_LSU_lb;
+//         lbu <=  EXU_LSU_lbu;
+//         lhu <=  EXU_LSU_lhu;
+//         ren <=  EXU_LSU_ren;
+//         //wen <=  EXU_LSU_wen;
+//         pc <=  EXU_LSU_PC;
+//         dnpc <=  EXU_LSU_dnpc;
+//         skip <=  EXU_skip;
+//     end
+// end
 
 
 always @(posedge clock) begin
@@ -466,14 +466,14 @@ always @(posedge clock) begin
         // LSU_WBU_csr_in <= csr_in;
         //LSU_WBU_JUMP <= EXU_LSU_JUMP;
         //LSU_WBU_pc <= EXU_IFU_pc;
-        LSU_WBU_lb <= lb;
-        LSU_WBU_lh <= lh;
-        LSU_WBU_lw <= lw;
-        LSU_WBU_lbu <= lbu;
-        LSU_WBU_lhu <= lhu;
-        // LSU_WBU_PC <= pc;
-        // LSU_WBU_dnpc <= dnpc;
-        LSU_WBU_skip <= skip ;
+        // LSU_WBU_lb <= lb;
+        // LSU_WBU_lh <= lh;
+        // LSU_WBU_lw <= lw;
+        // LSU_WBU_lbu <= lbu;
+        // LSU_WBU_lhu <= lhu;
+        // // LSU_WBU_PC <= pc;
+        // // LSU_WBU_dnpc <= dnpc;
+        // LSU_WBU_skip <= skip ;
     end 
 end
 
