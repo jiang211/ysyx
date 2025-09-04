@@ -474,31 +474,7 @@ always @(posedge clock) begin
         LSU_WBU_PC <= pc;
         LSU_WBU_dnpc <= dnpc;
         LSU_WBU_skip <= skip ;
-    end else begin
-        //RDATAIN <= 32'b0;
-        //WDATA   <= 32'b0;
-        LSU_WBU_rd <= 5'b0;
-        LSU_WBU_result <= 32'b0;
-        LSU_WBU_reg <= 1'b0;
-        LSU_WBU_ebreak <= 1'b0;
-        LSU_WBU_csr_data <= 32'b0;
-        LSU_WBU_ecall <= 1'b0;
-        LSU_WBU_mret <= 1'b0;
-        LSU_WBU_C_type <= 1'b0;
-        LSU_WBU_csr_rst <= 3'b0;
-        LSU_WBU_csr_in <= 32'b0;
-        //LSU_WBU_JUMP <= 1'b0;
-        //LSU_WBU_pc <= 32'b0;
-        LSU_REN      <= 1'b0;
-        LSU_WBU_lb <= 1'b0;
-        LSU_WBU_lh <= 1'b0;
-        LSU_WBU_lw <= 1'b0;
-        LSU_WBU_lbu <= 1'b0;
-        LSU_WBU_lhu <= 1'b0;
-        LSU_WBU_PC <= 32'b0;
-        LSU_WBU_dnpc <= 32'b0;
-        LSU_WBU_skip <= 1'b0;
-    end
+    end 
 end
 
 
