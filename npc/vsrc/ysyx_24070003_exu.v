@@ -102,7 +102,7 @@ wire [31:0] alu_out;
 wire [31:0] csr_in;
 
 //assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
-mux4_32bit my(
+ysyx_24070003_mux4_32bit my(
     .sel            ({IDU_EXU_exu_raw_rs1,IDU_EXU_lsu_raw_rs1}),
     .a              (rs1_data), 
     .b              (LSU_forward_data),
@@ -112,7 +112,7 @@ mux4_32bit my(
 );
 //MuxKeyInternal #(2, 2, 32, 1) i0 (RS1_data, {IDU_EXU_exu_raw_rs1,IDU_EXU_lsu_raw_rs1}, EXU_LSU_alu_out, {2'b00,rs1_data,2'b01,LSU_forward_data});
 //assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
-mux4_32bit my1(
+ysyx_24070003_mux4_32bit my1(
     .sel            ({IDU_EXU_exu_raw_rs2,IDU_EXU_lsu_raw_rs2}),
     .a              (rs2_data), 
     .b              (LSU_forward_data),
@@ -170,16 +170,16 @@ end
 wire [31:0] pc_opdata1;
 wire [31:0] pc_opdata2;
 
-assign pc_opdata1 = (pc_sel[1] || pc_sel[3]) ? pc_data : RS1_data;
+assign pc_opdata1 = (pc_sel[1] || pc_sel[3] || zero) ? pc_data : RS1_data;
 assign pc_opdata2 = imm_data;
 wire [31:0] next_pc = pc_opdata1 + pc_opdata2;
 // wire [31:0] next_pc_jal = pc_data + imm_data;
 // wire [31:0] next_pc_jalr = RS1_data + imm_data;
 
-wire [3:0] pc_sel = {IDU_EXU_jal || IDU_EXU_B_type, IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal || zero, IDU_EXU_jalr};
+wire [3:0] pc_sel = {IDU_EXU_jal || IDU_EXU_B_type, IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal, IDU_EXU_jalr};
 assign EXU_IFU_pc =
             (pc_sel[2]) ? csr_data      :
-            (pc_sel[1] || pc_sel[0]) ? next_pc   :
+            (pc_sel[1] || pc_sel[0] || zero) ? next_pc   :
                                   pc_data + 32'd4;
 
 

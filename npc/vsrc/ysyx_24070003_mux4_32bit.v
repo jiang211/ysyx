@@ -1,4 +1,4 @@
-module mux4_32bit(
+module ysyx_24070003_mux4_32bit(
     input [1:0] sel,
     input [31:0] a, 
     input [31:0] b,
