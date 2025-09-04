@@ -453,7 +453,7 @@ always @(posedge clock) begin
     end else if((LSU_AXI4_RREADY && LSU_AXI4_RVALID) || (LSU_AXI4_BVALID && LSU_AXI4_BREADY)) begin
         //RDATAIN <= rdata_in;
         //WDATA   <= wdata;
-        LSU_WBU_result <= result;
+        // LSU_WBU_result <= result;
         LSU_REN      <= ren;
         // LSU_WBU_rd <= rd;
         // LSU_WBU_reg<= reg_en;
