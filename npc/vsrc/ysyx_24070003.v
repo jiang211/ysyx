@@ -452,12 +452,12 @@ ysyx_24070003_icache  my_icache(
     .ICACHE_AXI4_rvalid             (ICACHE_AXI4_rvalid ),
     .ICACHE_AXI4_rready             (ICACHE_AXI4_rready ),
     .ICACHE_AXI4_rlast              (io_master_rlast    ),
-    .ICACHE_hit_count               (ICACHE_hit_count   ),
-    .ICACHE_miss_count              (ICACHE_miss_count  ),
-    .total_access                   (total_access       ),
-    .access_time                    (access_time        ),
-    .miss_penalty                   (miss_penalty       ),
-    .ifu_during_count               (ifu_during_count   ),
+    // .ICACHE_hit_count               (ICACHE_hit_count   ),
+    // .ICACHE_miss_count              (ICACHE_miss_count  ),
+    // .total_access                   (total_access       ),
+    // .access_time                    (access_time        ),
+    // .miss_penalty                   (miss_penalty       ),
+    // .ifu_during_count               (ifu_during_count   ),
     .ICACHE_AXI4_arlen              (ICACHE_AXI4_arlen  )
 );
 
@@ -614,12 +614,12 @@ ysyx_24070003_idu my_idu(
     .IDU_EXU_lsu_raw_rs1            (IDU_EXU_lsu_raw_rs1),
     .IDU_EXU_lsu_raw_rs2            (IDU_EXU_lsu_raw_rs2),
 
-    .calcu_type_count               (calcu_type_count   ),
-    .Jump_type_count                (Jump_type_count    ),
-    .BJump_type_count               (BJump_type_count   ),
-    .LOAD_type_count                (LOAD_type_count    ),
-    .STORE_type_count               (STORE_type_count   ),
-    .C_type_count                   (C_type_count       ),
+    // .calcu_type_count               (calcu_type_count   ),
+    // .Jump_type_count                (Jump_type_count    ),
+    // .BJump_type_count               (BJump_type_count   ),
+    // .LOAD_type_count                (LOAD_type_count    ),
+    // .STORE_type_count               (STORE_type_count   ),
+    // .C_type_count                   (C_type_count       ),
 
 
     .exu_reg_write_en               (EXU_IDU_REG_WEN    ),
@@ -804,10 +804,10 @@ ysyx_24070003_lsu my_lsu(
     .LSU_AXI_wlast                  (LSU_AXI_wlast      ),
     .LSU_AXI4_wsize                 (LSU_AXI4_wsize     ),
     .LSU_AXI4_ARSIZE                (LSU_AXI4_ARSIZE    ),
-    .lsu_count                      (lsu_count          ),
-    .lsu_during_count               (lsu_during_count   ),
-    .lsu_load_count                 (lsu_load_count     ),
-    .lsu_store_count                (lsu_store_count    ),
+    // .lsu_count                      (lsu_count          ),
+    // .lsu_during_count               (lsu_during_count   ),
+    // .lsu_load_count                 (lsu_load_count     ),
+    // .lsu_store_count                (lsu_store_count    ),
 
     .LSU_forward_data               (LSU_forward_data   ),
     .LSU_IDU_REG_ADDR               (LSU_IDU_REG_ADDR   ),
@@ -904,29 +904,29 @@ always @(posedge clock ) begin
         total_count <= total_count + 1;
     end
 end
-always @(posedge clock ) begin
-    if(EXU_LSU_ebreak) begin
-        $display("total_count               = %040d\n",total_count);
-        $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
-        $display("lsu_count                 = %040d\n",lsu_count);
-        $display("ifu_count                 = %040d\n",ifu_count);
-        $display("calcu_type_count          = %040d\n",calcu_type_count);
-        $display("Jump_type_count           = %040d\n",Jump_type_count);
-        $display("BJump_type_count          = %040d\n",BJump_type_count);
-        $display("LOAD_type_count           = %040d\n",LOAD_type_count);
-        $display("STORE_type_count          = %040d\n",STORE_type_count);
-        $display("C_type_count              = %040d\n",C_type_count);
-        $display("lsu_average_count         = %040d\n",lsu_during_count/lsu_count);
-        $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
-        $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
-        $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
-        $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
-        $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
-        $display("total_access              = %040d\n",total_access);
-        $display("access_time               = %040d\n",access_time);
-        $display("miss_penalty              = %040d\n",miss_penalty);
-    end
-end
+// always @(posedge clock ) begin
+//     if(EXU_LSU_ebreak) begin
+//         $display("total_count               = %040d\n",total_count);
+//         $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
+//         $display("lsu_count                 = %040d\n",lsu_count);
+//         $display("ifu_count                 = %040d\n",ifu_count);
+//         $display("calcu_type_count          = %040d\n",calcu_type_count);
+//         $display("Jump_type_count           = %040d\n",Jump_type_count);
+//         $display("BJump_type_count          = %040d\n",BJump_type_count);
+//         $display("LOAD_type_count           = %040d\n",LOAD_type_count);
+//         $display("STORE_type_count          = %040d\n",STORE_type_count);
+//         $display("C_type_count              = %040d\n",C_type_count);
+//         $display("lsu_average_count         = %040d\n",lsu_during_count/lsu_count);
+//         $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
+//         $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
+//         $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
+//         $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
+//         $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
+//         $display("total_access              = %040d\n",total_access);
+//         $display("access_time               = %040d\n",access_time);
+//         $display("miss_penalty              = %040d\n",miss_penalty);
+//     end
+// end
 import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
 reg [31:0] dpi_monitor_data[0:5];
 // 初始化时绑定指针

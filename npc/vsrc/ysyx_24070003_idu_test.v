@@ -131,11 +131,11 @@ assign rd = (R_type || I_type || U_type || J_type || C_type) ? INSTR[11:7] : 5'b
 
 
 
-assign imm = ( {32{I_type}} & immI_num ) |
-                     ( {32{S_type}} & immS_num ) |
-                     ( {32{B_type}} & immB_num ) |
-                     ( {32{U_type}} & immU_num ) |
-                     ( {32{J_type}} & immJ_num ) ;
+assign imm = 32'b0;//( {32{I_type}} & immI_num ) |
+                    //  ( {32{S_type}} & immS_num ) |
+                    //  ( {32{B_type}} & immB_num ) |
+                    //  ( {32{U_type}} & immU_num ) |
+                    //  ( {32{J_type}} & immJ_num ) ;
 
 wire J_type_1;
 wire [1:0] alu_op;
