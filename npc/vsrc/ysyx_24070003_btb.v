@@ -42,12 +42,12 @@ assign hit[1] = btb_valid[cur_index][1] && (btb_tag[cur_index][1] == cur_tag);
 
 assign pred_valid = hit[0] || hit[1];
 
-assign update_hit[0] = btb_valid[update_index][0] && (btb_tag[update_index][0] == update_tag);
-assign update_hit[1] = btb_valid[update_index][1] && (btb_tag[update_index][1] == update_tag);
+assign update_hit[0] = ~btb_valid[update_index][0] ;
+assign update_hit[1] = ~btb_valid[update_index][1] ;
 
-//assign upd_hit = update_hit[0] || update_hit[1];
 
-assign pred_pc = (hit[0]) ? {btb_target[cur_index][0],2'b00} : (hit[1]) ? {btb_target[cur_index][1],2'b00} : cur_pc;
+
+assign pred_pc = {btb_target[cur_index][hit[1]],2'b00};
 
 reg update_way;
 always @(posedge clock) begin
@@ -62,12 +62,12 @@ end
 
 always @(posedge clock) begin
     if(update_valid)begin
-        if(btb_valid[update_index][0] == 1'b0) begin
+        if(update_hit[0]) begin
             btb_tag[update_index][0] <= update_tag;
             btb_target[update_index][0] <= target_pc[31:2];
             btb_valid[update_index][0] <= 1;
         end
-        else if(btb_valid[update_index][1] == 1'b0) begin
+        else if(update_hit[1]) begin
             btb_tag[update_index][1] <= update_tag;
             btb_target[update_index][1] <= target_pc[31:2];
             btb_valid[update_index][1] <= 1;
