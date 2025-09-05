@@ -57,12 +57,12 @@ module ysyx_24070003_idu(
     output reg IDU_EXU_lsu_raw_rs1,
     output reg IDU_EXU_lsu_raw_rs2,
 
-    output reg [63:0] calcu_type_count,
-    output reg [63:0] Jump_type_count,
-    output reg [63:0] BJump_type_count,
-    output reg [63:0] LOAD_type_count,
-    output reg [63:0] STORE_type_count,
-    output reg [63:0] C_type_count,
+    // output reg [63:0] calcu_type_count,
+    // output reg [63:0] Jump_type_count,
+    // output reg [63:0] BJump_type_count,
+    // output reg [63:0] LOAD_type_count,
+    // output reg [63:0] STORE_type_count,
+    // output reg [63:0] C_type_count,
 
     input         exu_reg_write_en,
     input  [4:0]  exu_rd_addr,
@@ -179,7 +179,7 @@ wire sltiu= (I_type_1 && funct3 == 3'b011);
 wire bltu = (B_type && funct3 == 3'b110);
 wire bgeu = (B_type && funct3 == 3'b111);
 
-wire u_alu_type = (sltu | sltiu | bltu | bgeu | lbu | lhu ) ? 1'b1 : 1'b0;
+wire u_alu_type = (sltu | sltiu | bltu | bgeu | lbu | lhu );
 //wire mul_high = mulh | mulhu;
 //wire jump = J_type | I_type_2;
 wire mem_read = I_type_3;
@@ -313,12 +313,12 @@ begin
     //IDU_EXU_STALL               <=        1'b0;
     IDU_EXU_PC                  <=        32'b0;
     IDU_EXU_pre_dnpc                <=        32'b0;
-    calcu_type_count               <=        64'b0;
-    Jump_type_count               <=        64'b0;
-    BJump_type_count               <=        64'b0;
-    C_type_count               <=        64'b0;
-    LOAD_type_count               <=        64'b0;
-    STORE_type_count               <=        64'b0;
+    // calcu_type_count               <=        64'b0;
+    // Jump_type_count               <=        64'b0;
+    // BJump_type_count               <=        64'b0;
+    // C_type_count               <=        64'b0;
+    // LOAD_type_count               <=        64'b0;
+    // STORE_type_count               <=        64'b0;
     end
     else if(stall || flush)begin
    // IDU_EXU_opcode        <=        opcode   ;     
@@ -368,12 +368,12 @@ begin
     IDU_EXU_lsu_raw_rs2           <=        1'b0;
     end
     else if(IFU_IDU_valid && IDU_IFU_ready)begin
-        if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
-        else if(J_type) begin Jump_type_count <= Jump_type_count + 1'b1; end
-        else if(B_type) begin BJump_type_count <= BJump_type_count + 1'b1; end
-        else if(C_type) begin C_type_count <= C_type_count + 1'b1; end
-        else if(I_type_3) begin LOAD_type_count <= LOAD_type_count + 1'b1; end
-        else if(S_type) begin STORE_type_count <= STORE_type_count + 1'b1; end
+        // if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
+        // else if(J_type) begin Jump_type_count <= Jump_type_count + 1'b1; end
+        // else if(B_type) begin BJump_type_count <= BJump_type_count + 1'b1; end
+        // else if(C_type) begin C_type_count <= C_type_count + 1'b1; end
+        // else if(I_type_3) begin LOAD_type_count <= LOAD_type_count + 1'b1; end
+        // else if(S_type) begin STORE_type_count <= STORE_type_count + 1'b1; end
    // IDU_EXU_opcode        <=        opcode   ;     
     IDU_EXU_rd            <=        rd       ;
     IDU_EXU_rs1           <=        rs1      ;  

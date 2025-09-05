@@ -16,6 +16,13 @@ module ysyx_24070003_icache(
     output    [31:0]  ICACHE_IFU_pre_dnpc,
     output            ICACHE_IFU_valid,
 
+    // output reg [63:0] ICACHE_hit_count,
+    // output reg [63:0] ICACHE_miss_count,
+    // output reg [63:0] total_access,
+    // output reg [63:0] access_time,
+    // output reg [63:0] miss_penalty,
+    // output reg [63:0] ifu_during_count,
+
     output reg [31:0] ICACHE_AXI4_araddr,
     output reg        ICACHE_AXI4_arvalid,
     input             ICACHE_AXI4_arready,
@@ -24,13 +31,8 @@ module ysyx_24070003_icache(
     input             ICACHE_AXI4_rlast,
     output            ICACHE_IFU_stall,
     output            ICACHE_AXI4_rready,
-    output reg [7:0]  ICACHE_AXI4_arlen,
-    output reg [63:0] ICACHE_hit_count,
-    output reg [63:0] ICACHE_miss_count,
-    output reg [63:0] total_access,
-    output reg [63:0] access_time,
-    output reg [63:0] miss_penalty,
-    output reg [63:0] ifu_during_count
+    output reg [7:0]  ICACHE_AXI4_arlen
+    
 );
 
 parameter SDRAM_BLOCK_SIZE = 16;      // 4字节块大小
@@ -154,7 +156,7 @@ end
 assign ICACHE_IFU_rdata = data_reg3;
 assign ICACHE_IFU_raddr = addr_reg3;
 assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
-assign ICACHE_IFU_valid = data_valid && (~flush);
+assign ICACHE_IFU_valid = data_valid & (~flush);
 
 assign ICACHE_IFU_stall = icache_stall;
 wire stall;
@@ -232,59 +234,59 @@ always @(posedge clock) begin
     end
 end
 
-always @(posedge clock) begin
-    if(reset) begin
-        ICACHE_hit_count <= 0;
-    end
-    else if(hit_reg2 && reg2_valid && (!stall) && IFU_AXI4_rready)begin
-        ICACHE_hit_count <= ICACHE_hit_count + 1;
-    end
-end
+// always @(posedge clock) begin
+//     if(reset) begin
+//         ICACHE_hit_count <= 0;
+//     end
+//     else if(hit_reg2 && reg2_valid && (!stall) && IFU_AXI4_rready)begin
+//         ICACHE_hit_count <= ICACHE_hit_count + 1;
+//     end
+// end
 
-always @(posedge clock) begin
-    if(reset) begin
-        ICACHE_miss_count <= 0;
-    end
-    else if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid && state == AXI_WAIT)begin
-        ICACHE_miss_count <= ICACHE_miss_count + 1;
-    end
-end
+// always @(posedge clock) begin
+//     if(reset) begin
+//         ICACHE_miss_count <= 0;
+//     end
+//     else if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid && state == AXI_WAIT)begin
+//         ICACHE_miss_count <= ICACHE_miss_count + 1;
+//     end
+// end
 
-always @(posedge clock) begin
-    if(reset) begin
-        access_time <= 0;
-    end
-    else if(state == IDLE && IFU_AXI4_arvalid) begin
-        access_time <= access_time + 1'b1;
-    end
-end
+// always @(posedge clock) begin
+//     if(reset) begin
+//         access_time <= 0;
+//     end
+//     else if(state == IDLE && IFU_AXI4_arvalid) begin
+//         access_time <= access_time + 1'b1;
+//     end
+// end
 
-always @(posedge clock) begin
-    if(reset) begin
-        total_access <= 0;
-    end
-    else if(reg2_valid && (!stall) && IFU_AXI4_rready) begin
-        total_access <= total_access + 1'b1;
-    end
-end
+// always @(posedge clock) begin
+//     if(reset) begin
+//         total_access <= 0;
+//     end
+//     else if(reg2_valid && (!stall) && IFU_AXI4_rready) begin
+//         total_access <= total_access + 1'b1;
+//     end
+// end
 
-always @(posedge clock) begin
-    if(reset) begin
-        miss_penalty <= 0;
-    end
-    else if(((!hit_reg2) && reg2_valid && (!stall) && IFU_AXI4_rready && state == IDLE) || state == AXI_READ || state == AXI_WAIT) begin
-        miss_penalty <= miss_penalty + 1'b1;
-    end
-end
+// always @(posedge clock) begin
+//     if(reset) begin
+//         miss_penalty <= 0;
+//     end
+//     else if(((!hit_reg2) && reg2_valid && (!stall) && IFU_AXI4_rready && state == IDLE) || state == AXI_READ || state == AXI_WAIT) begin
+//         miss_penalty <= miss_penalty + 1'b1;
+//     end
+// end
 
-always @(posedge clock) begin
-    if(reset) begin
-        ifu_during_count <= 0;
-    end
-    else if((reg2_valid && (!stall) && IFU_AXI4_rready) || state == AXI_READ || state == AXI_WAIT || state == UPDATED_CACHE ) begin
-        ifu_during_count <= ifu_during_count + 1;
-    end
-end
+// always @(posedge clock) begin
+//     if(reset) begin
+//         ifu_during_count <= 0;
+//     end
+//     else if((reg2_valid && (!stall) && IFU_AXI4_rready) || state == AXI_READ || state == AXI_WAIT || state == UPDATED_CACHE ) begin
+//         ifu_during_count <= ifu_during_count + 1;
+//     end
+// end
 
 
 

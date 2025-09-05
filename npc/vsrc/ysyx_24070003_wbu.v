@@ -11,7 +11,7 @@ module ysyx_24070003_wbu(
     input LSU_WBU_valid,
     output LSU_WBU_ready,
     input LSU_WBU_reg,
-    input [31:0] LSU_WBU_csr_data,
+    //input [31:0] LSU_WBU_csr_data,
     input [31:0] LSU_WBU_csr_in,
     input [2:0]  LSU_WBU_csr_rst,
     input LSU_WBU_ecall,
@@ -42,7 +42,7 @@ wire csr_en;
 
 
 assign WBU_wen = LSU_WBU_reg;
-assign WBU_REG_DATA = (LSU_WBU_C_type) ? LSU_WBU_csr_data : LSU_WBU_result;
+assign WBU_REG_DATA = LSU_WBU_result;
 assign WBU_REG_ADDR = addr;
 assign WBU_CSR_DATA = LSU_WBU_csr_in;
 assign WBU_CSR_ADDR = LSU_WBU_csr_rst;

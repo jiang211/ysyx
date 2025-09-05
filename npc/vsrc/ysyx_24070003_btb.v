@@ -27,7 +27,7 @@ wire [WAY_NUM-1:0] update_hit;
 wire upd_hit;
 
 reg [TAG_WIDTH-1:0] btb_tag [2 ** INDEX_WIDTH -1:0][WAY_NUM-1:0];     // 标签存储
-reg [31:0] btb_target [2 ** INDEX_WIDTH -1:0][WAY_NUM-1:0];  // 目标地址存储
+reg [29:0] btb_target [2 ** INDEX_WIDTH -1:0][WAY_NUM-1:0];  // 目标地址存储
 reg btb_valid [2 ** INDEX_WIDTH -1:0][WAY_NUM-1:0];          // 有效位
 
 
@@ -42,19 +42,19 @@ assign hit[1] = btb_valid[cur_index][1] && (btb_tag[cur_index][1] == cur_tag);
 
 assign pred_valid = hit[0] || hit[1];
 
-assign update_hit[0] = btb_valid[update_index][0] && (btb_tag[update_index][0] == update_tag);
-assign update_hit[1] = btb_valid[update_index][1] && (btb_tag[update_index][1] == update_tag);
+assign update_hit[0] = ~btb_valid[update_index][0] ;
+assign update_hit[1] = ~btb_valid[update_index][1] ;
 
-assign upd_hit = update_hit[0] || update_hit[1];
 
-assign pred_pc = (hit[0]) ? btb_target[cur_index][0] : (hit[1]) ? btb_target[cur_index][1] : cur_pc;
+
+assign pred_pc = (pred_valid) ? {btb_target[cur_index][hit[1]],2'b00} : cur_pc;
 
 reg update_way;
 always @(posedge clock) begin
     if(reset)begin 
         update_way <= 0;
     end
-    else if(!upd_hit && update_valid)begin
+    else if(update_valid)begin
         update_way <= ~update_way;
     end
 end
@@ -64,17 +64,17 @@ always @(posedge clock) begin
     if(update_valid)begin
         if(update_hit[0]) begin
             btb_tag[update_index][0] <= update_tag;
-            btb_target[update_index][0] <= target_pc;
+            btb_target[update_index][0] <= target_pc[31:2];
             btb_valid[update_index][0] <= 1;
         end
         else if(update_hit[1]) begin
             btb_tag[update_index][1] <= update_tag;
-            btb_target[update_index][1] <= target_pc;
+            btb_target[update_index][1] <= target_pc[31:2];
             btb_valid[update_index][1] <= 1;
         end
         else begin
             btb_tag[update_index][update_way] <= update_tag;
-            btb_target[update_index][update_way] <= target_pc;
+            btb_target[update_index][update_way] <= target_pc[31:2];
             btb_valid[update_index][update_way] <= 1;
         end
     end
