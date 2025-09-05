@@ -47,7 +47,7 @@ assign update_hit[1] = ~btb_valid[update_index][1] ;
 
 
 
-assign pred_pc = (hit[0]) ? {btb_target[cur_index][0],2'b00} : (hit[1]) ? {btb_target[cur_index][1],2'b00} : cur_pc;
+assign pred_pc = (pred_valid) ? {btb_target[cur_index][hit[1]],2'b00} : cur_pc;
 
 reg update_way;
 always @(posedge clock) begin
