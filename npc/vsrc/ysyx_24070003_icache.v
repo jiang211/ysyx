@@ -156,7 +156,7 @@ end
 assign ICACHE_IFU_rdata = data_reg3;
 assign ICACHE_IFU_raddr = addr_reg3;
 assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
-assign ICACHE_IFU_valid = data_valid && (~flush);
+assign ICACHE_IFU_valid = data_valid & (~flush);
 
 assign ICACHE_IFU_stall = icache_stall;
 wire stall;
