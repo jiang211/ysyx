@@ -173,11 +173,11 @@ reg [2:0] state;
     //                    (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WLEN << 2'd2) :
     //                    (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WLEN << 2'd3) : (LSU_WLEN << 2'd0);
      assign lsu_wstrb = (LSU_WLEN << EXU_LSU_result[1:0] );
-    assign lsu_wdata = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WDATA << 32'd0) :
-                       (EXU_LSU_result[1:0]  == 2'b01) ? (LSU_WDATA << 32'd8) :
-                       (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WDATA << 32'd16) :
-                       (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WDATA << 32'd24) : (LSU_WDATA << 32'd0);
-    //assign lsu_wdata = (LSU_WDATA << (EXU_LSU_result[1:0] << 3));
+    // assign lsu_wdata = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WDATA << 32'd0) :
+    //                    (EXU_LSU_result[1:0]  == 2'b01) ? (LSU_WDATA << 32'd8) :
+    //                    (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WDATA << 32'd16) :
+    //                    (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WDATA << 32'd24) : (LSU_WDATA << 32'd0);
+    assign lsu_wdata = (LSU_WDATA << (EXU_LSU_result[1:0] << 3));
     //wire [31:0] LSU_WBU_DATA;
     reg [31:0] LSU_WBU_result;
     assign LSU_WBU_DATA = (LSU_REN) ? rdata : LSU_WBU_result;
