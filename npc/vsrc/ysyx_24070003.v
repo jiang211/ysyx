@@ -134,7 +134,7 @@ wire [31:0]                          EXU_LSU_dnpc                   ;
 wire [31:0]                          LSU_WBU_dnpc                   ;
 //wire [31:0]                          IDU_EXU_dnpc                   ;
 wire [31:0]                          LSU_WBU_DATA                   ;
-wire [31:0]                          LSU_WBU_csr_data               ;
+//wire [31:0]                          LSU_WBU_csr_data               ;
 wire [31:0]                          LSU_WBU_csr_in                 ;
 wire [31:0]                          WBU_CSR_DATA                   ;
 wire [31:0]                          EXU_IFU_pc                     ;
@@ -769,7 +769,7 @@ ysyx_24070003_lsu my_lsu(
     //.alu_result                   (alu_out            ),
     .rs2_data                       (EXU_LSU_RS2DATA    ),
    // .rdata                        (rdata              ),
-    .LSU_WBU_csr_data               (LSU_WBU_csr_data   ),
+    //.LSU_WBU_csr_data               (LSU_WBU_csr_data   ),
     .LSU_WBU_ecall                  (LSU_WBU_ecall      ),
     .LSU_WBU_mret                   (LSU_WBU_mret       ),
     .LSU_WBU_C_type                 (LSU_WBU_C_type     ),
@@ -829,7 +829,7 @@ ysyx_24070003_wbu my_wbu(
     .LSU_WBU_PC                     (LSU_WBU_PC         ),
     .LSU_WBU_reg                    (LSU_WBU_reg        ),
     .LSU_WBU_result                 (LSU_WBU_DATA       ),
-    .LSU_WBU_csr_data               (LSU_WBU_csr_data   ),
+    //.LSU_WBU_csr_data               (LSU_WBU_csr_data   ),
     .LSU_WBU_csr_in                 (LSU_WBU_csr_in     ),
     .LSU_WBU_ecall                  (LSU_WBU_ecall      ),
     .LSU_WBU_mret                   (LSU_WBU_mret       ),

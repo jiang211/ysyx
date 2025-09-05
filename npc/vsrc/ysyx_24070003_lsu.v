@@ -45,7 +45,7 @@ module ysyx_24070003_lsu(
     output   reg    LSU_WBU_ebreak,
     //output   [31:0] rdata,
     output   reg [4:0]  LSU_WBU_rd,
-    output   reg [31:0] LSU_WBU_csr_data,
+    //output   reg [31:0] LSU_WBU_csr_data,
     output   reg [31:0] LSU_WBU_csr_in,
     output   reg    LSU_WBU_ecall,
     output   reg    LSU_WBU_mret,
@@ -168,15 +168,17 @@ reg [2:0] state;
     //     $write("lsu_wstrb = %04b,EXU_LSU_result = %08x\n",lsu_wstrb,EXU_LSU_result);
     //     end
     // end
-    // assign lsu_wstrb = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WLEN << 2'd0) :
-    //                    (EXU_LSU_result[1:0]  == 2'b01) ? (LSU_WLEN << 2'd1) :
-    //                    (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WLEN << 2'd2) :
-    //                    (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WLEN << 2'd3) : (LSU_WLEN << 2'd0);
-     assign lsu_wstrb = (LSU_WLEN << EXU_LSU_result[1:0] );
+    assign lsu_wstrb = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WLEN << 2'd0) :
+                       (EXU_LSU_result[1:0]  == 2'b01) ? (LSU_WLEN << 2'd1) :
+                       (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WLEN << 2'd2) :
+                       (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WLEN << 2'd3) : (LSU_WLEN << 2'd0);
+    //assign lsu_wstrb = (LSU_WLEN << EXU_LSU_result[1:0] );
     assign lsu_wdata = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WDATA << 32'd0) :
                        (EXU_LSU_result[1:0]  == 2'b01) ? (LSU_WDATA << 32'd8) :
                        (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WDATA << 32'd16) :
                        (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WDATA << 32'd24) : (LSU_WDATA << 32'd0);
+
+    
     //assign lsu_wdata = (LSU_WDATA << (EXU_LSU_result[1:0] << 3));
     //wire [31:0] LSU_WBU_DATA;
     reg [31:0] LSU_WBU_result;
@@ -352,7 +354,7 @@ always @(posedge clock) begin
         LSU_WBU_result <= 32'b0;
         LSU_WBU_reg <= 1'b0;
         LSU_WBU_ebreak <= 1'b0;
-        LSU_WBU_csr_data <= 32'b0;
+        //LSU_WBU_csr_data <= 32'b0;
         LSU_WBU_ecall <= 1'b0;
         LSU_WBU_mret <= 1'b0;
         LSU_WBU_C_type <= 1'b0;
@@ -372,12 +374,12 @@ always @(posedge clock) begin
     end else if((LSU_EXU_ready && EXU_LSU_valid) ) begin
         //RDATAIN <= rdata_in;
         //WDATA   <= wdata;
-        LSU_WBU_result <= EXU_LSU_result;
+        LSU_WBU_result <= (EXU_LSU_C_type) ? EXU_LSU_csr_data : EXU_LSU_result;
         LSU_REN      <= EXU_LSU_ren;
         LSU_WBU_rd <= EXU_LSU_rd;
         LSU_WBU_reg<= EXU_LSU_reg;
         LSU_WBU_ebreak<= EXU_LSU_ebreak;
-        LSU_WBU_csr_data <= EXU_LSU_csr_data;
+        //LSU_WBU_csr_data <= EXU_LSU_csr_data;
         LSU_WBU_ecall <= EXU_LSU_ecall;
         LSU_WBU_mret <= EXU_LSU_mret;
         LSU_WBU_C_type <= EXU_LSU_C_type;

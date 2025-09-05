@@ -132,9 +132,24 @@ assign  csr_in =     (csr_op == 3'b100) ? RS1_data        :
                                         32'h0;   // 无效，理论上不会出现
 wire [31:0] opdata1;
 wire [31:0] opdata2;
-assign opdata1 = (alu_src1 == 2'b10)? RS1_data : (alu_src1 == 2'b01) ? 32'h00000000 : pc_data;
-assign opdata2 = (alu_src2 == 2'b10)? RS2_data : (alu_src2 == 2'b01) ? 32'h00000004 : imm_data;
-
+//assign opdata1 = (alu_src1 == 2'b10)? RS1_data : (alu_src1 == 2'b01) ? 32'h00000000 : pc_data;
+ysyx_24070003_mux4_32bit my3(
+    .sel            (alu_src1),
+    .a              (pc_data), 
+    .b              (32'h00000000),
+    .c              (RS1_data),
+    .d              (pc_data),
+    .out            (opdata1)
+);
+//assign opdata2 = (alu_src2 == 2'b10)? RS2_data : (alu_src2 == 2'b01) ? 32'h00000004 : imm_data;
+ysyx_24070003_mux4_32bit my4(
+    .sel            (alu_src2),
+    .a              (imm_data), 
+    .b              (32'h00000004),
+    .c              (RS2_data),
+    .d              (imm_data),
+    .out            (opdata2)
+);
 
 ysyx_24070003_alu my_alu(
     .clock          (clock      ),
