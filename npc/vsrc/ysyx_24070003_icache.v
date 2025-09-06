@@ -85,6 +85,19 @@ reg [31:0] per_pc_reg3;
 reg data_valid;
 
 reg flush_r;
+// 新增“首次”标志
+reg first_req;
+always @(posedge clock) begin
+    if (reset)                    first_req <= 1'b1;
+    else if (reg1_valid && hit_reg1)
+                                  first_req <= 1'b0;  // 只要曾经命中过，就退出首次
+end
+
+// 更新条件
+logic allow_update;
+assign allow_update = !icache_stall && IFU_AXI4_rready && !fence_i &&
+                      (state == IDLE) &&
+                      (first_req || hit_reg1);   // 首次不要求 hit
 
 assign hit_reg1 = (valid[index_reg1] && (tags[index_reg1] == tag_reg1));
 
@@ -98,7 +111,7 @@ always @(posedge clock) begin
     else if(flush) begin
         reg1_valid <= 0;
     end
-    else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
+    else if(allow_update) begin
         pc_reg1 <= IFU_AXI4_araddr;
         reg1_valid <= 1'b1;
         reg1_pre_dnpc <= BTB_pre_DNPC;

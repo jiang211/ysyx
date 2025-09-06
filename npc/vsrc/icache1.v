@@ -50,7 +50,7 @@ reg valid [0:SDRAM_NUM_BLOCKS-1];                 // 有效位
 
 typedef enum logic [2:0] {
     IDLE,        // 空闲状态
-    AXI_WAIT,
+    JUDGE,
     AXI_READ,    // 从FLASH读取
     UPDATED_CACHE, // 更新缓存
     SEND_DATA // 更新缓存
@@ -134,7 +134,8 @@ end
 //         per_pc_reg3 <= pre_pc_buffer;
 //     end
 // end
-assign ICACHE_IFU_rdata = (state == IDLE) ? data[index_reg1][32*pc_reg1[3:2]+:32] : ICACHE_AXI4_rdata;
+
+assign ICACHE_IFU_rdata = (state == IDLE) ? data[index_reg1][32*pc_reg1[3:2]+:32] : (pc_reg1[3:2] == 2'b11) ? ICACHE_AXI4_rdata : data[index_reg1][32*pc_reg1[3:2]+:32];
 assign ICACHE_IFU_raddr = pc_reg1;
 assign ICACHE_IFU_pre_dnpc  = reg1_pre_dnpc;
 assign ICACHE_IFU_valid = (state == IDLE && reg1_valid && hit_reg1 && (~flush)) | (state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r));
@@ -173,6 +174,7 @@ always @(posedge clock) begin
     end
 end
 
+
 always @(posedge clock) begin
     if(reset) begin
         state <= IDLE;
@@ -185,16 +187,16 @@ always @(posedge clock) begin
                     state <= IDLE;
                 end
                 else if(!flush)begin
-                    state <= AXI_WAIT;
+                    state <= JUDGE;
                 end
             end
         end
-        AXI_WAIT: begin
+        JUDGE: begin
             if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
                 state <= AXI_READ;
             end
             else begin
-                state <= AXI_WAIT;
+                state <= JUDGE;
             end
         end
         AXI_READ: begin
