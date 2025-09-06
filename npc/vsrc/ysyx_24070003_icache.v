@@ -95,9 +95,9 @@ end
 
 // 更新条件
 reg allow_update;
-assign allow_update = !icache_stall && IFU_AXI4_rready && !fence_i &&
+assign allow_update = (!icache_stall && IFU_AXI4_rready && !fence_i &&
                       (state == IDLE) &&
-                      (first_req & (~reg1_valid) || hit_reg1);   // 首次不要求 hit
+                      (first_req & (~reg1_valid) || hit_reg1)) | (state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r));   // 首次不要求 hit
 
 assign hit_reg1 = (valid[index_reg1] && (tags[index_reg1] == tag_reg1));
 
