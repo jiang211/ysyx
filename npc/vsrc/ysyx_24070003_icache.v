@@ -85,7 +85,7 @@ reg [31:0] per_pc_reg3;
 reg data_valid;
 
 reg flush_r;
-// 新增“首次”标志
+
 reg first_req;
 always @(posedge clock) begin
     if (reset)                    first_req <= 1'b1;
@@ -94,10 +94,10 @@ always @(posedge clock) begin
 end
 
 // 更新条件
-logic allow_update;
+reg allow_update;
 assign allow_update = !icache_stall && IFU_AXI4_rready && !fence_i &&
                       (state == IDLE) &&
-                      (first_req || hit_reg1);   // 首次不要求 hit
+                      (first_req & (~reg1_valid) || hit_reg1);   // 首次不要求 hit
 
 assign hit_reg1 = (valid[index_reg1] && (tags[index_reg1] == tag_reg1));
 
@@ -149,11 +149,11 @@ always @(posedge clock) begin
         per_pc_reg3 <= pre_pc_buffer;
     end
 end
-assign ICACHE_IFU_rdata = (state == IDLE) ? data[index_reg1][32*pc_reg1[3:2]+:32] : ICACHE_AXI4_rdata;;
+
+assign ICACHE_IFU_rdata = (state == IDLE) ? data[index_reg1][32*pc_reg1[3:2]+:32] : (pc_reg1[3:2] == 2'b11) ? ICACHE_AXI4_rdata : data[index_reg1][32*pc_reg1[3:2]+:32];
 assign ICACHE_IFU_raddr = pc_reg1;
 assign ICACHE_IFU_pre_dnpc  = reg1_pre_dnpc;
 assign ICACHE_IFU_valid = (state == IDLE && reg1_valid && hit_reg1 && (~flush)) | (state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r));
-
 
 assign ICACHE_IFU_stall = icache_stall;
 wire stall;
