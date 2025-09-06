@@ -67,8 +67,6 @@ reg [SDRAM_INDEX_BITS - 1:0] index_buffer;
 wire [SDRAM_TAG_BITS-1:0] tag_reg1 = pc_reg1[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
 wire [SDRAM_INDEX_BITS-1:0] index_reg1 = pc_reg1[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
 
-
-
 reg [1:0] burst_count;
 integer i;
 
@@ -98,7 +96,7 @@ always @(posedge clock) begin
     else if(flush) begin
         reg1_valid <= 0;
     end
-    else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
+    else if(!icache_stall && IFU_AXI4_rready && !fence_i ) begin
         pc_reg1 <= IFU_AXI4_araddr;
         reg1_valid <= 1'b1;
         reg1_pre_dnpc <= BTB_pre_DNPC;
@@ -107,39 +105,39 @@ end
 
 
 
-always @(posedge clock) begin
-    if(reset) begin
-        addr_reg3 <= 0;
-        data_reg3 <= 0;
-        per_pc_reg3 <= 0;
-    end
-    else if(!icache_stall && IFU_AXI4_rready) begin
-        if(reg1_valid && hit_reg1 && state == IDLE) begin
-            case (pc_reg1[3:2])
-                2'b00: data_reg3 <= data[index_reg1][31:0];
-                2'b01: data_reg3 <= data[index_reg1][63:32];
-                2'b10: data_reg3 <= data[index_reg1][95:64];
-                2'b11: data_reg3 <= data[index_reg1][127:96];
-            endcase
-            addr_reg3 <= pc_reg1;
-            per_pc_reg3 <= reg1_pre_dnpc;
-        end
-    end
-    else if((!(LSU_IFU_stall || IDU_IFU_STALL)) && state == UPDATED_CACHE)begin
-        case (addr_buffer[3:2])
-            2'b00: data_reg3 <= burst_buffer[31:0];
-            2'b01: data_reg3 <= burst_buffer[63:32];
-            2'b10: data_reg3 <= burst_buffer[95:64];
-            2'b11: data_reg3 <= burst_buffer[127:96];
-        endcase
-        addr_reg3 <= addr_buffer;
-        per_pc_reg3 <= pre_pc_buffer;
-    end
-end
-assign ICACHE_IFU_rdata = data_reg3;
-assign ICACHE_IFU_raddr = addr_reg3;
-assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
-assign ICACHE_IFU_valid = data_valid & (~flush);
+// always @(posedge clock) begin
+//     if(reset) begin
+//         addr_reg3 <= 0;
+//         data_reg3 <= 0;
+//         per_pc_reg3 <= 0;
+//     end
+//     else if(!icache_stall && IFU_AXI4_rready) begin
+//         if(reg1_valid && hit_reg1 && state == IDLE) begin
+//             case (pc_reg1[3:2])
+//                 2'b00: data_reg3 <= data[index_reg1][31:0];
+//                 2'b01: data_reg3 <= data[index_reg1][63:32];
+//                 2'b10: data_reg3 <= data[index_reg1][95:64];
+//                 2'b11: data_reg3 <= data[index_reg1][127:96];
+//             endcase
+//             addr_reg3 <= pc_reg1;
+//             per_pc_reg3 <= reg1_pre_dnpc;
+//         end
+//     end
+//     else if((!(LSU_IFU_stall || IDU_IFU_STALL)) && state == UPDATED_CACHE)begin
+//         case (addr_buffer[3:2])
+//             2'b00: data_reg3 <= burst_buffer[31:0];
+//             2'b01: data_reg3 <= burst_buffer[63:32];
+//             2'b10: data_reg3 <= burst_buffer[95:64];
+//             2'b11: data_reg3 <= burst_buffer[127:96];
+//         endcase
+//         addr_reg3 <= addr_buffer;
+//         per_pc_reg3 <= pre_pc_buffer;
+//     end
+// end
+assign ICACHE_IFU_rdata = (state == IDLE) ? data[index_reg1][32*pc_reg1[3:2]+:32] : ICACHE_AXI4_rdata;
+assign ICACHE_IFU_raddr = pc_reg1;
+assign ICACHE_IFU_pre_dnpc  = reg1_pre_dnpc;
+assign ICACHE_IFU_valid = (state == IDLE && reg1_valid && hit_reg1 && (~flush)) | (state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r));
 
 assign ICACHE_IFU_stall = icache_stall;
 wire stall;
@@ -155,7 +153,7 @@ always @(posedge clock) begin
     else if(LSU_IFU_stall || IDU_IFU_STALL) begin
         data_valid <= data_valid;
     end
-    else if((state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (state == UPDATED_CACHE)) begin
+    else if((state == IDLE && reg1_valid && hit_reg1 && (~flush))) begin
         data_valid <= 1'b1;
     end
     else begin
@@ -182,7 +180,7 @@ always @(posedge clock) begin
     else begin
         case (state)
         IDLE: begin
-            if(reg1_valid && (!stall) && IFU_AXI4_rready) begin
+            if(reg1_valid &&  IFU_AXI4_rready) begin
                 if(hit_reg1)begin
                     state <= IDLE;
                 end
@@ -201,15 +199,16 @@ always @(posedge clock) begin
         end
         AXI_READ: begin
             if(ICACHE_AXI4_rvalid && ICACHE_AXI4_rlast) begin
-                state <= UPDATED_CACHE;
+                if(!(LSU_IFU_stall || IDU_IFU_STALL)) begin state <= IDLE; end
+                //state <= UPDATED_CACHE;
             end
             else begin
                 state <= AXI_READ;
             end
         end
-        UPDATED_CACHE: begin
-            if(!(LSU_IFU_stall || IDU_IFU_STALL)) begin state <= IDLE; end
-        end
+        // UPDATED_CACHE: begin
+        //     if(!(LSU_IFU_stall || IDU_IFU_STALL)) begin state <= IDLE; end
+        // end
         default: begin
             state <= IDLE;
         end
@@ -229,10 +228,10 @@ always @(posedge clock)begin
     end 
     else if(state == AXI_READ && ICACHE_AXI4_rvalid) begin
         case (burst_count)
-            2'b00: burst_buffer[31:0] <= ICACHE_AXI4_rdata;
-            2'b01: burst_buffer[63:32] <= ICACHE_AXI4_rdata;
-            2'b10: burst_buffer[95:64] <= ICACHE_AXI4_rdata;
-            2'b11: burst_buffer[127:96] <= ICACHE_AXI4_rdata;
+            2'b00: data[index_reg1][31:0] <= ICACHE_AXI4_rdata;
+            2'b01: data[index_reg1][63:32] <= ICACHE_AXI4_rdata;
+            2'b10: data[index_reg1][95:64] <= ICACHE_AXI4_rdata;
+            2'b11: data[index_reg1][127:96] <= ICACHE_AXI4_rdata;
         endcase
         
     end
@@ -247,44 +246,40 @@ always @(posedge clock)begin
     end
 end
 
-always @(posedge clock)begin
-    if(reset) begin
-        index_buffer <= 0;
-        addr_buffer <= 32'h0;
-        pre_pc_buffer <= 32'h0;
-        tag_buffer <= 0;
-    end 
-    else if(state == IDLE && (!hit_reg1) && reg1_valid) begin
-        index_buffer <= index_reg1;
-        addr_buffer <= pc_reg1;
-        pre_pc_buffer <= reg1_pre_dnpc;
-        tag_buffer <= tag_reg1;
-    end 
-end
+// always @(posedge clock)begin
+//     if(reset) begin
+//         index_buffer <= 0;
+//         addr_buffer <= 32'h0;
+//         pre_pc_buffer <= 32'h0;
+//         tag_buffer <= 0;
+//     end 
+//     else if(state == IDLE && (!hit_reg1) && reg1_valid) begin
+//         index_buffer <= index_reg1;
+//         addr_buffer <= pc_reg1;
+//         pre_pc_buffer <= reg1_pre_dnpc;
+//         tag_buffer <= tag_reg1;
+//     end 
+// end
 
 always @(posedge clock) begin
-    if(reset) begin
+    if(fence_i) begin
         for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
             valid[i] <= 0;  // 复位时所有块无效
         end
     end
-    else if(fence_i) begin
-        for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
-            valid[i] <= 0;  // 复位时所有块无效
-        end
-    end
-    else if(state == UPDATED_CACHE) begin
-        valid[index_buffer] <= 1'b1;
+    else if(state == AXI_READ) begin
+        valid[index_reg1] <= 1'b1;
+        tags[index_reg1] <= tag_buffer;
     end
 end
 
-always @(posedge clock) begin
-    if(state == UPDATED_CACHE) begin
-        tags[index_buffer] <= tag_buffer;
-        data[index_buffer] <= burst_buffer;
+// always @(posedge clock) begin
+//     if(state == UPDATED_CACHE) begin
+//         tags[index_buffer] <= tag_buffer;
+//         data[index_buffer] <= burst_buffer;
         
-    end
-end
+//     end
+// end
 
 always @(posedge clock) begin
     if(reset)begin
