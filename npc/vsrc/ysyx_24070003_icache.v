@@ -142,12 +142,12 @@ always @(posedge clock) begin
             per_pc_reg3 <= reg2_pre_dnpc;
         end
     end
-    else if((!(LSU_IFU_stall || IDU_IFU_STALL)) && ICACHE_AXI4_rlast)begin
+    else if((!(LSU_IFU_stall || IDU_IFU_STALL)) && state == UPDATED_CACHE)begin
         case (addr_buffer[3:2])
             2'b00: data_reg3 <= data[index_reg2][31:0];
             2'b01: data_reg3 <= data[index_reg2][63:32];
             2'b10: data_reg3 <= data[index_reg2][95:64];
-            2'b11: data_reg3 <= ICACHE_AXI4_rdata;
+            2'b11: data_reg3 <= data[index_reg2][127:96];
         endcase
         addr_reg3 <= addr_buffer;
         per_pc_reg3 <= pre_pc_buffer;
