@@ -144,10 +144,10 @@ always @(posedge clock) begin
     end
     else if((!(LSU_IFU_stall || IDU_IFU_STALL)) && state == UPDATED_CACHE)begin
         case (addr_buffer[3:2])
-            2'b00: data_reg3 <= data[index_reg2][31:0];
-            2'b01: data_reg3 <= data[index_reg2][63:32];
-            2'b10: data_reg3 <= data[index_reg2][95:64];
-            2'b11: data_reg3 <= data[index_reg2][127:96];
+            2'b00: data_reg3 <= burst_buffer[31:0];
+            2'b01: data_reg3 <= burst_buffer[63:32];
+            2'b10: data_reg3 <= burst_buffer[95:64];
+            2'b11: data_reg3 <= burst_buffer[127:96];
         endcase
         addr_reg3 <= addr_buffer;
         per_pc_reg3 <= pre_pc_buffer;
@@ -301,10 +301,10 @@ always @(posedge clock)begin
     end 
     else if(state == AXI_READ && ICACHE_AXI4_rvalid) begin
         case (burst_count)
-            2'b00: data[index_buffer][31:0] <= ICACHE_AXI4_rdata;
-            2'b01: data[index_buffer][63:32] <= ICACHE_AXI4_rdata;
-            2'b10: data[index_buffer][95:64] <= ICACHE_AXI4_rdata;
-            2'b11: data[index_buffer][127:96] <= ICACHE_AXI4_rdata;
+            2'b00: burst_buffer[31:0] <= ICACHE_AXI4_rdata;
+            2'b01: burst_buffer[63:32] <= ICACHE_AXI4_rdata;
+            2'b10: burst_buffer[95:64] <= ICACHE_AXI4_rdata;
+            2'b11: burst_buffer[127:96] <= ICACHE_AXI4_rdata;
         endcase
         
     end
@@ -353,6 +353,7 @@ end
 always @(posedge clock) begin
     if(state == UPDATED_CACHE) begin
         tags[index_buffer] <= tag_buffer;
+        data[index_buffer] <= burst_buffer;
         
     end
 end
