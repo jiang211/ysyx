@@ -136,11 +136,10 @@ always @(posedge clock) begin
         per_pc_reg3 <= pre_pc_buffer;
     end
 end
-assign ICACHE_IFU_rdata = (state == IDLE) ? data[index_reg1][32*pc_reg1[3:2]+:32] : ICACHE_AXI4_rdata;;
-assign ICACHE_IFU_raddr = pc_reg1;
-assign ICACHE_IFU_pre_dnpc  = reg1_pre_dnpc;
-assign ICACHE_IFU_valid = (state == IDLE && reg1_valid && hit_reg1 && (~flush)) | (state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r));
-
+assign ICACHE_IFU_rdata = data_reg3;
+assign ICACHE_IFU_raddr = addr_reg3;
+assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
+assign ICACHE_IFU_valid = data_valid & (~flush);
 
 assign ICACHE_IFU_stall = icache_stall;
 wire stall;
