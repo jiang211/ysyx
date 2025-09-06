@@ -233,7 +233,7 @@ end
 
 
 assign ICACHE_AXI4_araddr = {pc_reg1[31:4], 4'b0} ; 
-assign ICACHE_AXI4_arvalid = (state == IDLE && (!hit_reg1) && reg1_valid && (!flush) && IFU_AXI4_rready);
+assign ICACHE_AXI4_arvalid = (state == IDLE && (!hit_reg1) && (!flush) && IFU_AXI4_rready);
 assign ICACHE_AXI4_rready = 1'b1;
 assign ICACHE_AXI4_arlen = 8'b11;  // 一次读取4个数据
 //assign ICACHE_AXI4_araddr = (is_sdram_reg2) ? {pc_reg2[31:4], 4'b0} : {pc_reg2[31:2], 2'b0};  // 地址对齐到16字节边界
