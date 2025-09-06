@@ -155,7 +155,7 @@ assign ICACHE_IFU_raddr = pc_reg1;
 assign ICACHE_IFU_pre_dnpc  = reg1_pre_dnpc;
 assign ICACHE_IFU_valid = (state == IDLE && reg1_valid && hit_reg1 && (~flush)) | (state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r));
 
-assign ICACHE_IFU_stall = icache_stall;
+assign ICACHE_IFU_stall = allow_update;
 wire stall;
 assign stall = (state != IDLE);
 
