@@ -320,7 +320,7 @@ always @(posedge clock) begin
             valid[i] <= 0;  // 复位时所有块无效
         end
     end
-    else if(state == UPDATED_CACHE) begin
+    else if(state == AXI_READ) begin
         valid[index_buffer] <= 1'b1;
         tags[index_buffer] <= tag_buffer;
     end
