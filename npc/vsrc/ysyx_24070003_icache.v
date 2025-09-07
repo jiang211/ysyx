@@ -125,12 +125,12 @@ always @(posedge clock) begin
             per_pc_reg3 <= reg1_pre_dnpc;
         end
     end
-    else if((!(LSU_IFU_stall || IDU_IFU_STALL)) && state == UPDATED_CACHE)begin
+    else if(state == AXI_READ && ICACHE_AXI4_rlast)begin
         case (addr_buffer[3:2])
             2'b00: data_reg3 <= data[index_buffer][31:0];
             2'b01: data_reg3 <= data[index_buffer][63:32];
             2'b10: data_reg3 <= data[index_buffer][95:64];
-            2'b11: data_reg3 <= data[index_buffer][127:96];
+            2'b11: data_reg3 <= ICACHE_AXI4_rdata;
         endcase
         addr_reg3 <= addr_buffer;
         per_pc_reg3 <= pre_pc_buffer;
@@ -155,7 +155,7 @@ always @(posedge clock) begin
     else if(LSU_IFU_stall || IDU_IFU_STALL) begin
         data_valid <= data_valid;
     end
-    else if((state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (state == UPDATED_CACHE)) begin
+    else if((state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (ICACHE_AXI4_rlast)) begin
         data_valid <= 1'b1;
     end
     else begin
@@ -182,7 +182,7 @@ always @(posedge clock) begin
     else begin
         case (state)
         IDLE: begin
-            if(reg1_valid && (!stall) && IFU_AXI4_rready) begin
+            if(reg1_valid && (!(LSU_IFU_stall || IDU_IFU_STALL)) && IFU_AXI4_rready) begin
                 if(hit_reg1)begin
                     state <= IDLE;
                 end
@@ -201,7 +201,7 @@ always @(posedge clock) begin
         end
         AXI_READ: begin
             if(ICACHE_AXI4_rvalid && ICACHE_AXI4_rlast) begin
-                state <= UPDATED_CACHE;
+                state <= IDLE; 
             end
             else begin
                 state <= AXI_READ;
@@ -320,19 +320,13 @@ always @(posedge clock) begin
             valid[i] <= 0;  // 复位时所有块无效
         end
     end
-    else if(state == UPDATED_CACHE) begin
+    else if(state == AXI_READ) begin
         valid[index_buffer] <= 1'b1;
         tags[index_buffer] <= tag_buffer;
     end
 end
 
-// always @(posedge clock) begin
-//     if(state == UPDATED_CACHE) begin
-//         tags[index_buffer] <= tag_buffer;
-//         data[index_buffer] <= burst_buffer;
-        
-//     end
-// end
+
 
 always @(posedge clock) begin
     if(reset)begin
