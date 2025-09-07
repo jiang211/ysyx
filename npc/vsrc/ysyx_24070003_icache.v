@@ -152,10 +152,7 @@ always @(posedge clock) begin
     else if(flush || flush_r || fence_i) begin
         data_valid <= 0;
     end
-    // else if(LSU_IFU_stall || IDU_IFU_STALL) begin
-    //     data_valid <= data_valid;
-    // end
-    else if((state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (ICACHE_AXI4_rlast)) begin
+    else if((state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (state == AXI_READ && ICACHE_AXI4_rlast)) begin
         data_valid <= 1'b1;
     end
     else begin
