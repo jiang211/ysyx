@@ -326,13 +326,7 @@ always @(posedge clock) begin
     end
 end
 
-// always @(posedge clock) begin
-//     if(state == UPDATED_CACHE) begin
-//         tags[index_buffer] <= tag_buffer;
-//         data[index_buffer] <= burst_buffer;
-        
-//     end
-// end
+
 
 always @(posedge clock) begin
     if(reset)begin
