@@ -23,7 +23,7 @@ module ysyx_24070003_icache(
     // output reg [63:0] miss_penalty,
     // output reg [63:0] ifu_during_count,
 
-    output     [31:0] ICACHE_AXI4_araddr,
+    output reg [31:0] ICACHE_AXI4_araddr,
     output reg        ICACHE_AXI4_arvalid,
     input             ICACHE_AXI4_arready,
     input  [31:0]     ICACHE_AXI4_rdata,
@@ -139,7 +139,7 @@ assign ICACHE_IFU_rdata = data_reg3;
 assign ICACHE_IFU_raddr = addr_reg3;
 assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
 assign ICACHE_IFU_valid = data_valid & (~flush);
-assign ICACHE_AXI4_araddr = {pc_reg1[31:4], 4'b0} ; 
+
 assign ICACHE_IFU_stall = icache_stall;
 wire stall;
 assign stall = (state != IDLE);
@@ -324,13 +324,14 @@ end
 always @(posedge clock) begin
     if(reset)begin
         ICACHE_AXI4_arvalid <= 0;
+        ICACHE_AXI4_araddr <= 0;
     end
     else if((ICACHE_AXI4_arready && ICACHE_AXI4_arvalid))begin
         ICACHE_AXI4_arvalid <= 1'b0;
     end
     else  if(state == IDLE && (!hit_reg1) && reg1_valid && (!flush) && IFU_AXI4_rready)begin
         ICACHE_AXI4_arvalid <= 1'b1;
-        
+        ICACHE_AXI4_araddr <= {pc_reg1[31:4], 4'b0} ; 
     end
     
 end
