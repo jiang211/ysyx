@@ -59,9 +59,7 @@ state_t state;
 
 
 
-reg [31:0] addr_buffer,pre_pc_buffer;
-reg [SDRAM_TAG_BITS - 1:0] tag_buffer;
-reg [SDRAM_INDEX_BITS - 1:0] index_buffer;
+
 wire [SDRAM_TAG_BITS-1:0] tag_reg1 = pc_reg1[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
 wire [SDRAM_INDEX_BITS-1:0] index_reg1 = pc_reg1[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
 
@@ -308,20 +306,7 @@ always @(posedge clock)begin
     end
 end
 
-always @(posedge clock)begin
-    if(reset) begin
-        index_buffer <= 0;
-        addr_buffer <= 32'h0;
-        pre_pc_buffer <= 32'h0;
-        tag_buffer <= 0;
-    end 
-    else if(state == IDLE && (!hit_reg1) && reg1_valid) begin
-        index_buffer <= index_reg1;
-        addr_buffer <= pc_reg1;
-        pre_pc_buffer <= reg1_pre_dnpc;
-        tag_buffer <= tag_reg1;
-    end 
-end
+
 
 always @(posedge clock) begin
     if(fence_i) begin
