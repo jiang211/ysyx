@@ -24,7 +24,7 @@ module ysyx_24070003_ifu(
     output [31:0]     BTB_pre_DNPC,
     // AXI-Lite4 Interface
     output reg [31:0] IFU_AXI4_araddr,
-    output reg        IFU_AXI4_arvalid,
+    output            IFU_AXI4_arvalid,
     // input             IFU_AXI4_arready,
     input  [31:0]     IFU_AXI4_rdata,
     input             ICACHE_IFU_rvalid,
@@ -83,16 +83,16 @@ end
 assign IFU_IDU_valid = ICACHE_IFU_rvalid;
 
 assign IFU_AXI4_araddr = pc;
-always @(posedge clock) begin
-    if (rstn) begin
-        IFU_AXI4_arvalid <= 1'b0;
-    end else if (!stall && !EXU_IFU_flush && !fence_i) begin
-        IFU_AXI4_arvalid <= 1'b1;
-    end else begin
-        IFU_AXI4_arvalid <= 1'b0;
-    end
-end
-
+// always @(posedge clock) begin
+//     if (rstn) begin
+//         IFU_AXI4_arvalid <= 1'b0;
+//     end else if (!stall && !EXU_IFU_flush && !fence_i) begin
+//         IFU_AXI4_arvalid <= 1'b1;
+//     end else begin
+//         IFU_AXI4_arvalid <= 1'b0;
+//     end
+// end
+assign IFU_AXI4_arvalid = (~stall && !EXU_IFU_flush && !fence_i);
 
 
 assign IFU_IDU_INSTR = IFU_AXI4_rdata;

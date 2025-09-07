@@ -3,8 +3,8 @@ module ysyx_24070003_icache(
     input reset,
     input fence_i,
     input flush,
-    input reg [31:0]  IFU_AXI4_araddr,
-    input reg         IFU_AXI4_arvalid,
+    input  [31:0]  IFU_AXI4_araddr,
+    input          IFU_AXI4_arvalid,
     // output reg        IFU_AXI4_rvalid,
     input             IFU_AXI4_rready,
     input  [31:0]     BTB_pre_DNPC,
@@ -136,6 +136,7 @@ always @(posedge clock) begin
         per_pc_reg3 <= pre_pc_buffer;
     end
 end
+
 assign ICACHE_IFU_rdata = data_reg3;
 assign ICACHE_IFU_raddr = addr_reg3;
 assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
@@ -155,7 +156,7 @@ always @(posedge clock) begin
     else if((state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (state == AXI_READ && ICACHE_AXI4_rlast)) begin
         data_valid <= 1'b1;
     end
-    else begin
+    else if(ICACHE_IFU_valid && IFU_AXI4_rready)begin
         data_valid <= 1'b0;
     end
 end
