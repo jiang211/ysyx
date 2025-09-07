@@ -102,19 +102,25 @@ wire icache_stall = stall || LSU_IFU_stall || IDU_IFU_STALL;
 always @(posedge clock) begin
     if(reset) begin
         pc_reg1 <= 0;
-        reg1_valid  <= 0;
         reg1_pre_dnpc <= 0;
-    end
-    else if(flush) begin
-        reg1_valid <= 0;
     end
     else if(allow_update) begin
         pc_reg1 <= IFU_AXI4_araddr;
-        reg1_valid <= 1'b1;
         reg1_pre_dnpc <= BTB_pre_DNPC;
     end
 end
 
+always @(posedge clock) begin
+    if(reset) begin
+        pc_reg1 <= 0;
+    end
+    else if(flush) begin
+        reg1_valid <= 0;
+    end
+    else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
+        reg1_valid <= 1'b1;
+    end
+end
 
 always @(posedge clock) begin
     if(reset) begin
