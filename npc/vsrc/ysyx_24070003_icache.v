@@ -86,18 +86,6 @@ reg data_valid;
 reg flush_r;
 
 assign hit_reg1 = (valid[index_reg1] && (tags[index_reg1] == tag_reg1));
-reg first_req;
-always @(posedge clock) begin
-    if (reset)                    first_req <= 1'b1;
-    else if (reg1_valid && hit_reg1)
-                                  first_req <= 1'b0;  // 只要曾经命中过，就退出首次
-end
-
-// 更新条件
-reg allow_update;
-assign allow_update = (!icache_stall && IFU_AXI4_rready && !fence_i &&
-                      (state == IDLE) &&
-                      (first_req & (~reg1_valid) || hit_reg1)) | (state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r)); 
 
 wire icache_stall = stall || LSU_IFU_stall || IDU_IFU_STALL;
 always @(posedge clock) begin
@@ -109,7 +97,7 @@ always @(posedge clock) begin
     else if(flush) begin
         reg1_valid <= 0;
     end
-    else if(allow_update) begin
+    else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
         pc_reg1 <= IFU_AXI4_araddr;
         reg1_valid <= 1'b1;
         reg1_pre_dnpc <= BTB_pre_DNPC;
@@ -136,14 +124,14 @@ always @(posedge clock) begin
         end
     end
     else if(state == AXI_READ && ICACHE_AXI4_rlast)begin
-        case (pc_reg1[3:2])
-            2'b00: data_reg3 <= data[index_reg1][31:0];
-            2'b01: data_reg3 <= data[index_reg1][63:32];
-            2'b10: data_reg3 <= data[index_reg1][95:64];
+        case (addr_buffer[3:2])
+            2'b00: data_reg3 <= data[index_buffer][31:0];
+            2'b01: data_reg3 <= data[index_buffer][63:32];
+            2'b10: data_reg3 <= data[index_buffer][95:64];
             2'b11: data_reg3 <= ICACHE_AXI4_rdata;
         endcase
-        addr_reg3 <= pc_reg1;
-        per_pc_reg3 <= reg1_pre_dnpc;
+        addr_reg3 <= addr_buffer;
+        per_pc_reg3 <= pre_pc_buffer;
     end
 end
 
@@ -152,7 +140,7 @@ assign ICACHE_IFU_raddr = addr_reg3;
 assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
 assign ICACHE_IFU_valid = data_valid & (~flush);
 
-assign ICACHE_IFU_stall = allow_update;
+assign ICACHE_IFU_stall = icache_stall;
 wire stall;
 assign stall = (state != IDLE);
 
@@ -286,10 +274,10 @@ assign ICACHE_AXI4_arlen = 8'b11;  // 一次读取4个数据
 always @(posedge clock)begin
     if(state == AXI_READ && ICACHE_AXI4_rvalid) begin
         case (burst_count)
-            2'b00: data[index_reg1][31:0] <= ICACHE_AXI4_rdata;
-            2'b01: data[index_reg1][63:32] <= ICACHE_AXI4_rdata;
-            2'b10: data[index_reg1][95:64] <= ICACHE_AXI4_rdata;
-            2'b11: data[index_reg1][127:96] <= ICACHE_AXI4_rdata;
+            2'b00: data[index_buffer][31:0] <= ICACHE_AXI4_rdata;
+            2'b01: data[index_buffer][63:32] <= ICACHE_AXI4_rdata;
+            2'b10: data[index_buffer][95:64] <= ICACHE_AXI4_rdata;
+            2'b11: data[index_buffer][127:96] <= ICACHE_AXI4_rdata;
         endcase
         
     end
@@ -304,20 +292,14 @@ always @(posedge clock)begin
     end
 end
 
-// always @(posedge clock)begin
-//     if(reset) begin
-//         index_buffer <= 0;
-//         addr_buffer <= 32'h0;
-//         pre_pc_buffer <= 32'h0;
-//         tag_buffer <= 0;
-//     end 
-//     else if(state == IDLE && (!hit_reg1) && reg1_valid) begin
-//         index_buffer <= index_reg1;
-//         addr_buffer <= pc_reg1;
-//         pre_pc_buffer <= reg1_pre_dnpc;
-//         tag_buffer <= tag_reg1;
-//     end 
-// end
+always @(posedge clock)begin
+    if(state == IDLE && (!hit_reg1) && reg1_valid) begin
+        index_buffer <= index_reg1;
+        addr_buffer <= pc_reg1;
+        pre_pc_buffer <= reg1_pre_dnpc;
+        tag_buffer <= tag_reg1;
+    end 
+end
 
 always @(posedge clock) begin
     if(fence_i) begin
@@ -326,8 +308,8 @@ always @(posedge clock) begin
         end
     end
     else if(state == AXI_READ) begin
-        valid[index_reg1] <= 1'b1;
-        tags[index_reg1] <= tag_reg1;
+        valid[index_buffer] <= 1'b1;
+        tags[index_buffer] <= tag_buffer;
     end
 end
 
