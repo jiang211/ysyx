@@ -387,7 +387,7 @@ ysyx_24070003_ifu my_ifu(
     .clock                            (clock              ),
     .rstn                           (reset              ),
     .fence_i                        (fence_i            ),
-    .stall                          (stall              ),
+    .stall                          (stall  ||  LSU_IFU_stall           ),
    //.pcsrc                         (pcsrc              ),
     .EXU_IFU_pc                     (EXU_IFU_pc         ),
     .EXU_IFU_flush                  (flush              ),
