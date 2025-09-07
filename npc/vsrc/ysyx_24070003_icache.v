@@ -140,7 +140,7 @@ always @(posedge clock) begin
             per_pc_reg3 <= reg1_pre_dnpc;
         end
     end
-    else if(state == AXI_READ && ICACHE_AXI4_rlast)begin
+    else if(!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)begin
         case (pc_reg1[3:2])
             2'b00: data_reg3 <= data[index_reg1][31:0];
             2'b01: data_reg3 <= data[index_reg1][63:32];
