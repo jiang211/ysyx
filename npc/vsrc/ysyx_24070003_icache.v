@@ -167,7 +167,7 @@ always @(posedge clock) begin
     else if(flush || flush_r || fence_i) begin
         data_valid <= 0;
     end
-    else if((state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (state == AXI_READ && ICACHE_AXI4_rlast)) begin
+    else if((state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)) begin
         data_valid <= 1'b1;
     end
     else if(ICACHE_IFU_valid && IFU_AXI4_rready)begin
