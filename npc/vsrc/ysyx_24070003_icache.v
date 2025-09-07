@@ -60,7 +60,7 @@ typedef enum logic [2:0] {
 state_t state;
 
 
-reg [127:0] burst_buffer; 
+
 reg [31:0] addr_buffer,pre_pc_buffer;
 reg [SDRAM_TAG_BITS - 1:0] tag_buffer;
 reg [SDRAM_INDEX_BITS - 1:0] index_buffer;
@@ -78,9 +78,7 @@ reg reg1_valid;
 reg [31:0] reg1_pre_dnpc;
 
 wire hit_reg1;
-// reg [31:0] pc_reg2;
-// reg reg2_valid;
-// reg [31:0] reg2_pre_dnpc;
+
 
 reg [31:0] addr_reg3;
 reg [31:0] data_reg3;
@@ -108,21 +106,6 @@ always @(posedge clock) begin
     end
 end
 
-// always @(posedge clock) begin
-//     if(reset) begin
-//         pc_reg2 <= 0;
-//         reg2_valid  <= 0;
-//         reg2_pre_dnpc <= 0;
-//     end
-//     else if(flush) begin
-//         reg2_valid <= 0;
-//     end 
-//     else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
-//         pc_reg2 <= pc_reg1;
-//         reg2_valid <= reg1_valid;
-//         reg2_pre_dnpc <= reg1_pre_dnpc;
-//     end
-// end
 
 always @(posedge clock) begin
     if(reset) begin
@@ -142,12 +125,12 @@ always @(posedge clock) begin
             per_pc_reg3 <= reg1_pre_dnpc;
         end
     end
-    else if((!(LSU_IFU_stall || IDU_IFU_STALL)) && state == UPDATED_CACHE)begin
+    else if((!(LSU_IFU_stall || IDU_IFU_STALL)) && ICACHE_AXI4_rlast)begin
         case (addr_buffer[3:2])
             2'b00: data_reg3 <= data[index_buffer][31:0];
             2'b01: data_reg3 <= data[index_buffer][63:32];
             2'b10: data_reg3 <= data[index_buffer][95:64];
-            2'b11: data_reg3 <= data[index_buffer][127:96];
+            2'b11: data_reg3 <= ICACHE_AXI4_rdata;
         endcase
         addr_reg3 <= addr_buffer;
         per_pc_reg3 <= pre_pc_buffer;
@@ -172,7 +155,7 @@ always @(posedge clock) begin
     else if(LSU_IFU_stall || IDU_IFU_STALL) begin
         data_valid <= data_valid;
     end
-    else if((state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (state == UPDATED_CACHE)) begin
+    else if((state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (ICACHE_AXI4_rlast)) begin
         data_valid <= 1'b1;
     end
     else begin
@@ -218,7 +201,7 @@ always @(posedge clock) begin
         end
         AXI_READ: begin
             if(ICACHE_AXI4_rvalid && ICACHE_AXI4_rlast) begin
-                state <= UPDATED_CACHE;
+                state <= IDLE;
             end
             else begin
                 state <= AXI_READ;
@@ -332,12 +315,7 @@ always @(posedge clock)begin
 end
 
 always @(posedge clock) begin
-    if(reset) begin
-        for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
-            valid[i] <= 0;  // 复位时所有块无效
-        end
-    end
-    else if(fence_i) begin
+    if(fence_i) begin
         for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
             valid[i] <= 0;  // 复位时所有块无效
         end
