@@ -293,7 +293,13 @@ always @(posedge clock)begin
 end
 
 always @(posedge clock)begin
-    if(state == IDLE && (!hit_reg1) && reg1_valid) begin
+    if(reset) begin
+        index_buffer <= 0;
+        addr_buffer <= 32'h0;
+        pre_pc_buffer <= 32'h0;
+        tag_buffer <= 0;
+    end 
+    else if(state == IDLE && (!hit_reg1) && reg1_valid) begin
         index_buffer <= index_reg1;
         addr_buffer <= pc_reg1;
         pre_pc_buffer <= reg1_pre_dnpc;
