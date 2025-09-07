@@ -98,7 +98,7 @@ wire allow_update;
 assign allow_update = (!icache_stall && IFU_AXI4_rready && !fence_i &&
                       (state == IDLE) &&
                       (first_req & (~reg1_valid) || hit_reg1)) | (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r)); 
-wire icache_stall = stall || LSU_IFU_stall || IDU_IFU_STALL;
+wire icache_stall = LSU_IFU_stall || IDU_IFU_STALL;
 always @(posedge clock) begin
     if(reset) begin
         pc_reg1 <= 0;
