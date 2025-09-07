@@ -201,7 +201,7 @@ always @(posedge clock) begin
         end
         AXI_READ: begin
             if(ICACHE_AXI4_rvalid && ICACHE_AXI4_rlast) begin
-                state <= UPDATED_CACHE; 
+                state <= IDLE; 
             end
             else begin
                 state <= AXI_READ;
