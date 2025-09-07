@@ -1,215 +1,319 @@
+module icache(
+    input clock,
+    input reset,
+    input fence_i,
+    input flush,
+    input reg [31:0]  IFU_AXI4_araddr,
+    input reg         IFU_AXI4_arvalid,
+    // output reg        IFU_AXI4_rvalid,
+    input             IFU_AXI4_rready,
+    input  [31:0]     BTB_pre_DNPC,
+    input             IDU_IFU_STALL,
+    input             LSU_IFU_stall,
 
-module icache #(
-    CacheLine_Width = 2,
-    OFFSET_WIDTH = 2,
-    INDEX_WIDTH = 2,
-    ADDR_WIDTH = 32,
-    DATA_WIDTH = 32
-) (
-    input             clock,
-    input             reset,
-    input             clr,
-    input             flush,
-    input  cpu_valid_i,
-    input  [31:0]cpu_pc_i,
-    input  [31:0]pred_pc_i,
-    input   pred_res_i,
-    output cpu_ready_o,
+    output    [31:0]  ICACHE_IFU_rdata,
+    output    [31:0]  ICACHE_IFU_raddr,
+    output    [31:0]  ICACHE_IFU_pre_dnpc,
+    output            ICACHE_IFU_valid,
 
-    input   cpu_ready_i,
-    output logic [31:0]cpu_inst_o,
-    output logic [31:0]cpu_pc_o,
-    output logic [31:0]pred_pc_o,
-    output logic pred_res_o,
-    output cpu_valid_o,
+    // output reg [63:0] ICACHE_hit_count,
+    // output reg [63:0] ICACHE_miss_count,
+    // output reg [63:0] total_access,
+    // output reg [63:0] access_time,
+    // output reg [63:0] miss_penalty,
+    // output reg [63:0] ifu_during_count,
 
-
-    input         icache_awready,
-    output        icache_awvalid,
-    output [31:0] icache_awaddr,
-    output [ 3:0] icache_awid,
-    output [ 7:0] icache_awlen,
-    output [ 2:0] icache_awsize,
-    output [ 1:0] icache_awburst,
-
-    input         icache_wready,
-    output        icache_wvalid,
-    output [31:0] icache_wdata,
-    output [ 3:0] icache_wstrb,
-    output        icache_wlast,
-
-    output       icache_bready,
-    input        icache_bvalid,
-    input  [1:0] icache_bresp,
-    input  [3:0] icache_bid,
-
-    input             icache_arready,
-    output reg        icache_arvalid,
-    output     [31:0] icache_araddr,
-    output     [ 3:0] icache_arid,
-    output     [ 7:0] icache_arlen,
-    output     [ 2:0] icache_arsize,
-    output     [ 1:0] icache_arburst,
-
-    output        icache_rready,
-    input         icache_rvalid,
-    input  [ 1:0] icache_rresp,
-    input  [31:0] icache_rdata,
-    input         icache_rlast,
-    input  [ 3:0] icache_rid
-
+    output     [31:0] ICACHE_AXI4_araddr,
+    output reg        ICACHE_AXI4_arvalid,
+    input             ICACHE_AXI4_arready,
+    input  [31:0]     ICACHE_AXI4_rdata,
+    input             ICACHE_AXI4_rvalid,
+    input             ICACHE_AXI4_rlast,
+    output            ICACHE_IFU_stall,
+    output            ICACHE_AXI4_rready,
+    output reg [7:0]  ICACHE_AXI4_arlen
+    
 );
 
+parameter SDRAM_BLOCK_SIZE = 16;      // 4字节块大小
+parameter SDRAM_NUM_BLOCKS = 4;     // 16个缓存块
+parameter SDRAM_OFFSET_BITS = 4;     // 2^2 = 4字节 (块内偏移)
+parameter SDRAM_INDEX_BITS = 2;      // 2^4 = 16个块 (索引位)
+parameter SDRAM_TAG_BITS = 26;       // 32 - (2+4) = 26位标签
 
 
-  localparam IDLE = 2'b00;
-  localparam ADDR = 2'b01;
-  localparam MISS = 2'b10;
-  localparam DIRECT = 2'b11;
+reg [SDRAM_TAG_BITS-1:0] tags [0:SDRAM_NUM_BLOCKS-1];  // 标签存储
+reg [SDRAM_BLOCK_SIZE * 8-1:0] data [0:SDRAM_NUM_BLOCKS-1];           // 数据存储
+reg valid [0:SDRAM_NUM_BLOCKS-1];                 // 有效位
+
+              // 有效位
+
+typedef enum logic [2:0] {
+    IDLE,        // 空闲状态
+    AXI_WAIT,
+    AXI_READ,    // 从FLASH读取
+    UPDATED_CACHE, // 更新缓存
+    SEND_DATA // 更新缓存
+} state_t;
 
 
-  localparam TAG_WIDTH = ADDR_WIDTH - OFFSET_WIDTH - INDEX_WIDTH - CacheLine_Width;
-  localparam VALID_WIDTH = 1;
-  localparam CACHE_WIDTH = DATA_WIDTH * (2 ** CacheLine_Width) + TAG_WIDTH + VALID_WIDTH;
+state_t state;
 
-  wire [                                 VALID_WIDTH-1:0] icache_valid;
-  wire [                                 INDEX_WIDTH-1:0] index;
-  wire [                                   TAG_WIDTH-1:0] icache_tag;
-  wire [                                  DATA_WIDTH-1:0] rdata;
-  wire                                                    hit;
-  wire                                                    mux_flag;
-  wire [CacheLine_Width-1                            : 0] block_choice;
-  wire [                       32*2**CacheLine_Width-1:0] block_data;
-    wire                                data_choice                 ;
 
-  reg  [                                 CACHE_WIDTH-1:0] icache         [2**INDEX_WIDTH-1:0];
-  reg  [                                             1:0] state;
-  reg  [                               CacheLine_Width:0] count;
-  reg  [                                 INDEX_WIDTH-1:0] index_r;
-  reg  [                                   TAG_WIDTH-1:0] cpu_tag_r;
-  reg  [                             CacheLine_Width-1:0] block_choice_r;
-  reg flush_r;
+reg [127:0] burst_buffer; 
+reg [31:0] addr_buffer,pre_pc_buffer;
+reg [SDRAM_TAG_BITS - 1:0] tag_buffer;
+reg [SDRAM_INDEX_BITS - 1:0] index_buffer;
+wire [SDRAM_TAG_BITS-1:0] tag_reg1 = pc_reg1[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
+wire [SDRAM_INDEX_BITS-1:0] index_reg1 = pc_reg1[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
 
-  always @(posedge clock) begin
-    if (reset) begin
-      index_r   <= 0;
-      cpu_tag_r <= 0;
-      block_choice_r <= 0;
-      pred_pc_o <= 0;
-      pred_res_o <= 0;
-    end else if (cpu_valid_i & cpu_ready_o & ~flush) begin
-      index_r   <= index;
-      cpu_tag_r <= cpu_pc_i[ADDR_WIDTH-1:OFFSET_WIDTH+INDEX_WIDTH+CacheLine_Width];
-      block_choice_r <= block_choice;
-      pred_pc_o <= pred_pc_i;
-      pred_res_o <= pred_res_i;
+
+
+reg [1:0] burst_count;
+integer i;
+
+wire hit_reg1;
+reg [31:0]  pc_reg1;
+reg reg1_valid;
+reg [31:0] reg1_pre_dnpc;
+
+
+
+reg [31:0] addr_reg3;
+reg [31:0] data_reg3;
+reg [31:0] per_pc_reg3;
+reg data_valid;
+
+reg flush_r;
+
+reg first_req;
+always @(posedge clock) begin
+    if (reset)                    first_req <= 1'b1;
+    else if (reg1_valid && hit_reg1)
+                                  first_req <= 1'b0;  // 只要曾经命中过，就退出首次
+end
+
+// 更新条件
+reg allow_update;
+assign allow_update = (!icache_stall && IFU_AXI4_rready && !fence_i &&
+                      (state == IDLE) &&
+                      (first_req & (~reg1_valid) || hit_reg1)) | (state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r));   // 首次不要求 hit
+
+assign hit_reg1 = (valid[index_reg1] && (tags[index_reg1] == tag_reg1));
+
+wire icache_stall = stall || LSU_IFU_stall || IDU_IFU_STALL;
+always @(posedge clock) begin
+    if(reset) begin
+        pc_reg1 <= 0;
+        reg1_valid  <= 0;
+        reg1_pre_dnpc <= 0;
     end
-  end
-
-  always @(posedge clock) begin
-      if(reset)
-        flush_r <= 1'b0;
-      else begin
-        case(state)
-        MISS:if(icache_rlast & icache_rvalid & icache_rready) flush_r <= 1'b0;
-        else flush_r <= flush_r? flush_r: flush;
-        DIRECT:if(icache_rlast & icache_rvalid & icache_rready) flush_r <= 1'b0;
-        else flush_r <= flush_r? flush_r: flush;
-        default:flush_r <= 1'b0;
-        endcase
-      end
-  end
+    else if(flush) begin
+        reg1_valid <= 0;
+    end
+    else if(allow_update) begin
+        pc_reg1 <= IFU_AXI4_araddr;
+        reg1_valid <= 1'b1;
+        reg1_pre_dnpc <= BTB_pre_DNPC;
+    end
+end
 
 
 
+// always @(posedge clock) begin
+//     if(reset) begin
+//         addr_reg3 <= 0;
+//         data_reg3 <= 0;
+//         per_pc_reg3 <= 0;
+//     end
+//     else if(!icache_stall && IFU_AXI4_rready) begin
+//         if(reg1_valid && hit_reg1 && state == IDLE) begin
+//             case (pc_reg1[3:2])
+//                 2'b00: data_reg3 <= data[index_reg1][31:0];
+//                 2'b01: data_reg3 <= data[index_reg1][63:32];
+//                 2'b10: data_reg3 <= data[index_reg1][95:64];
+//                 2'b11: data_reg3 <= data[index_reg1][127:96];
+//             endcase
+//             addr_reg3 <= pc_reg1;
+//             per_pc_reg3 <= reg1_pre_dnpc;
+//         end
+//     end
+//     else if((!(LSU_IFU_stall || IDU_IFU_STALL)) && state == UPDATED_CACHE)begin
+//         case (addr_buffer[3:2])
+//             2'b00: data_reg3 <= burst_buffer[31:0];
+//             2'b01: data_reg3 <= burst_buffer[63:32];
+//             2'b10: data_reg3 <= burst_buffer[95:64];
+//             2'b11: data_reg3 <= burst_buffer[127:96];
+//         endcase
+//         addr_reg3 <= addr_buffer;
+//         per_pc_reg3 <= pre_pc_buffer;
+//     end
+// end
 
-  always @(posedge clock) begin
-    if (reset) state <= IDLE;
+assign ICACHE_IFU_rdata = (state == IDLE) ? data[index_reg1][32*pc_reg1[3:2]+:32] : (pc_reg1[3:2] == 2'b11) ? ICACHE_AXI4_rdata : data[index_reg1][32*pc_reg1[3:2]+:32];
+assign ICACHE_IFU_raddr = pc_reg1;
+assign ICACHE_IFU_pre_dnpc  = reg1_pre_dnpc;
+assign ICACHE_IFU_valid = (state == IDLE && reg1_valid && hit_reg1 && (~flush)) | (state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r));
+
+assign ICACHE_IFU_stall = allow_update;
+wire stall;
+assign stall = (state != IDLE);
+
+always @(posedge clock) begin
+    if(reset)begin
+        data_valid <= 0;
+    end
+    else if(flush || flush_r || fence_i) begin
+        data_valid <= 0;
+    end
+    else if(LSU_IFU_stall || IDU_IFU_STALL) begin
+        data_valid <= data_valid;
+    end
+    else if((state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (state == UPDATED_CACHE)) begin
+        data_valid <= 1'b1;
+    end
     else begin
-      case (state)
+        data_valid <= 1'b0;
+    end
+end
+
+always @(posedge clock) begin
+    if(reset) begin
+        flush_r <= 0;
+    end
+    else if(state != IDLE && flush) begin
+        flush_r <= flush;
+    end
+    else if(state == IDLE) begin
+        flush_r <= 0;
+    end
+end
+
+always @(posedge clock) begin
+    if(reset) begin
+        state <= IDLE;
+    end
+    else begin
+        case (state)
         IDLE: begin
-          if (cpu_valid_i & cpu_ready_o & ~flush) state <= mux_flag? ADDR:DIRECT;
-          else begin
+            if(IFU_AXI4_rready) begin
+                if(hit_reg1)begin
+                    state <= IDLE;
+                end
+                else if(!flush)begin
+                    state <= AXI_WAIT;
+                end
+            end
+        end
+        AXI_WAIT: begin
+            if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
+                state <= AXI_READ;
+            end
+            else begin
+                state <= AXI_WAIT;
+            end
+        end
+        AXI_READ: begin
+            if(ICACHE_AXI4_rvalid && ICACHE_AXI4_rlast) begin
+                state <= UPDATED_CACHE;
+            end
+            else begin
+                state <= AXI_READ;
+            end
+        end
+        UPDATED_CACHE: begin
+            if(!(LSU_IFU_stall || IDU_IFU_STALL)) begin state <= IDLE; end
+        end
+        default: begin
             state <= IDLE;
-          end
         end
-        ADDR: begin
-          if (flush | hit&cpu_ready_i) state <=  IDLE;
-          else if (hit&~cpu_ready_i) state <= ADDR ;
-          else if (icache_arready & icache_arvalid) state <= MISS;
-        end
-        MISS: begin
-          if (icache_rlast & icache_rvalid & icache_rready) state <= (cpu_ready_i|flush|flush_r)? IDLE:ADDR ;
-          else state <= MISS;
-        end
-        DIRECT:begin
-          state <= icache_rvalid & icache_rready & icache_rlast? IDLE:DIRECT;
-        end
-        default: state <= IDLE;
-      endcase
+        endcase
     end
-  end
+end
 
 
-  always @(posedge clock) begin
-    if (reset) count <= 0;
-    else if (state == IDLE) count <= 0;
-    else if (icache_rvalid) count <= count + 1;
-  end
+assign ICACHE_AXI4_araddr = {pc_reg1[31:4], 4'b0} ; 
+assign ICACHE_AXI4_arvalid = (state == IDLE && (!hit_reg1) && (!flush) && IFU_AXI4_rready);
+assign ICACHE_AXI4_rready = 1'b1;
+assign ICACHE_AXI4_arlen = 8'b11;  // 一次读取4个数据
+//assign ICACHE_AXI4_araddr = (is_sdram_reg2) ? {pc_reg2[31:4], 4'b0} : {pc_reg2[31:2], 2'b0};  // 地址对齐到16字节边界
 
-  integer i;
-
-  always @(posedge clock) begin
-    if (clr) begin
-      for (i = 0; i < 2 ** INDEX_WIDTH; i++) icache[i][0] <= 1'b0;
-    end else if (state == MISS)begin
-      icache[index_r][TAG_WIDTH+VALID_WIDTH-1:0] <= {cpu_tag_r, 1'b1};
-      if(icache_rvalid &  icache_rready) icache[index_r][TAG_WIDTH+VALID_WIDTH+32*count+:32] <= icache_rdata;
+always @(posedge clock)begin
+    if(reset) begin
+        burst_buffer <= 128'h0;
+    end 
+    else if(state == AXI_READ && ICACHE_AXI4_rvalid) begin
+        case (burst_count)
+            2'b00: data[index_reg1][31:0] <= ICACHE_AXI4_rdata;
+            2'b01: data[index_reg1][63:32] <= ICACHE_AXI4_rdata;
+            2'b10: data[index_reg1][95:64] <= ICACHE_AXI4_rdata;
+            2'b11: data[index_reg1][127:96] <= ICACHE_AXI4_rdata;
+        endcase
+        
     end
-  end
+end
 
-  assign block_choice = cpu_pc_i[CacheLine_Width+OFFSET_WIDTH-1:OFFSET_WIDTH];
-  assign block_data = icache[index_r][CACHE_WIDTH-1:VALID_WIDTH+TAG_WIDTH];
-  assign rdata = block_data[32*block_choice_r+:32];
-  assign icache_tag = icache[index_r][VALID_WIDTH+TAG_WIDTH-1:VALID_WIDTH];
-  assign icache_valid = icache[index_r][VALID_WIDTH-1:0];
-  assign index = cpu_pc_i[OFFSET_WIDTH+CacheLine_Width+INDEX_WIDTH-1:OFFSET_WIDTH+CacheLine_Width];
+always @(posedge clock)begin
+    if(reset) begin
+        burst_count <= 0;
+    end 
+    else if(state == AXI_READ && ICACHE_AXI4_rvalid) begin
+        burst_count <= burst_count + 1;
+    end
+end
 
-  assign icache_rready = state == DIRECT ? cpu_ready_i : 1'b1;
-  assign icache_arid = 0;
-  assign icache_arlen = state == ADDR ? 2 ** CacheLine_Width - 1 : 0;  // 0+1 = 1 transfer once
-  assign icache_arsize = 3'b010;  // transfer 4 bytes once
-  assign icache_arburst = state == ADDR  ? 2'b01:2'b00;  // INCR Burst
-  assign icache_awvalid = 0;
-  assign icache_awaddr = 0;
-  assign icache_awid = 0;
-  assign icache_awlen = 0;
-  assign icache_awsize = 0;
-  assign icache_awburst = 0;
+always @(posedge clock)begin
+    if(reset) begin
+        index_buffer <= 0;
+        addr_buffer <= 32'h0;
+        pre_pc_buffer <= 32'h0;
+        tag_buffer <= 0;
+    end 
+    else if(state == IDLE && (!hit_reg1) && reg1_valid) begin
+        index_buffer <= index_reg1;
+        addr_buffer <= pc_reg1;
+        pre_pc_buffer <= reg1_pre_dnpc;
+        tag_buffer <= tag_reg1;
+    end 
+end
 
-  assign icache_wvalid = 0;
-  assign icache_wdata = 0;
-  assign icache_wstrb = 0;
-  assign icache_wlast = 0;
+always @(posedge clock) begin
+    if(reset) begin
+        for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
+            valid[i] <= 0;  // 复位时所有块无效
+        end
+    end
+    else if(fence_i) begin
+        for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
+            valid[i] <= 0;  // 复位时所有块无效
+        end
+    end
+    else if(state == AXI_READ) begin
+        tags[index_buffer] <= tag_reg1;
+        valid[index_buffer] <= 1'b1;
+    end
+end
 
-  assign icache_bready = 0;
-  assign icache_araddr = state == ADDR ? {cpu_tag_r,index_r,{(CacheLine_Width+OFFSET_WIDTH){1'b0}}}:cpu_pc_i;
+// always @(posedge clock) begin
+//     if(state == UPDATED_CACHE) begin
+//         tags[index_buffer] <= tag_buffer;
+        
+//     end
+// end
 
-
-  assign icache_arvalid = ((state == IDLE & cpu_valid_i & ~mux_flag)| (state == ADDR & ~hit))&~flush;
-  assign cpu_ready_o = mux_flag?  state == IDLE: icache_arready ;
-
-
-  assign data_choice = (block_choice_r == {CacheLine_Width{1'b1}}) ; 
-  assign cpu_inst_o   = state == DIRECT? icache_rdata:(state == MISS & data_choice )? icache_rdata:rdata;
-  assign cpu_valid_o  = state == DIRECT? icache_rvalid: ((state == ADDR)&hit&~flush) | ((state == MISS || state == DIRECT ) & icache_rvalid & icache_rlast &~(flush | flush_r) );
-  assign cpu_pc_o = {cpu_tag_r,index_r,block_choice_r,{OFFSET_WIDTH{1'b0}}};
-  assign hit = icache_valid & (cpu_tag_r == icache_tag) ;
-  assign mux_flag = ~(cpu_pc_i[31:28] == 4'ha);  // sram addr 
-
-
-
-
+// always @(posedge clock) begin
+//     if(reset)begin
+//         ICACHE_AXI4_arvalid <= 0;
+//     end
+//     else if((ICACHE_AXI4_arready && ICACHE_AXI4_arvalid))begin
+//         ICACHE_AXI4_arvalid <= 1'b0;
+//     end
+//     else  if(state == IDLE && (!hit_reg1) && reg1_valid && (!flush) && IFU_AXI4_rready)begin
+//         ICACHE_AXI4_arvalid <= 1'b1;
+        
+//     end
+    
+// end
 
 
 
