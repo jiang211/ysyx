@@ -216,7 +216,7 @@ ysyx_24070003_mux4_32bit my8(
     //assign addr = alu_result;
 
 
-assign LSU_IFU_stall = (state != IDLE) & EXU_LSU_ren;
+assign LSU_IFU_stall = (state != IDLE);
 
 
 
