@@ -128,8 +128,7 @@ always @(posedge clock) begin
         data_reg3 <= 0;
         per_pc_reg3 <= 0;
     end
-    else if(!icache_stall && IFU_AXI4_rready) begin
-        if(reg1_valid && hit_reg1 && state == IDLE) begin
+    else if(!icache_stall && IFU_AXI4_rready && reg1_valid && hit_reg1 && state == IDLE) begin
             case (pc_reg1[3:2])
                 2'b00: data_reg3 <= data[index_reg1][31:0];
                 2'b01: data_reg3 <= data[index_reg1][63:32];
@@ -138,7 +137,7 @@ always @(posedge clock) begin
             endcase
             addr_reg3 <= pc_reg1;
             per_pc_reg3 <= reg1_pre_dnpc;
-        end
+       
     end
     else if(!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)begin
         case (pc_reg1[3:2])
