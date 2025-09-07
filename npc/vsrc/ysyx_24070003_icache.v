@@ -136,7 +136,7 @@ always @(posedge clock) begin
         end
     end
     else if(state == AXI_READ && ICACHE_AXI4_rlast)begin
-        case (addr_buffer[3:2])
+        case (pc_reg1[3:2])
             2'b00: data_reg3 <= data[index_reg1][31:0];
             2'b01: data_reg3 <= data[index_reg1][63:32];
             2'b10: data_reg3 <= data[index_reg1][95:64];
