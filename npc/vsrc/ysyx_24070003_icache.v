@@ -121,12 +121,7 @@ always @(posedge clock) begin
 end
 
 always @(posedge clock) begin
-    if(reset) begin
-        addr_reg3 <= 0;
-        data_reg3 <= 0;
-        per_pc_reg3 <= 0;
-    end
-    else if(!icache_stall && IFU_AXI4_rready && reg1_valid && hit_reg1 && state == IDLE) begin
+    if(!icache_stall && IFU_AXI4_rready && reg1_valid && hit_reg1 && state == IDLE) begin
             case (pc_reg1[3:2])
                 2'b00: data_reg3 <= data[index_reg1][31:0];
                 2'b01: data_reg3 <= data[index_reg1][63:32];
@@ -154,9 +149,8 @@ assign ICACHE_IFU_raddr = addr_reg3;
 assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
 assign ICACHE_IFU_valid = data_valid & (~flush);
 
-assign ICACHE_IFU_stall = !allow_update;
-wire stall;
-assign stall = (state != IDLE);
+assign ICACHE_IFU_stall = ~allow_update;
+
 
 always @(posedge clock) begin
     if(reset)begin

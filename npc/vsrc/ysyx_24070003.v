@@ -411,6 +411,9 @@ ysyx_24070003_ifu my_ifu(
     .IFU_IDU_INSTR                  (instr              ),
     //.instr_in                     (instr_in           ),
     .BTB_pre_DNPC                   (BTB_pre_DNPC       ),
+
+    .ifu_count                      (ifu_count          ),
+
     .IFU_AXI4_araddr                (IFU_AXI4_araddr    ),
     .IFU_AXI4_arvalid               (IFU_AXI4_arvalid   ),
     //.IFU_AXI4_arready               (IFU_AXI4_arready   ),
@@ -418,8 +421,8 @@ ysyx_24070003_ifu my_ifu(
     .ICACHE_IFU_rvalid              (IFU_AXI4_rvalid    ),
     .IFU_AXI4_rready                (IFU_AXI4_rready    ),
     .ICACHE_IFU_raddr               (ICACHE_IFU_raddr   ),
-    .ICACHE_IFU_stall               (ICACHE_IFU_stall   ),
-    .ifu_count                      (ifu_count          )
+    .ICACHE_IFU_stall               (ICACHE_IFU_stall   )
+    
 );
 
 
