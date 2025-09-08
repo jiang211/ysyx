@@ -271,6 +271,7 @@ always @(posedge clock) begin
                             // lsu_store_count <= lsu_store_count + 1'b1;
                             // lsu_count <= lsu_count + 1'b1;
                             LSU_AXI_wlast <= 1'b1;
+                            LSU_AXI4_BREADY <= 1'b1;
                             state <= WRITE_DATA;
                             LSU_AXI4_AWVALID <= 1'b0;
                             LSU_AXI4_WVALID <= 1'b0;
@@ -318,6 +319,7 @@ always @(posedge clock) begin
                     LSU_AXI_wlast <= 1'b1;
                     state <= WRITE_WIRE_2;
                     LSU_AXI4_WVALID <= 1'b0;
+                    LSU_AXI4_BREADY <= 1'b1;
                     state <= WRITE_DATA;
                 end else begin
                     
@@ -330,6 +332,7 @@ always @(posedge clock) begin
                 if(LSU_AXI4_AWVALID && LSU_AXI4_AWREADY ) begin
                     state <= WRITE_WIRE_1;
                     LSU_AXI4_AWVALID <= 1'b0;
+                    LSU_AXI4_BREADY <= 1'b1;
                     state <= WRITE_DATA;
                 end else begin
                     state <= WRITE_WIRE_2;
@@ -337,7 +340,6 @@ always @(posedge clock) begin
             end
             
             WRITE_DATA: begin   
-                LSU_AXI4_BREADY <= 1'b1;
                 LSU_AXI_wlast <= 1'b0;
                 if(LSU_AXI4_BVALID && LSU_AXI4_BREADY) begin
                     LSU_AXI4_BREADY <= 1'b0;
