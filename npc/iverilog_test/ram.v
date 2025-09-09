@@ -43,7 +43,66 @@ reg rst_q;
 always @(posedge clk) rst_q <= rst;
 
 wire rst_negedge = rst_q & ~rst;   // 复位释放沿
-wire [31:0] data = mem[32'h3fe4];
+
+
+wire [31:0] data21 = mem[32'h21];
+wire [31:0] data22 = mem[32'h22];
+wire [31:0] data23 = mem[32'h23];
+wire [31:0] data24 = mem[32'h24];
+wire [31:0] data25 = mem[32'h25];
+wire [31:0] data26 = mem[32'h26];
+wire [31:0] data27 = mem[32'h27];
+wire [31:0] data28 = mem[32'h28];
+wire [31:0] data29 = mem[32'h29];
+wire [31:0] data2a = mem[32'h2a];
+wire [31:0] data2b = mem[32'h2b];
+wire [31:0] data2c = mem[32'h2c];
+wire [31:0] data2d = mem[32'h2d];
+wire [31:0] data2e = mem[32'h2e];
+wire [31:0] data2f = mem[32'h2f];
+wire [31:0] data30 = mem[32'h30];
+wire [31:0] data31 = mem[32'h31];
+wire [31:0] data32 = mem[32'h32];
+wire [31:0] data33 = mem[32'h33];
+wire [31:0] data34 = mem[32'h34];
+wire [31:0] data35 = mem[32'h35];
+wire [31:0] data36 = mem[32'h36];
+wire [31:0] data37 = mem[32'h37];
+wire [31:0] data38 = mem[32'h38];
+wire [31:0] data39 = mem[32'h39];
+wire [31:0] data3a = mem[32'h3a];
+wire [31:0] data3b = mem[32'h3b];
+wire [31:0] data3c = mem[32'h3c];
+wire [31:0] data3d = mem[32'h3d];
+wire [31:0] data3e = mem[32'h3e];
+wire [31:0] data3f = mem[32'h3f];
+wire [31:0] data40 = mem[32'h40];
+wire [31:0] data41 = mem[32'h41];
+wire [31:0] data42 = mem[32'h42];
+wire [31:0] data43 = mem[32'h43];
+wire [31:0] data44 = mem[32'h44];
+wire [31:0] data45 = mem[32'h45];
+wire [31:0] data46 = mem[32'h46];
+wire [31:0] data47 = mem[32'h47];
+wire [31:0] data48 = mem[32'h48];
+wire [31:0] data49 = mem[32'h49];
+wire [31:0] data4a = mem[32'h4a];
+wire [31:0] data4b = mem[32'h4b];
+wire [31:0] data4c = mem[32'h4c];
+wire [31:0] data4d = mem[32'h4d];
+wire [31:0] data4e = mem[32'h4e];
+wire [31:0] data4f = mem[32'h4f];
+wire [31:0] data50 = mem[32'h50];
+wire [31:0] data51 = mem[32'h51];
+wire [31:0] data52 = mem[32'h52];
+wire [31:0] data53 = mem[32'h53];
+wire [31:0] data54 = mem[32'h54];
+wire [31:0] data55 = mem[32'h55];
+wire [31:0] data56 = mem[32'h56];
+wire [31:0] data57 = mem[32'h57];
+wire [31:0] data58 = mem[32'h58];
+wire [31:0] data59 = mem[32'h59];
+wire [31:0] data5a = mem[32'h5a];
 initial rst_q = 1;
 // 上电装载镜像
 always @(posedge clk) begin
@@ -57,6 +116,8 @@ always @(posedge clk) begin
         // 2. 复位一结束就重新装镜像
         $readmemh("ram.hex", mem);
         $display("=== $readmemh loaded after rst ===");
+
+		
         $display("mem[0] = %08x", mem[0]);
     end
 end
