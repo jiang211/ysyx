@@ -70,7 +70,9 @@ module ysyx_24070003(
     output  wire        [1:0] io_slave_rresp,   
     output  wire            [31:0] io_slave_rdata ,
     output  wire      io_slave_rlast ,
-    output  wire        [3:0] io_slave_rid   
+    output  wire        [3:0] io_slave_rid   ,
+    output  wire         ebreak,
+    output  wire [31:0] a0
 );
 
 reg [63:0]                           lsu_count                      ;
@@ -160,7 +162,7 @@ wire [1:0]                                alu_src1                       ;
 wire [1:0]                                alu_src2                       ;
 wire                                 U_type_1                       ;  
 wire                                 J_type_1                       ;
-wire                                 ebreak                         ;
+
 reg                                  difftest_valid                 ;
 wire                                 IFU_IDU_valid                  ;
 wire                                 IDU_EXU_valid                  ;
@@ -868,7 +870,8 @@ ysyx_24070003_RegisterFile #(.ADDR_WIDTH(4), .DATA_WIDTH(32)) rf1(
         .rdata1                     (rs1_data           ),
         .raddr1                     (rs1[3:0]           ),
         .rdata2                     (rs2_data           ),
-        .raddr2                     (rs2[3:0]           )
+        .raddr2                     (rs2[3:0]           ),
+        .a0                         (a0                 )
     );
 assign WBU_CSR_RADDR = (IDU_EXU_ecall) ? 'd3 : (IDU_EXU_mret) ? 'd0 :IDU_EXU_csr_rst;
 ysyx_24070003_csr_reg #(.ADDR_WIDTH(3), .DATA_WIDTH(32)) csr1(
@@ -3259,7 +3262,8 @@ module ysyx_24070003_RegisterFile #(
     
     output [DATA_WIDTH-1:0] rdata2,
     
-    input [ADDR_WIDTH-1:0] raddr2
+    input [ADDR_WIDTH-1:0] raddr2,
+    output [31:0]           a0
 );
 
     reg [DATA_WIDTH-1:0] rf[15:0];
@@ -3274,6 +3278,8 @@ module ysyx_24070003_RegisterFile #(
     
     assign rdata1 = rf[raddr1];
     assign rdata2 = rf[raddr2];
+    
+    assign                       a0                  = rf[10];
    
 endmodule
 

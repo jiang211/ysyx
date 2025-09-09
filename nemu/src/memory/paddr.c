@@ -18,7 +18,7 @@
 #include <device/mmio.h>
 #include <isa.h>
 
-#define YSYXSOC
+//#define YSYXSOC
 #ifndef YSYXSOC
 
 #ifndef CONFIG_TARGET_SHARE  

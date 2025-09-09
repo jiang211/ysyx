@@ -15,7 +15,7 @@
 
 #include <isa.h>
 #include <memory/paddr.h>
-#define YSYXSOC
+//#define YSYXSOC
 
 // this is not consistent with uint8_t
 // but it is ok since we do not access the array directly
@@ -37,7 +37,8 @@ static void restart() {
   // cpu.pc = 0x30000000;
   // #endif
   /* Set the initial values of the CSRs. */
-  cpu.pc = 0x30000000;
+  cpu.pc = 0x80000000;
+  //cpu.pc = 0x30000000;
   cpu.csr[1] = 0x1800;
   /* The zero register is always 0. */
   cpu.gpr[0] = 0;
