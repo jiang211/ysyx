@@ -71,8 +71,6 @@ module ysyx_24070003(
     output  wire            [31:0] io_slave_rdata ,
     output  wire      io_slave_rlast ,
     output  wire        [3:0] io_slave_rid   
-    //output  wire         ebreak,
-    //output  wire [31:0] a0
 );
 
 reg [63:0]                           lsu_count                      ;
@@ -162,7 +160,7 @@ wire [1:0]                                alu_src1                       ;
 wire [1:0]                                alu_src2                       ;
 wire                                 U_type_1                       ;  
 wire                                 J_type_1                       ;
-
+wire                                 ebreak                         ;
 reg                                  difftest_valid                 ;
 wire                                 IFU_IDU_valid                  ;
 wire                                 IDU_EXU_valid                  ;
@@ -859,8 +857,7 @@ ysyx_24070003_wbu my_wbu(
     .DNPC_DATA                      (DNPC_DATA          ),
     .WBU_TOP_skip                   (WBU_TOP_skip       )
 );
-wire ebreak;
-wire [31:0] a0;
+    
 
 ysyx_24070003_RegisterFile #(.ADDR_WIDTH(4), .DATA_WIDTH(32)) rf1(
         .clock                        (clock              ),
@@ -871,8 +868,7 @@ ysyx_24070003_RegisterFile #(.ADDR_WIDTH(4), .DATA_WIDTH(32)) rf1(
         .rdata1                     (rs1_data           ),
         .raddr1                     (rs1[3:0]           ),
         .rdata2                     (rs2_data           ),
-        .raddr2                     (rs2[3:0]           ),
-        .a0                         (a0                 )
+        .raddr2                     (rs2[3:0]           )
     );
 assign WBU_CSR_RADDR = (IDU_EXU_ecall) ? 'd3 : (IDU_EXU_mret) ? 'd0 :IDU_EXU_csr_rst;
 ysyx_24070003_csr_reg #(.ADDR_WIDTH(3), .DATA_WIDTH(32)) csr1(
@@ -905,41 +901,36 @@ always @(posedge clock ) begin
     end
 end
 
-// always @(posedge clock ) begin
-//     if(reset) begin
-//         total_count <= 0;
-//     end else begin
-//         total_count <= total_count + 1;
-//     end
-// end
-// always @(posedge clock ) begin
-//     if(ifu_count % 1000 == 0) begin
-//         $display("ifu_count = %040d",ifu_count);
-//     end
-// end
-// always @(posedge clock ) begin
-//     if(EXU_LSU_ebreak) begin
-//         $display("total_count               = %040d\n",total_count);
-//         $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
-//         $display("lsu_count                 = %040d\n",lsu_count);
-//         $display("ifu_count                 = %040d\n",ifu_count);
-//         $display("calcu_type_count          = %040d\n",calcu_type_count);
-//         $display("Jump_type_count           = %040d\n",Jump_type_count);
-//         $display("BJump_type_count          = %040d\n",BJump_type_count);
-//         $display("LOAD_type_count           = %040d\n",LOAD_type_count);
-//         $display("STORE_type_count          = %040d\n",STORE_type_count);
-//         $display("C_type_count              = %040d\n",C_type_count);
-//         $display("lsu_average_count         = %040d\n",lsu_during_count/lsu_count);
-//         $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
-//         $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
-//         $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
-//         $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
-//         $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
-//         $display("total_access              = %040d\n",total_access);
-//         $display("access_time               = %040d\n",access_time);
-//         $display("miss_penalty              = %040d\n",miss_penalty);
-//     end
-// end
+always @(posedge clock ) begin
+    if(reset) begin
+        total_count <= 0;
+    end else begin
+        total_count <= total_count + 1;
+    end
+end
+always @(posedge clock ) begin
+    if(EXU_LSU_ebreak) begin
+        $display("total_count               = %040d\n",total_count);
+        $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
+        $display("lsu_count                 = %040d\n",lsu_count);
+        $display("ifu_count                 = %040d\n",ifu_count);
+        $display("calcu_type_count          = %040d\n",calcu_type_count);
+        $display("Jump_type_count           = %040d\n",Jump_type_count);
+        $display("BJump_type_count          = %040d\n",BJump_type_count);
+        $display("LOAD_type_count           = %040d\n",LOAD_type_count);
+        $display("STORE_type_count          = %040d\n",STORE_type_count);
+        $display("C_type_count              = %040d\n",C_type_count);
+        $display("lsu_average_count         = %040d\n",lsu_during_count/lsu_count);
+        $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
+        $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
+        $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
+        $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
+        $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
+        $display("total_access              = %040d\n",total_access);
+        $display("access_time               = %040d\n",access_time);
+        $display("miss_penalty              = %040d\n",miss_penalty);
+    end
+end
 import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
 reg [31:0] dpi_monitor_data[0:5];
 // 初始化时绑定指针
@@ -3268,8 +3259,7 @@ module ysyx_24070003_RegisterFile #(
     
     output [DATA_WIDTH-1:0] rdata2,
     
-    input [ADDR_WIDTH-1:0] raddr2,
-    output [31:0]           a0
+    input [ADDR_WIDTH-1:0] raddr2
 );
 
     reg [DATA_WIDTH-1:0] rf[15:0];
@@ -3284,22 +3274,6 @@ module ysyx_24070003_RegisterFile #(
     
     assign rdata1 = rf[raddr1];
     assign rdata2 = rf[raddr2];
-    
-    assign                       a0                  = rf[10];
-    wire [31:0] ra = rf[1];
-    wire [31:0] sp = rf[2]; 
-    wire [31:0] gp = rf[3]; 
-    wire [31:0] tp = rf[4]; 
-    wire [31:0] t0 = rf[5]; 
-    wire [31:0] t1 = rf[6]; 
-    wire [31:0] t2 = rf[7]; 
-    wire [31:0] s0 = rf[8]; 
-    wire [31:0] s1 = rf[9]; 
-    wire [31:0] a1 = rf[11]; 
-    wire [31:0] a2 = rf[12]; 
-    wire [31:0] a3 = rf[13]; 
-    wire [31:0] a4 = rf[14]; 
-    wire [31:0] a5 = rf[15]; 
    
 endmodule
 
