@@ -53,8 +53,8 @@ void init_isa() {
   // #else
   // memcpy(guest_to_host(0x30000000), img, sizeof(img));
   // #endif
-  
-memcpy(guest_to_host(0x30000000), img, sizeof(img));
+  memcpy(guest_to_host(0x80000000), img, sizeof(img));
+//memcpy(guest_to_host(0x30000000), img, sizeof(img));
   /* Initialize this virtual computer system. */
   restart();
 }
