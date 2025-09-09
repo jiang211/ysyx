@@ -217,7 +217,7 @@ ram u_ram (
 // 波形
 //----------------------------------------------------------------------
 initial begin
-    $dumpfile("tb.vcd");
+    //$dumpfile("tb.vcd");
     $dumpvars(0, tb_ysyx_24070003);
 end
 
