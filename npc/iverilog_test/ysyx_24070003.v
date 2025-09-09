@@ -911,11 +911,11 @@ end
 //         total_count <= total_count + 1;
 //     end
 // end
-// always @(posedge clock ) begin
-//     if(ifu_count % 1000 == 0) begin
-//         $display("ifu_count = %040d",ifu_count);
-//     end
-// end
+always @(posedge clock ) begin
+    if(EXU_LSU_ebreak) begin
+        $display("ifu_count = %010d",ifu_count);
+    end
+end
 // always @(posedge clock ) begin
 //     if(EXU_LSU_ebreak) begin
 //         $display("total_count               = %040d\n",total_count);
