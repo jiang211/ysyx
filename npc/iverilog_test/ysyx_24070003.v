@@ -3280,6 +3280,20 @@ module ysyx_24070003_RegisterFile #(
     assign rdata2 = rf[raddr2];
     
     assign                       a0                  = rf[10];
+    wire [31:0] ra = rf[1];
+    wire [31:0] sp = rf[2]; 
+    wire [31:0] gp = rf[3]; 
+    wire [31:0] tp = rf[4]; 
+    wire [31:0] t0 = rf[5]; 
+    wire [31:0] t1 = rf[6]; 
+    wire [31:0] t2 = rf[7]; 
+    wire [31:0] s0 = rf[8]; 
+    wire [31:0] s1 = rf[9]; 
+    wire [31:0] a1 = rf[11]; 
+    wire [31:0] a2 = rf[12]; 
+    wire [31:0] a3 = rf[13]; 
+    wire [31:0] a4 = rf[14]; 
+    wire [31:0] a5 = rf[15]; 
    
 endmodule
 
