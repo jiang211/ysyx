@@ -218,7 +218,7 @@ ram u_ram (
 //----------------------------------------------------------------------
 initial begin
     //$dumpfile("tb.vcd");
-    $dumpvars(0, tb_ysyx_24070003);
+    //$dumpvars(0, tb_ysyx_24070003);
 end
 
 endmodule

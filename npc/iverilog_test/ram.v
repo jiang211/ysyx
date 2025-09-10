@@ -228,10 +228,10 @@ integer byte_idx;
 always @(posedge clk) begin
     if (wvalid && wready) begin
         if(w_addr != 32'ha00003f8)begin
-            if(wstrb[0]) mem[addr2w(w_addr)][7:0] <= wdata[31:24];
-            if(wstrb[1]) mem[addr2w(w_addr)][15:8] <= wdata[23:16];
-            if(wstrb[2]) mem[addr2w(w_addr)][23:16] <= wdata[15:8];
-            if(wstrb[3]) mem[addr2w(w_addr)][31:24] <= wdata[7:0];
+            if(wstrb[0]) mem[addr2w(w_addr)][31:24] <= wdata[7:0];
+            if(wstrb[1]) mem[addr2w(w_addr)][23:16] <= wdata[15:8];
+            if(wstrb[2]) mem[addr2w(w_addr)][15:8] <= wdata[23:16];
+            if(wstrb[3]) mem[addr2w(w_addr)][7:0] <= wdata[31:24];
         end
         else begin
             $write("%c",wdata[7:0]);
