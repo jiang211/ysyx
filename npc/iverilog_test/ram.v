@@ -45,7 +45,7 @@ always @(posedge clk) rst_q <= rst;
 wire rst_negedge = rst_q & ~rst;   // 复位释放沿
 
 
-wire [31:0] data = mem[32'h3fea];
+wire [31:0] data = mem[32'h5001];
 
 initial rst_q = 1;
 // 上电装载镜像
