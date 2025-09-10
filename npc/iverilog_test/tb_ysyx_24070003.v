@@ -95,7 +95,7 @@ assign io_master_rvalid  = m_rvalid;
 assign io_master_rdata   = m_rdata;
 assign io_master_rlast   = m_rlast;
 assign io_master_rid     = m_rid;
-
+wire [63:0] ifu_count;
 //----------------------------------------------------------------------
 //  实例化 SoC
 //----------------------------------------------------------------------
@@ -164,7 +164,8 @@ ysyx_24070003 dut (
     .io_slave_rlast    (io_slave_rlast),
     .io_slave_rid      (io_slave_rid),
     .ebreak            (ebreak),
-    .a0                 (a0)
+    .a0                 (a0),
+    .ifu_count          (ifu_count)
 );
 always @(posedge clock) begin
     if (ebreak) begin
@@ -176,7 +177,11 @@ always @(posedge clock) begin
         end
         $stop;   // 立即停仿真
     end
-end
+    else if(ifu_count > 'd100000) begin
+        $display("\n=== TIMEOUT ===");
+        $stop;   // 立即停仿真
+    end
+end 
 //----------------------------------------------------------------------
 //  外部 ram
 //----------------------------------------------------------------------
@@ -217,8 +222,8 @@ ram u_ram (
 // 波形
 //----------------------------------------------------------------------
 initial begin
-    //$dumpfile("tb.vcd");
-    //$dumpvars(0, tb_ysyx_24070003);
+    $dumpfile("tb.vcd");
+    $dumpvars(0, tb_ysyx_24070003);
 end
 
 endmodule

@@ -72,11 +72,12 @@ module ysyx_24070003(
     output  wire      io_slave_rlast ,
     output  wire        [3:0] io_slave_rid   ,
     output  wire         ebreak,
-    output  wire [31:0] a0
+    output  wire [31:0] a0,
+    output  reg [63:0] ifu_count
 );
 
 reg [63:0]                           lsu_count                      ;
-reg [63:0]                           ifu_count                      ;
+//reg [63:0]                           ifu_count                      ;
 reg [63:0]                           calcu_type_count               ;
 reg [63:0]                           Jump_type_count                ;
 reg [63:0]                           BJump_type_count               ;
