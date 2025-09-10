@@ -70,7 +70,7 @@ module ysyx_24070003(
     output  wire        [1:0] io_slave_rresp,   
     output  wire            [31:0] io_slave_rdata ,
     output  wire      io_slave_rlast ,
-    output  wire        [3:0] io_slave_rid 
+    output  wire        [3:0] io_slave_rid   
 );
 
 reg [63:0]                           lsu_count                      ;
@@ -160,7 +160,7 @@ wire [1:0]                                alu_src1                       ;
 wire [1:0]                                alu_src2                       ;
 wire                                 U_type_1                       ;  
 wire                                 J_type_1                       ;
-
+wire                                 ebreak                         ;
 reg                                  difftest_valid                 ;
 wire                                 IFU_IDU_valid                  ;
 wire                                 IDU_EXU_valid                  ;
@@ -728,7 +728,7 @@ ysyx_24070003_exu my_exu(
     .EXU_BTB_PC                     (EXU_BTB_PC         ),
     .EXU_BTB_updata_valid           (EXU_BTB_updata_valid)
 );
-wire ebreak;
+
 assign LSU_RDATA = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RDATA : LSU_AXI4_RDATA;
 assign LSU_RVALID = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RVALID : LSU_AXI4_RVALID;
 assign LSU_ARREADY = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_ARREADY : LSU_AXI4_ARREADY;
@@ -901,18 +901,13 @@ always @(posedge clock ) begin
     end
 end
 
-// always @(posedge clock ) begin
-//     if(reset) begin
-//         total_count <= 0;
-//     end else begin
-//         total_count <= total_count + 1;
-//     end
-// end
-// always @(posedge clock ) begin
-//     if(EXU_LSU_ebreak) begin
-//         $display("ifu_count = %010d",ifu_count);
-//     end
-// end
+always @(posedge clock ) begin
+    if(reset) begin
+        total_count <= 0;
+    end else begin
+        total_count <= total_count + 1;
+    end
+end
 always @(posedge clock ) begin
     if(EXU_LSU_ebreak) begin
         $display("total_count               = %040d\n",total_count);
@@ -2985,7 +2980,6 @@ always @(posedge clock) begin
         LSU_AXI4_BREADY <= 1'b0;
 
         LSU_WBU_valid <= 1'b0;
-        LSU_RDATA <= 32'b0;
 
         LSU_AXI_wlast <= 1'b0;
         // lsu_count <=  64'd0;
@@ -3280,8 +3274,6 @@ module ysyx_24070003_RegisterFile #(
     
     assign rdata1 = rf[raddr1];
     assign rdata2 = rf[raddr2];
-    
-    
    
 endmodule
 
