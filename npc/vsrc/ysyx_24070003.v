@@ -2664,11 +2664,15 @@ assign BLT = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  & ~alu_crtl[0]);
 assign BGE = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  &  alu_crtl[0]);
 assign BNE = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  & ~alu_crtl[0]);
 assign BEQ = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  &  alu_crtl[0]);
-// assign zero = (BLT &  branch  &  LESS_S)   |
-//               (BGE & ~LESS_S)   |
-//               (BNE & ~ADD_zero) |
-//               (BEQ &  ADD_zero) ;
-
+wire zero0 = (BLT &  branch  &  LESS_S)   |
+              (BGE & ~LESS_S)   |
+              (BNE & ~ADD_zero) |
+              (BEQ &  ADD_zero) ;
+always @(*)begin
+    if(zero != zero0) begin
+        $display("opdata1 = %h, opdata2 = %h ,LESS_M1 = %h ,LESS_M2 = %h ,zero = %h,zero0 = %h",opdata1,opdata2,LESS_M1,LESS_M2,zero,zero0);
+    end
+end
 assign LESS_M1 = ADD_carry ^ sub_ctl;
 assign LESS_M2 = ADD_OverFlow ^ ADD_result[31];
 assign LESS_S = (u_alu_type)?LESS_M1:LESS_M2;
