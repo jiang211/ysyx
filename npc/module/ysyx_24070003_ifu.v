@@ -22,28 +22,22 @@ module ysyx_24070003_ifu(
     input  fence_i,
     input  stall,
     output [31:0]     BTB_pre_DNPC,
+
+    output reg [63:0] ifu_count,
+
     // AXI-Lite4 Interface
     output reg [31:0] IFU_AXI4_araddr,
-    output reg        IFU_AXI4_arvalid,
+    output            IFU_AXI4_arvalid,
     // input             IFU_AXI4_arready,
     input  [31:0]     IFU_AXI4_rdata,
     input             ICACHE_IFU_rvalid,
     output reg        IFU_AXI4_rready,
     input  [31:0]     ICACHE_IFU_raddr,
-    input             ICACHE_IFU_stall,
-    output reg [63:0] ifu_count
+    input             ICACHE_IFU_stall
+    
 );
 reg [31:0] pc;
 
-
-// localparam IDLE        = 2'b00;
-// localparam READ  = 2'b01;
-// reg [1:0] state;
-
-//reg [63:0] ifu_count;
-
-// wire [31:0] dnpc;
-// assign dnpc = (EXU_IFU_flush)? EXU_IFU_pc :pc + 4;
 
 
 assign cur_pc = pc;
@@ -69,30 +63,12 @@ begin
 end
 
 
-// always@(posedge clk)
-// begin
-//     if(rstn)begin
-//         IFU_dnpc <= 32'h80000000;
-//     end
-//     else begin
-//         IFU_dnpc <= dnpc;
-//     end
-// end
-//reg [31:0] instr;
 
 assign IFU_IDU_valid = ICACHE_IFU_rvalid;
 
 assign IFU_AXI4_araddr = pc;
-always @(posedge clock) begin
-    if (rstn) begin
-        IFU_AXI4_arvalid <= 1'b0;
-    end else if (!stall && !EXU_IFU_flush && !fence_i) begin
-        IFU_AXI4_arvalid <= 1'b1;
-    end else begin
-        IFU_AXI4_arvalid <= 1'b0;
-    end
-end
 
+assign IFU_AXI4_arvalid = (~stall && !EXU_IFU_flush && !fence_i);
 
 
 assign IFU_IDU_INSTR = IFU_AXI4_rdata;

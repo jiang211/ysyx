@@ -70,11 +70,14 @@ module ysyx_24070003(
     output  wire        [1:0] io_slave_rresp,   
     output  wire            [31:0] io_slave_rdata ,
     output  wire      io_slave_rlast ,
-    output  wire        [3:0] io_slave_rid   
+    output  wire        [3:0] io_slave_rid   ,
+    output  wire         ebreak,
+    output  wire [31:0] a0,
+    output  reg [63:0] ifu_count
 );
 
 reg [63:0]                           lsu_count                      ;
-reg [63:0]                           ifu_count                      ;
+//reg [63:0]                           ifu_count                      ;
 reg [63:0]                           calcu_type_count               ;
 reg [63:0]                           Jump_type_count                ;
 reg [63:0]                           BJump_type_count               ;
@@ -160,7 +163,7 @@ wire [1:0]                                alu_src1                       ;
 wire [1:0]                                alu_src2                       ;
 wire                                 U_type_1                       ;  
 wire                                 J_type_1                       ;
-wire                                 ebreak                         ;
+
 reg                                  difftest_valid                 ;
 wire                                 IFU_IDU_valid                  ;
 wire                                 IDU_EXU_valid                  ;
@@ -868,7 +871,8 @@ ysyx_24070003_RegisterFile #(.ADDR_WIDTH(4), .DATA_WIDTH(32)) rf1(
         .rdata1                     (rs1_data           ),
         .raddr1                     (rs1[3:0]           ),
         .rdata2                     (rs2_data           ),
-        .raddr2                     (rs2[3:0]           )
+        .raddr2                     (rs2[3:0]           ),
+        .a0                         (a0                 )
     );
 assign WBU_CSR_RADDR = (IDU_EXU_ecall) ? 'd3 : (IDU_EXU_mret) ? 'd0 :IDU_EXU_csr_rst;
 ysyx_24070003_csr_reg #(.ADDR_WIDTH(3), .DATA_WIDTH(32)) csr1(
@@ -901,46 +905,51 @@ always @(posedge clock ) begin
     end
 end
 
-always @(posedge clock ) begin
-    if(reset) begin
-        total_count <= 0;
-    end else begin
-        total_count <= total_count + 1;
-    end
-end
+// always @(posedge clock ) begin
+//     if(reset) begin
+//         total_count <= 0;
+//     end else begin
+//         total_count <= total_count + 1;
+//     end
+// end
 always @(posedge clock ) begin
     if(EXU_LSU_ebreak) begin
-        $display("total_count               = %040d\n",total_count);
-        $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
-        $display("lsu_count                 = %040d\n",lsu_count);
-        $display("ifu_count                 = %040d\n",ifu_count);
-        $display("calcu_type_count          = %040d\n",calcu_type_count);
-        $display("Jump_type_count           = %040d\n",Jump_type_count);
-        $display("BJump_type_count          = %040d\n",BJump_type_count);
-        $display("LOAD_type_count           = %040d\n",LOAD_type_count);
-        $display("STORE_type_count          = %040d\n",STORE_type_count);
-        $display("C_type_count              = %040d\n",C_type_count);
-        $display("lsu_average_count         = %040d\n",lsu_during_count/lsu_count);
-        $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
-        $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
-        $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
-        $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
-        $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
-        $display("total_access              = %040d\n",total_access);
-        $display("access_time               = %040d\n",access_time);
-        $display("miss_penalty              = %040d\n",miss_penalty);
+        $display("ifu_count = %010d",ifu_count);
     end
 end
-import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
-reg [31:0] dpi_monitor_data[0:5];
-// 初始化时绑定指针
-initial set_monitor_ptr(dpi_monitor_data);
-assign dpi_monitor_data[0] = {31'b0,difftest_valid};
-assign dpi_monitor_data[1] = TO_top_pc;
-assign dpi_monitor_data[2] = TO_top_dnpc;
-assign dpi_monitor_data[3] = instr;
-assign dpi_monitor_data[4] = {31'b0,ebreak};
-assign dpi_monitor_data[5] = {31'b0,ref_skip};
+// always @(posedge clock ) begin
+//     if(EXU_LSU_ebreak) begin
+//         $display("total_count               = %040d\n",total_count);
+//         $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
+//         $display("lsu_count                 = %040d\n",lsu_count);
+//         $display("ifu_count                 = %040d\n",ifu_count);
+//         $display("calcu_type_count          = %040d\n",calcu_type_count);
+//         $display("Jump_type_count           = %040d\n",Jump_type_count);
+//         $display("BJump_type_count          = %040d\n",BJump_type_count);
+//         $display("LOAD_type_count           = %040d\n",LOAD_type_count);
+//         $display("STORE_type_count          = %040d\n",STORE_type_count);
+//         $display("C_type_count              = %040d\n",C_type_count);
+//         $display("lsu_average_count         = %040d\n",lsu_during_count/lsu_count);
+//         $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
+//         $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
+//         $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
+//         $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
+//         $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
+//         $display("total_access              = %040d\n",total_access);
+//         $display("access_time               = %040d\n",access_time);
+//         $display("miss_penalty              = %040d\n",miss_penalty);
+//     end
+// end
+// import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
+// reg [31:0] dpi_monitor_data[0:5];
+// // 初始化时绑定指针
+// initial set_monitor_ptr(dpi_monitor_data);
+// assign dpi_monitor_data[0] = {31'b0,difftest_valid};
+// assign dpi_monitor_data[1] = TO_top_pc;
+// assign dpi_monitor_data[2] = TO_top_dnpc;
+// assign dpi_monitor_data[3] = instr;
+// assign dpi_monitor_data[4] = {31'b0,ebreak};
+// assign dpi_monitor_data[5] = {31'b0,ref_skip};
 
 
 
@@ -2648,7 +2657,7 @@ ysyx_24070003_Adder Adder(.A(opdata1),
 			.Cin(sub_ctl),
 			.ALU_CTL(alu_crtl),
 			.ADD_carry(ADD_carry),
-			//.ADD_OverFlow(ADD_OverFlow),
+			.ADD_OverFlow(ADD_OverFlow),
 			.ADD_zero(ADD_zero),
 			.ADD_result(ADD_result));
 
@@ -2659,7 +2668,7 @@ ysyx_24070003_Adder Adder(.A(opdata1),
 wire [31:0] SLT_result;
 wire LESS_M1,LESS_M2,LESS_S,SLT_M;
 wire BLT,BGE,BNE,BEQ;
-//assign ADD_OverFlow = (opdata1[31] & ~opdata2[31]) | ((opdata1[31] ~^ opdata2[31]) & ADD_result[31]); 
+
 assign BLT = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  & ~alu_crtl[0]);
 assign BGE = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  &  alu_crtl[0]);
 assign BNE = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  & ~alu_crtl[0]);
@@ -2670,10 +2679,10 @@ assign zero = (BLT &  branch  &  LESS_S)   |
               (BEQ &  ADD_zero) ;
 
 assign LESS_M1 = ADD_carry ^ sub_ctl;
-assign LESS_M2 = (opdata1[31] & ~opdata2[31]) | ((opdata1[31] ~^ opdata2[31]) & ADD_result[31]);
+assign LESS_M2 = ADD_OverFlow ^ ADD_result[31];
 assign LESS_S = (u_alu_type)?LESS_M1:LESS_M2;
 assign SLT_result = (LESS_S)?32'h00000001:32'h00000000;
-//708,687,567
+
 always @(*) 
 begin
   case(data_choice)
@@ -2683,108 +2692,7 @@ begin
      2'b11:alu_out=shift_result; 
   endcase
 end
-//  `define ysyx_24070003_OP_ADD         4'b0001 // +
-// `define ysyx_24070003_OP_SUB         4'b0011 // -
-
-// `define ysyx_24070003_OP_AND         4'b0100 // &
-// `define ysyx_24070003_OP_OR          4'b0101 // |
-// `define ysyx_24070003_OP_XOR         4'b0110 // ^
-
-// `define ysyx_24070003_OP_SLL         4'b1100 // <<
-// `define ysyx_24070003_OP_SRL         4'b1101 // >>
-// `define ysyx_24070003_OP_SRA         4'b1110 // >>>
-
-// `define ysyx_24070003_OP_BLT         4'b1000 // <
-// `define ysyx_24070003_OP_BGE         4'b1001 // >=
-// `define ysyx_24070003_OP_BNE         4'b1010 // !=
-// `define ysyx_24070003_OP_BEQ         4'b1011 // ==
-
-//  always @(*) begin
-//         case (alu_crtl)
-//             `ysyx_24070003_OP_BLT: begin
-//                 if(branch)
-//                     if(u_alu_type) begin
-//                         if(opdata1 < opdata2)begin
-//                             zero = 1'b1;
-//                         end
-//                         else begin
-//                             zero = 1'b0;
-//                         end
-//                     end
-//                     else begin
-//                         if($signed(opdata1) < $signed(opdata2))begin
-//                             zero = 1'b1;
-//                         end
-//                         else begin
-//                             zero = 1'b0;
-//                         end
-//                     end
-//                 else begin
-//                     if(u_alu_type) begin
-//                         zero = 1'b0;
-//                     end
-//                     else begin
-//                         zero = 1'b0;
-//                     end
-//                 end
-//             end
-            
-        
-//             `ysyx_24070003_OP_BGE:
-//                 if(branch)begin
-//                     if(u_alu_type) begin
-//                         if(opdata1 >= opdata2)begin
-//                             zero = 1'b1;
-//                         end
-//                         else begin
-//                             zero = 1'b0;
-//                         end
-//                     end
-//                     else begin
-//                         if($signed(opdata1) >= $signed(opdata2))begin
-//                             zero = 1'b1;
-//                         end
-//                         else begin
-//                             zero = 1'b0;
-//                         end
-//                     end
-//                 end
-//                 else begin
-//                     zero = 1'b0;
-//                 end
-//             `ysyx_24070003_OP_BNE: 
-//                 if(branch)
-//                     if(opdata1 != opdata2)begin
-//                         zero = 1'b1;
-//                     end
-//                     else begin
-//                         zero = 1'b0;
-//                     end
-//                 else begin
-//                     zero = 1'b0;
-//                 end
-//             `ysyx_24070003_OP_BEQ: 
-//                 if(branch)
-//                     if(opdata1 == opdata2)begin
-//                         zero = 1'b1;
-//                     end
-//                     else begin
-//                         zero = 1'b0;
-//                     end
-//                 else begin
-//                     zero = 1'b0;
-//                 end
-//             4'b1111: begin
-//                     zero = 1'b0;
-//                 end
-//             default: begin
-//                     zero = 1'b0;
-//                 end
-//         endcase
-        
-//     end
-
-
+ 
 endmodule
 
 module ysyx_24070003_Shifter(input [31:0] ALU_DA,
@@ -2814,7 +2722,7 @@ module ysyx_24070003_Adder(input [31:0] A,
 			 input Cin,
 			 input [3:0] ALU_CTL,
 			 output ADD_carry,
-			 //output ADD_OverFlow,
+			 output ADD_OverFlow,
 			 output ADD_zero,
 			 output [31:0] ADD_result);
 
@@ -2823,11 +2731,10 @@ module ysyx_24070003_Adder(input [31:0] A,
 
 
    assign ADD_zero = ~(|ADD_result);
-//    assign ADD_OverFlow=((~Cin) & ~A[31] & ~B[31] & ADD_result[31]) 
-//                       | ((~Cin) & A[31] & B[31] & ~ADD_result[31])
-//                       | ((Cin) & A[31] & ~B[31] & ~ADD_result[31]) 
-// 					  | ((Cin) & ~A[31] & B[31] & ADD_result[31]);
-     
+   assign ADD_OverFlow=((ALU_CTL==4'b0001) & ~A[31] & ~B[31] & ADD_result[31]) 
+                      | ((ALU_CTL==4'b0001) & A[31] & B[31] & ~ADD_result[31])
+                      | ((ALU_CTL==4'b0011) & A[31] & ~B[31] & ~ADD_result[31]) 
+					  | ((ALU_CTL==4'b0011) & ~A[31] & B[31] & ADD_result[31]);
 endmodule
 
 module ysyx_24070003_lsu(
@@ -3082,6 +2989,7 @@ always @(posedge clock) begin
         LSU_AXI4_BREADY <= 1'b0;
 
         LSU_WBU_valid <= 1'b0;
+        LSU_RDATA <= 32'b0;
 
         LSU_AXI_wlast <= 1'b0;
         // lsu_count <=  64'd0;
@@ -3361,12 +3269,13 @@ module ysyx_24070003_RegisterFile #(
     
     output [DATA_WIDTH-1:0] rdata2,
     
-    input [ADDR_WIDTH-1:0] raddr2
+    input [ADDR_WIDTH-1:0] raddr2,
+    output [31:0]           a0
 );
 
     reg [DATA_WIDTH-1:0] rf[15:0];
-    import "DPI-C" function void set_gpr_ptr(input logic [31:0] a []);
-    initial set_gpr_ptr(rf); 
+    // import "DPI-C" function void set_gpr_ptr(input logic [31:0] a []);
+    // initial set_gpr_ptr(rf); 
 
     
     always @(posedge clock) begin
@@ -3376,6 +3285,22 @@ module ysyx_24070003_RegisterFile #(
     
     assign rdata1 = rf[raddr1];
     assign rdata2 = rf[raddr2];
+    
+    assign                       a0                  = rf[10];
+    wire [31:0] ra = rf[1];
+    wire [31:0] sp = rf[2]; 
+    wire [31:0] gp = rf[3]; 
+    wire [31:0] tp = rf[4]; 
+    wire [31:0] t0 = rf[5]; 
+    wire [31:0] t1 = rf[6]; 
+    wire [31:0] t2 = rf[7]; 
+    wire [31:0] s0 = rf[8]; 
+    wire [31:0] s1 = rf[9]; 
+    wire [31:0] a1 = rf[11]; 
+    wire [31:0] a2 = rf[12]; 
+    wire [31:0] a3 = rf[13]; 
+    wire [31:0] a4 = rf[14]; 
+    wire [31:0] a5 = rf[15]; 
    
 endmodule
 
@@ -3401,8 +3326,8 @@ module ysyx_24070003_csr_reg #(
         csr[4] = 32'h79737978; // zero register
         csr[5] = 32'h016e38bf; // zero register
     end
-     import "DPI-C" function void set_csr_ptr(input logic [31:0] a []);
-     initial set_csr_ptr(csr); // set the pointer to the CSR array
+    //  import "DPI-C" function void set_csr_ptr(input logic [31:0] a []);
+    //  initial set_csr_ptr(csr); // set the pointer to the CSR array
     initial csr[1] = 'h1800;
     always @(posedge clock) begin
         if (ecall) begin 

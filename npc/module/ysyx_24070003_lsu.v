@@ -133,10 +133,20 @@ reg [2:0] state;
                    ( {32{EXU_LSU_sh}} & {16'b0,rs2_data[15:0]}) |
                    ( {32{EXU_LSU_sw}} & rs2_data);
 
-    assign lsu_rdata = (LSU_AXI4_ARADDR[1:0]  == 2'b00) ? (LSU_RDATA >> 32'd0) :
-                       (LSU_AXI4_ARADDR[1:0]  == 2'b01) ? (LSU_RDATA >> 32'd8) :
-                       (LSU_AXI4_ARADDR[1:0]  == 2'b10) ? (LSU_RDATA >> 32'd16) :
-                       (LSU_AXI4_ARADDR[1:0]  == 2'b11) ? (LSU_RDATA >> 32'd24) : (LSU_RDATA >> 32'd0);
+    // assign lsu_rdata = (LSU_AXI4_ARADDR[1:0]  == 2'b00) ? (LSU_RDATA >> 32'd0) :
+    //                    (LSU_AXI4_ARADDR[1:0]  == 2'b01) ? (LSU_RDATA >> 32'd8) :
+    //                    (LSU_AXI4_ARADDR[1:0]  == 2'b10) ? (LSU_RDATA >> 32'd16) :
+    //                    (LSU_AXI4_ARADDR[1:0]  == 2'b11) ? (LSU_RDATA >> 32'd24) : (LSU_RDATA >> 32'd0);
+
+ ysyx_24070003_mux4_32bit my6(
+    .sel            (LSU_AXI4_ARADDR[1:0]),
+    .a              (LSU_RDATA >> 32'd0), 
+    .b              (LSU_RDATA >> 32'd8),
+    .c              (LSU_RDATA >> 32'd16),
+    .d              (LSU_RDATA >> 32'd24),
+    .out            (lsu_rdata)
+);
+
     //assign lsu_rdata = (LSU_RDATA >> (LSU_AXI4_ARADDR[1:0] << 3));
 
     
@@ -168,17 +178,35 @@ reg [2:0] state;
     //     $write("lsu_wstrb = %04b,EXU_LSU_result = %08x\n",lsu_wstrb,EXU_LSU_result);
     //     end
     // end
-    assign lsu_wstrb = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WLEN << 2'd0) :
-                       (EXU_LSU_result[1:0]  == 2'b01) ? (LSU_WLEN << 2'd1) :
-                       (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WLEN << 2'd2) :
-                       (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WLEN << 2'd3) : (LSU_WLEN << 2'd0);
-    //assign lsu_wstrb = (LSU_WLEN << EXU_LSU_result[1:0] );
-    assign lsu_wdata = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WDATA << 32'd0) :
-                       (EXU_LSU_result[1:0]  == 2'b01) ? (LSU_WDATA << 32'd8) :
-                       (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WDATA << 32'd16) :
-                       (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WDATA << 32'd24) : (LSU_WDATA << 32'd0);
+    // assign lsu_wstrb = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WLEN << 2'd0) :
+    //                    (EXU_LSU_result[1:0]  == 2'b01) ? (LSU_WLEN << 2'd1) :
+    //                    (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WLEN << 2'd2) :
+    //                    (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WLEN << 2'd3) : (LSU_WLEN << 2'd0);
 
-    
+ysyx_24070003_mux4_32bit my7(
+    .sel            (EXU_LSU_result[1:0]),
+    .a              (LSU_WLEN << 32'd0), 
+    .b              (LSU_WLEN << 32'd1),
+    .c              (LSU_WLEN << 32'd2),
+    .d              (LSU_WLEN << 32'd3),
+    .out            (lsu_wstrb)
+);
+
+    //assign lsu_wstrb = (LSU_WLEN << EXU_LSU_result[1:0] );
+    // assign lsu_wdata = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WDATA << 32'd0) :
+    //                    (EXU_LSU_result[1:0]  == 2'b01) ? (LSU_WDATA << 32'd8) :
+    //                    (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WDATA << 32'd16) :
+    //                    (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WDATA << 32'd24) : (LSU_WDATA << 32'd0);
+
+ysyx_24070003_mux4_32bit my8(
+    .sel            (EXU_LSU_result[1:0]),
+    .a              (LSU_WDATA << 32'd0), 
+    .b              (LSU_WDATA << 32'd8),
+    .c              (LSU_WDATA << 32'd16),
+    .d              (LSU_WDATA << 32'd24),
+    .out            (lsu_wdata)
+);
+
     //assign lsu_wdata = (LSU_WDATA << (EXU_LSU_result[1:0] << 3));
     //wire [31:0] LSU_WBU_DATA;
     reg [31:0] LSU_WBU_result;
@@ -204,7 +232,7 @@ always @(posedge clock) begin
         LSU_AXI4_BREADY <= 1'b0;
 
         LSU_WBU_valid <= 1'b0;
-
+        LSU_RDATA <= 32'b0;
         LSU_AXI_wlast <= 1'b0;
         // lsu_count <=  64'd0;
         // lsu_during_count <= 64'd0;
@@ -243,6 +271,7 @@ always @(posedge clock) begin
                             // lsu_store_count <= lsu_store_count + 1'b1;
                             // lsu_count <= lsu_count + 1'b1;
                             LSU_AXI_wlast <= 1'b1;
+                            LSU_AXI4_BREADY <= 1'b1;
                             state <= WRITE_DATA;
                             LSU_AXI4_AWVALID <= 1'b0;
                             LSU_AXI4_WVALID <= 1'b0;
@@ -290,6 +319,7 @@ always @(posedge clock) begin
                     LSU_AXI_wlast <= 1'b1;
                     state <= WRITE_WIRE_2;
                     LSU_AXI4_WVALID <= 1'b0;
+                    LSU_AXI4_BREADY <= 1'b1;
                     state <= WRITE_DATA;
                 end else begin
                     
@@ -302,6 +332,7 @@ always @(posedge clock) begin
                 if(LSU_AXI4_AWVALID && LSU_AXI4_AWREADY ) begin
                     state <= WRITE_WIRE_1;
                     LSU_AXI4_AWVALID <= 1'b0;
+                    LSU_AXI4_BREADY <= 1'b1;
                     state <= WRITE_DATA;
                 end else begin
                     state <= WRITE_WIRE_2;
@@ -309,7 +340,6 @@ always @(posedge clock) begin
             end
             
             WRITE_DATA: begin   
-                LSU_AXI4_BREADY <= 1'b1;
                 LSU_AXI_wlast <= 1'b0;
                 if(LSU_AXI4_BVALID && LSU_AXI4_BREADY) begin
                     LSU_AXI4_BREADY <= 1'b0;

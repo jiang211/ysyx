@@ -3,6 +3,7 @@ module ysyx_24070003_RegisterFile #(
     parameter DATA_WIDTH = 32
 ) (
     input clock,
+    input reset,
     input [DATA_WIDTH-1:0] wdata,
     input [ADDR_WIDTH-1:0] waddr,
     input wen,
@@ -22,6 +23,7 @@ module ysyx_24070003_RegisterFile #(
 
     
     always @(posedge clock) begin
+        if(reset) rf[0] <= 0;
         if (wen & waddr != 0) rf[waddr] <= wdata; 
     end
     

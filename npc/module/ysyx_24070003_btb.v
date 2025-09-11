@@ -61,7 +61,13 @@ end
 
 
 always @(posedge clock) begin
-    if(update_valid)begin
+    if(reset)begin
+        btb_valid[0][0] <= 0;
+        btb_valid[0][1] <= 0;
+        btb_tag[0][0] <= 0;
+        btb_tag[0][1] <= 0;
+    end
+    else if(update_valid)begin
         if(update_hit[0]) begin
             btb_tag[update_index][0] <= update_tag;
             btb_target[update_index][0] <= target_pc[31:2];
