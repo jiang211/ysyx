@@ -2827,10 +2827,10 @@ module ysyx_24070003_Adder(input [31:0] A,
 
 
    assign ADD_zero = ~(|ADD_result);
-   assign ADD_OverFlow=((ALU_CTL==4'b0001) & ~A[31] & ~B[31] & ADD_result[31]) 
-                      | ((ALU_CTL==4'b0001) & A[31] & B[31] & ~ADD_result[31])
-                      | ((ALU_CTL==4'b0011) & A[31] & ~B[31] & ~ADD_result[31]) 
-					  | ((ALU_CTL==4'b0011) & ~A[31] & B[31] & ADD_result[31]);
+   assign ADD_OverFlow=((~Cin) & ~A[31] & ~B[31] & ADD_result[31]) 
+                      | ((~Cin) & A[31] & B[31] & ~ADD_result[31])
+                      | ((Cin) & A[31] & ~B[31] & ~ADD_result[31]) 
+					  | ((Cin) & ~A[31] & B[31] & ADD_result[31]);
 endmodule
 
 module ysyx_24070003_lsu(
