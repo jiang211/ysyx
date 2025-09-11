@@ -21,7 +21,7 @@
 //#define YSYXSOC
 #ifndef YSYXSOC
 
-#ifndef CONFIG_TARGET_SHARE  
+//#ifndef CONFIG_TARGET_SHARE  
 #if   defined(CONFIG_PMEM_MALLOC)
 static uint8_t *pmem = NULL;
 #else // CONFIG_PMEM_GARRAY
@@ -89,81 +89,81 @@ void paddr_write(paddr_t addr, int len, word_t data) {
   out_of_bound(addr);
 }
 #endif
-#else
+//#else
 
 
-static uint8_t mrom[4*1024] PG_ALIGN = {};
-static uint8_t sram[8*1024] PG_ALIGN = {};
-static uint8_t flash[16*1024*1024] PG_ALIGN = {};
-static uint8_t psram[4*1024*1024] PG_ALIGN = {};
-static uint8_t sdram[64*1024*1024] PG_ALIGN = {};
-static uint8_t uart[8*1024] PG_ALIGN = {};
+// static uint8_t mrom[4*1024] PG_ALIGN = {};
+// static uint8_t sram[8*1024] PG_ALIGN = {};
+// static uint8_t flash[16*1024*1024] PG_ALIGN = {};
+// static uint8_t psram[4*1024*1024] PG_ALIGN = {};
+// static uint8_t sdram[64*1024*1024] PG_ALIGN = {};
+// static uint8_t uart[8*1024] PG_ALIGN = {};
 
-static void out_of_bound(paddr_t addr) {
-  printf("1\n");
-  panic("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
-      addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
-}
+// static void out_of_bound(paddr_t addr) {
+//   printf("1\n");
+//   panic("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
+//       addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
+// }
 
-uint8_t* guest_to_host(paddr_t paddr) {
-  if(paddr >= 0x0f000000 && paddr <= 0x0fffffff) {
-    return sram + paddr - 0x0f000000;
-  } else if(paddr >= 0x20000000 && paddr <= 0x20000fff) {
-    return mrom + paddr - 0x20000000;
-  } else if(paddr >= 0x30000000 && paddr <= 0x3fffffff) {
-    return flash + paddr - 0x30000000;
-  } else if(paddr >= 0x80000000 && paddr <= 0x9fffffff) {
-    return psram + paddr - 0x80000000;
-  } else if(paddr >= 0xa0000000 && paddr <= 0xbfffffff) {
-    return sdram + paddr - 0xa0000000;
-  } else if(paddr >= 0x10000000 && paddr <= 0x10000fff){
-    return uart + paddr - 0x10000000;
-  } else if(paddr >= 0x02000000 && paddr <= 0x0200ffff){
-    return 0;
-  } else {
-    out_of_bound(paddr);
-    assert(0);
-  }
-}
+// uint8_t* guest_to_host(paddr_t paddr) {
+//   if(paddr >= 0x0f000000 && paddr <= 0x0fffffff) {
+//     return sram + paddr - 0x0f000000;
+//   } else if(paddr >= 0x20000000 && paddr <= 0x20000fff) {
+//     return mrom + paddr - 0x20000000;
+//   } else if(paddr >= 0x30000000 && paddr <= 0x3fffffff) {
+//     return flash + paddr - 0x30000000;
+//   } else if(paddr >= 0x80000000 && paddr <= 0x9fffffff) {
+//     return psram + paddr - 0x80000000;
+//   } else if(paddr >= 0xa0000000 && paddr <= 0xbfffffff) {
+//     return sdram + paddr - 0xa0000000;
+//   } else if(paddr >= 0x10000000 && paddr <= 0x10000fff){
+//     return uart + paddr - 0x10000000;
+//   } else if(paddr >= 0x02000000 && paddr <= 0x0200ffff){
+//     return 0;
+//   } else {
+//     out_of_bound(paddr);
+//     assert(0);
+//   }
+// }
 
 
-paddr_t host_to_guest(uint8_t *haddr) { return 0; }
+// paddr_t host_to_guest(uint8_t *haddr) { return 0; }
 
-static word_t pmem_read(paddr_t addr, int len) {
-  if(addr == 0x10000005){return 0xffffffff;}
-  else if(addr >= 0x02000000 && addr <= 0x0200ffff){
-    return 0;
-  }
-  word_t ret = host_read(guest_to_host(addr), len);
-  return ret;
-}
+// static word_t pmem_read(paddr_t addr, int len) {
+//   if(addr == 0x10000005){return 0xffffffff;}
+//   else if(addr >= 0x02000000 && addr <= 0x0200ffff){
+//     return 0;
+//   }
+//   word_t ret = host_read(guest_to_host(addr), len);
+//   return ret;
+// }
 
-static void pmem_write(paddr_t addr, int len, word_t data) {
-  if(addr == 0x10000000) {
-    putchar(data);
-  }
+// static void pmem_write(paddr_t addr, int len, word_t data) {
+//   if(addr == 0x10000000) {
+//     putchar(data);
+//   }
   
-  //if(addr >= 0xa000ef60 && addr <= 0xa000efff){printf("nemu: sdram_write addr = %x, data = %x\n", addr,data);}
-  //if(addr >= 0x80004000 && addr <= 0x80004000){printf("nemu: psram_write addr = %x, data = %x\n", addr,data);}
-   //Log("MTRACE: Write Memory Address: 0x%x, len: %d, data: 0x%x", addr, len, data);
-  host_write(guest_to_host(addr), len, data);
-}
+//   //if(addr >= 0xa000ef60 && addr <= 0xa000efff){printf("nemu: sdram_write addr = %x, data = %x\n", addr,data);}
+//   //if(addr >= 0x80004000 && addr <= 0x80004000){printf("nemu: psram_write addr = %x, data = %x\n", addr,data);}
+//    //Log("MTRACE: Write Memory Address: 0x%x, len: %d, data: 0x%x", addr, len, data);
+//   host_write(guest_to_host(addr), len, data);
+// }
 
-word_t paddr_read(paddr_t addr, int len) {
-  return pmem_read(addr, len);
-}
+// word_t paddr_read(paddr_t addr, int len) {
+//   return pmem_read(addr, len);
+// }
 
-void paddr_write(paddr_t addr, int len, word_t data) {
-  pmem_write(addr, len, data);
-}
+// void paddr_write(paddr_t addr, int len, word_t data) {
+//   pmem_write(addr, len, data);
+// }
 
-void init_mem() {
-  IFDEF(CONFIG_MEM_RANDOM, memset(sram, 0, 8*1024));
-  IFDEF(CONFIG_MEM_RANDOM, memset(mrom, rand(), 4*1024));
-  IFDEF(CONFIG_MEM_RANDOM, memset(flash, rand(), 16*1024*1024));
-  IFDEF(CONFIG_MEM_RANDOM, memset(psram, 0, 4*1024*1024));
-  IFDEF(CONFIG_MEM_RANDOM, memset(sdram, 0, 64*1024*1024));
-  Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
-}
+// void init_mem() {
+//   IFDEF(CONFIG_MEM_RANDOM, memset(sram, 0, 8*1024));
+//   IFDEF(CONFIG_MEM_RANDOM, memset(mrom, rand(), 4*1024));
+//   IFDEF(CONFIG_MEM_RANDOM, memset(flash, rand(), 16*1024*1024));
+//   IFDEF(CONFIG_MEM_RANDOM, memset(psram, 0, 4*1024*1024));
+//   IFDEF(CONFIG_MEM_RANDOM, memset(sdram, 0, 64*1024*1024));
+//   Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
+// }
 
-#endif
+// #endif
