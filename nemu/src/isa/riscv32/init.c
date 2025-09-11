@@ -37,8 +37,8 @@ static void restart() {
   // cpu.pc = 0x30000000;
   // #endif
   /* Set the initial values of the CSRs. */
-  cpu.pc = 0x80000000;
-  //cpu.pc = 0x30000000;
+  //cpu.pc = 0x80000000;
+  cpu.pc = 0x30000000;
   cpu.csr[1] = 0x1800;
   /* The zero register is always 0. */
   cpu.gpr[0] = 0;
@@ -51,9 +51,9 @@ void init_isa() {
   // memcpy(guest_to_host(RESET_VECTOR), img, sizeof(img));
   // //#endif
   // #else
-  // memcpy(guest_to_host(0x30000000), img, sizeof(img));
+   memcpy(guest_to_host(0x30000000), img, sizeof(img));
   // #endif
-  memcpy(guest_to_host(0x80000000), img, sizeof(img));
+  //memcpy(guest_to_host(0x80000000), img, sizeof(img));
 //memcpy(guest_to_host(0x30000000), img, sizeof(img));
   /* Initialize this virtual computer system. */
   restart();
