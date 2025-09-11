@@ -19,9 +19,9 @@
 #include <isa.h>
 
 //#define YSYXSOC
-#ifndef YSYXSOC
+//#ifndef YSYXSOC
 
-//#ifndef CONFIG_TARGET_SHARE  
+#ifndef CONFIG_TARGET_SHARE  
 #if   defined(CONFIG_PMEM_MALLOC)
 static uint8_t *pmem = NULL;
 #else // CONFIG_PMEM_GARRAY
