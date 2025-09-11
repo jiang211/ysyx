@@ -2648,7 +2648,7 @@ ysyx_24070003_Adder Adder(.A(opdata1),
 			.Cin(sub_ctl),
 			.ALU_CTL(alu_crtl),
 			.ADD_carry(ADD_carry),
-			.ADD_OverFlow(ADD_OverFlow),
+			//.ADD_OverFlow(ADD_OverFlow),
 			.ADD_zero(ADD_zero),
 			.ADD_result(ADD_result));
 
@@ -2659,7 +2659,7 @@ ysyx_24070003_Adder Adder(.A(opdata1),
 wire [31:0] SLT_result;
 wire LESS_M1,LESS_M2,LESS_S,SLT_M;
 wire BLT,BGE,BNE,BEQ;
-
+assign ADD_OverFlow = (opdata1[31] & ~opdata2[31]) | ((opdata1[31] ~^ opdata2[31]) & ADD_result[31]); 
 assign BLT = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  & ~alu_crtl[0]);
 assign BGE = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  &  alu_crtl[0]);
 assign BNE = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  & ~alu_crtl[0]);
@@ -2818,7 +2818,7 @@ module ysyx_24070003_Adder(input [31:0] A,
 			 input Cin,
 			 input [3:0] ALU_CTL,
 			 output ADD_carry,
-			 output ADD_OverFlow,
+			 //output ADD_OverFlow,
 			 output ADD_zero,
 			 output [31:0] ADD_result);
 
@@ -2831,7 +2831,7 @@ module ysyx_24070003_Adder(input [31:0] A,
 //                       | ((~Cin) & A[31] & B[31] & ~ADD_result[31])
 //                       | ((Cin) & A[31] & ~B[31] & ~ADD_result[31]) 
 // 					  | ((Cin) & ~A[31] & B[31] & ADD_result[31]);
-    assign ADD_OverFlow = (A[31] & ~B[31]) | ((A[31] ~^ B[31]) & ADD_result[31]);  
+     
 endmodule
 
 module ysyx_24070003_lsu(
