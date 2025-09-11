@@ -2670,7 +2670,7 @@ wire zero0 = (BLT &  branch  &  LESS_S)   |
               (BEQ &  ADD_zero) ;
 always @(*)begin
     if(zero != zero0) begin
-        $display("opdata1 = %h, opdata2 = %h ,LESS_M1 = %h ,LESS_M2 = %h ,zero = %h,zero0 = %h",opdata1,opdata2,LESS_M1,LESS_M2,zero,zero0);
+        $display("u_alu_type = %h ,alu_crtl = %h,opdata1 = %h, opdata2 = %h ,LESS_M1 = %h ,LESS_M2 = %h ,zero = %h,zero0 = %h",u_alu_type,alu_crtl,opdata1,opdata2,LESS_M1,LESS_M2,zero,zero0);
     end
 end
 assign LESS_M1 = ADD_carry ^ sub_ctl;
