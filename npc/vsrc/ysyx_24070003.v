@@ -2674,7 +2674,7 @@ always @(*)begin
     end
 end
 assign LESS_M1 = ADD_carry ^ sub_ctl;
-assign LESS_M2 = ADD_OverFlow ^ ADD_result[31];
+assign LESS_M2 = ADD_OverFlow;
 assign LESS_S = (u_alu_type)?LESS_M1:LESS_M2;
 assign SLT_result = (LESS_S)?32'h00000001:32'h00000000;
 //708,687,567
@@ -2827,10 +2827,11 @@ module ysyx_24070003_Adder(input [31:0] A,
 
 
    assign ADD_zero = ~(|ADD_result);
-   assign ADD_OverFlow=((~Cin) & ~A[31] & ~B[31] & ADD_result[31]) 
-                      | ((~Cin) & A[31] & B[31] & ~ADD_result[31])
-                      | ((Cin) & A[31] & ~B[31] & ~ADD_result[31]) 
-					  | ((Cin) & ~A[31] & B[31] & ADD_result[31]);
+//    assign ADD_OverFlow=((~Cin) & ~A[31] & ~B[31] & ADD_result[31]) 
+//                       | ((~Cin) & A[31] & B[31] & ~ADD_result[31])
+//                       | ((Cin) & A[31] & ~B[31] & ~ADD_result[31]) 
+// 					  | ((Cin) & ~A[31] & B[31] & ADD_result[31]);
+    assign ADD_OverFlow = (A[31] & ~B[31]) | ((A[31] ~^ B[31]) & ADD_result[31]);  
 endmodule
 
 module ysyx_24070003_lsu(
