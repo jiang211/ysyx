@@ -177,7 +177,7 @@ always @(posedge clock) begin
         end
         $stop;   // 立即停仿真
     end
-    else if(ifu_count > 'd600000) begin
+    else if(ifu_count > 'd100000) begin
         $display("\n=== TIMEOUT ===");
         $stop;   // 立即停仿真
     end
