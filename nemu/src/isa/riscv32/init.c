@@ -51,7 +51,7 @@ void init_isa() {
   // memcpy(guest_to_host(RESET_VECTOR), img, sizeof(img));
   // //#endif
   // #else
-   memcpy(guest_to_host(0x30000000), img, sizeof(img));
+   memcpy(guest_to_host(0x80000000), img, sizeof(img));
   // #endif
   //memcpy(guest_to_host(0x80000000), img, sizeof(img));
 //memcpy(guest_to_host(0x30000000), img, sizeof(img));
