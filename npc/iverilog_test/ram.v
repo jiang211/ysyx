@@ -38,43 +38,27 @@ module ram(
 // ==========================================================
 //  行为级存储本体，仅仿真用
 // ==========================================================
-reg [31:0] mem [0:1024*1024*4-1];   // 16 MB，按 32-bit word 寻址
-reg rst_q;
-always @(posedge clk) rst_q <= rst;
+reg [7:0] mem [0:1024*1024*4-1];   // 16 MB，按 32-bit word 寻址
 
-wire rst_negedge = rst_q & ~rst;   // 复位释放沿
-
-wire [31:0] data0 = mem[32'h97bcb];
-wire [31:0] data1 = mem[32'h97bcc];
-wire [31:0] data2 = mem[32'h97bcd];
-wire [31:0] data3 = mem[32'h97bce];
-wire [31:0] data4 = mem[32'h97bcf];
-wire [31:0] data5 = mem[32'h97bd0];
-
-initial rst_q = 1;
-// 上电装载镜像
-always @(posedge clk) begin
-    if (rst) begin
-        // 1. 复位期清零（可选，仿真可省）
-        integer k;
-        for (k = 0; k < 1024 * 1024 * 4; k = k + 1)
-            mem[k] <= 32'h0;
+initial begin
+  integer i;
+    // 初始化SRAM为0，避免x态
+    for (i = 0; i < 1024 * 1024 * 4; i = i + 1) begin
+        mem[i] = 8'h00;
     end
-    else if (rst_negedge) begin
-        // 2. 复位一结束就重新装镜像
-        $readmemh("ram.hex", mem);
-        $display("=== $readmemh loaded after rst ===");
-
-		
-        $display("mem[0] = %08x", mem[0]);
-    end
+    //$readmemh(`MEM_INIT_PATH, sram_array);
+    $readmemh("ram.hex", mem);
+    $display("mem[0] = %08x", {mem[3], mem[2], mem[1], mem[0]});
 end
+
 // 辅助：字节地址 -> word 索引
 function [31:0] addr2w;
-input [31:0] a;
-begin
-    addr2w = (a - 32'h80000000) >> 2;
-end
+    input [31:0] a;
+    reg [31:0] temp;
+    begin
+        temp = a - 32'h80000000;
+        addr2w = {temp[31:2], 2'b00};
+    end
 endfunction
 
 //************** read  *******************
@@ -135,6 +119,10 @@ end
 
 reg [63:0]r_data;
 wire [31:0] a = addr2w(r_addr);
+wire [7:0] data1 = mem[a];
+wire [7:0] data2 = mem[a+1];
+wire [7:0] data3 = mem[a+2];
+wire [7:0] data4 = mem[a+3];
 wire [31:0] r_cache = (r_addr == 32'ha0000048) ? mtime_low : (r_addr == 32'ha000004c) ? mtime_high : mem[addr2w(r_addr)];
 assign rdata = {r_cache[7:0], r_cache[15:8], r_cache[23:16], r_cache[31:24]};
 assign arready = read_current_state == read_idle;
@@ -232,10 +220,10 @@ integer byte_idx;
 always @(posedge clk) begin
     if (wvalid && wready) begin
         if(w_addr != 32'ha00003f8)begin
-            if(wstrb[0]) mem[addr2w(w_addr)][31:24] <= wdata[7:0];
-            if(wstrb[1]) mem[addr2w(w_addr)][23:16] <= wdata[15:8];
-            if(wstrb[2]) mem[addr2w(w_addr)][15:8] <= wdata[23:16];
-            if(wstrb[3]) mem[addr2w(w_addr)][7:0] <= wdata[31:24];
+            if(wstrb[0]) mem[addr2w(w_addr)] <= wdata[7:0];
+            if(wstrb[1]) mem[addr2w(w_addr) + 1] <= wdata[15:8];
+            if(wstrb[2]) mem[addr2w(w_addr) + 2] <= wdata[23:16];
+            if(wstrb[3]) mem[addr2w(w_addr) + 3]<= wdata[31:24];
         end
         else begin
             $write("%c",wdata[7:0]);

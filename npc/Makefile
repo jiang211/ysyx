@@ -115,7 +115,29 @@ NPC_FLAGS += $(IMG)
 
 WAVEFLAGS = gtkwave $(BUILD_DIR)/logs/$(TOPNAME).fst
 
+########################sim-iverilog#########################################
 
+CROSS_COMPILE = riscv64-unknown-elf-
+OBJCOPY = $(CROSS_COMPILE)objcopy
+SIMULATOR = iverilog
+SIM_OPTIONS = -g2012
+TARGET = my_design
+SRCS = $(shell find $(WORK_DIR)/iverilog_test -name "*.v")
+
+
+
+# 使用objcopy从.bin文件生成.hex文件的规则
+ram.hex: $(IMG)
+	@echo "Converting $< to Verilog hex format using objcopy"
+	$(OBJCOPY) -I binary -O verilog $< $@
+
+
+sim-iverilog: ram.hex
+	@echo "Simulating with Icarus Verilog using $(IMG)"
+	$(SIMULATOR) $(SIM_OPTIONS) -o $(TARGET) -DIMGFILE=\"$(IMG)\" $(SRCS)
+	vvp $(TARGET)
+
+################################################################
 all : default
 
 wave :  ./build/ysyxSoCFull
@@ -155,6 +177,9 @@ perf:
 clean :
 	@rm -rf $(BUILD_DIR)
 	@rm -rf $(OBJ_DIR)/*.d
+	@rm -rf ram.hex
+	@rm -rf tb.vcd
+	@rm -rf wave.fst
  
 	
 

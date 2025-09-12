@@ -2679,7 +2679,7 @@ assign zero = (BLT &  branch  &  LESS_S)   |
               (BEQ &  ADD_zero) ;
 
 assign LESS_M1 = ADD_carry ^ sub_ctl;
-assign LESS_M2 = ADD_OverFlow ^ ADD_result[31];
+assign LESS_M2 = (opdata1[31] & ~opdata2[31]) | ((opdata1[31] ~^ opdata2[31]) & ADD_result[31]);
 assign LESS_S = (u_alu_type)?LESS_M1:LESS_M2;
 assign SLT_result = (LESS_S)?32'h00000001:32'h00000000;
 
