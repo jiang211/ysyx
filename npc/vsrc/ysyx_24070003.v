@@ -2659,22 +2659,18 @@ ysyx_24070003_Adder Adder(.A(opdata1),
 wire [31:0] SLT_result;
 wire LESS_M1,LESS_M2,LESS_S,SLT_M;
 wire BLT,BGE,BNE,BEQ;
-assign ADD_OverFlow = (opdata1[31] & ~opdata2[31]) | ((opdata1[31] ~^ opdata2[31]) & ADD_result[31]); 
+//assign ADD_OverFlow = (opdata1[31] & ~opdata2[31]) | ((opdata1[31] ~^ opdata2[31]) & ADD_result[31]); 
 assign BLT = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  & ~alu_crtl[0]);
 assign BGE = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  &  alu_crtl[0]);
 assign BNE = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  & ~alu_crtl[0]);
 assign BEQ = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  &  alu_crtl[0]);
-wire zero0 = (BLT &  branch  &  LESS_S)   |
+assign zero = (BLT &  branch  &  LESS_S)   |
               (BGE & ~LESS_S)   |
               (BNE & ~ADD_zero) |
               (BEQ &  ADD_zero) ;
-always @(*)begin
-    if(zero != zero0) begin
-        $display("ADD_OverFlow = %h ,ADD_result = %h,u_alu_type = %h ,alu_crtl = %h,opdata1 = %h, opdata2 = %h ,LESS_M1 = %h ,LESS_M2 = %h ,zero = %h,zero0 = %h",ADD_OverFlow,ADD_result,u_alu_type,alu_crtl,opdata1,opdata2,LESS_M1,LESS_M2,zero,zero0);
-    end
-end
+
 assign LESS_M1 = ADD_carry ^ sub_ctl;
-assign LESS_M2 = ADD_OverFlow;
+assign LESS_M2 = (opdata1[31] & ~opdata2[31]) | ((opdata1[31] ~^ opdata2[31]) & ADD_result[31]);
 assign LESS_S = (u_alu_type)?LESS_M1:LESS_M2;
 assign SLT_result = (LESS_S)?32'h00000001:32'h00000000;
 //708,687,567
@@ -2687,106 +2683,106 @@ begin
      2'b11:alu_out=shift_result; 
   endcase
 end
- `define ysyx_24070003_OP_ADD         4'b0001 // +
-`define ysyx_24070003_OP_SUB         4'b0011 // -
+//  `define ysyx_24070003_OP_ADD         4'b0001 // +
+// `define ysyx_24070003_OP_SUB         4'b0011 // -
 
-`define ysyx_24070003_OP_AND         4'b0100 // &
-`define ysyx_24070003_OP_OR          4'b0101 // |
-`define ysyx_24070003_OP_XOR         4'b0110 // ^
+// `define ysyx_24070003_OP_AND         4'b0100 // &
+// `define ysyx_24070003_OP_OR          4'b0101 // |
+// `define ysyx_24070003_OP_XOR         4'b0110 // ^
 
-`define ysyx_24070003_OP_SLL         4'b1100 // <<
-`define ysyx_24070003_OP_SRL         4'b1101 // >>
-`define ysyx_24070003_OP_SRA         4'b1110 // >>>
+// `define ysyx_24070003_OP_SLL         4'b1100 // <<
+// `define ysyx_24070003_OP_SRL         4'b1101 // >>
+// `define ysyx_24070003_OP_SRA         4'b1110 // >>>
 
-`define ysyx_24070003_OP_BLT         4'b1000 // <
-`define ysyx_24070003_OP_BGE         4'b1001 // >=
-`define ysyx_24070003_OP_BNE         4'b1010 // !=
-`define ysyx_24070003_OP_BEQ         4'b1011 // ==
+// `define ysyx_24070003_OP_BLT         4'b1000 // <
+// `define ysyx_24070003_OP_BGE         4'b1001 // >=
+// `define ysyx_24070003_OP_BNE         4'b1010 // !=
+// `define ysyx_24070003_OP_BEQ         4'b1011 // ==
 
- always @(*) begin
-        case (alu_crtl)
-            `ysyx_24070003_OP_BLT: begin
-                if(branch)
-                    if(u_alu_type) begin
-                        if(opdata1 < opdata2)begin
-                            zero = 1'b1;
-                        end
-                        else begin
-                            zero = 1'b0;
-                        end
-                    end
-                    else begin
-                        if($signed(opdata1) < $signed(opdata2))begin
-                            zero = 1'b1;
-                        end
-                        else begin
-                            zero = 1'b0;
-                        end
-                    end
-                else begin
-                    if(u_alu_type) begin
-                        zero = 1'b0;
-                    end
-                    else begin
-                        zero = 1'b0;
-                    end
-                end
-            end
+//  always @(*) begin
+//         case (alu_crtl)
+//             `ysyx_24070003_OP_BLT: begin
+//                 if(branch)
+//                     if(u_alu_type) begin
+//                         if(opdata1 < opdata2)begin
+//                             zero = 1'b1;
+//                         end
+//                         else begin
+//                             zero = 1'b0;
+//                         end
+//                     end
+//                     else begin
+//                         if($signed(opdata1) < $signed(opdata2))begin
+//                             zero = 1'b1;
+//                         end
+//                         else begin
+//                             zero = 1'b0;
+//                         end
+//                     end
+//                 else begin
+//                     if(u_alu_type) begin
+//                         zero = 1'b0;
+//                     end
+//                     else begin
+//                         zero = 1'b0;
+//                     end
+//                 end
+//             end
             
         
-            `ysyx_24070003_OP_BGE:
-                if(branch)begin
-                    if(u_alu_type) begin
-                        if(opdata1 >= opdata2)begin
-                            zero = 1'b1;
-                        end
-                        else begin
-                            zero = 1'b0;
-                        end
-                    end
-                    else begin
-                        if($signed(opdata1) >= $signed(opdata2))begin
-                            zero = 1'b1;
-                        end
-                        else begin
-                            zero = 1'b0;
-                        end
-                    end
-                end
-                else begin
-                    zero = 1'b0;
-                end
-            `ysyx_24070003_OP_BNE: 
-                if(branch)
-                    if(opdata1 != opdata2)begin
-                        zero = 1'b1;
-                    end
-                    else begin
-                        zero = 1'b0;
-                    end
-                else begin
-                    zero = 1'b0;
-                end
-            `ysyx_24070003_OP_BEQ: 
-                if(branch)
-                    if(opdata1 == opdata2)begin
-                        zero = 1'b1;
-                    end
-                    else begin
-                        zero = 1'b0;
-                    end
-                else begin
-                    zero = 1'b0;
-                end
-            4'b1111: begin
-                    zero = 1'b0;
-                end
-            default: begin
-                    zero = 1'b0;
-                end
-        endcase
+//             `ysyx_24070003_OP_BGE:
+//                 if(branch)begin
+//                     if(u_alu_type) begin
+//                         if(opdata1 >= opdata2)begin
+//                             zero = 1'b1;
+//                         end
+//                         else begin
+//                             zero = 1'b0;
+//                         end
+//                     end
+//                     else begin
+//                         if($signed(opdata1) >= $signed(opdata2))begin
+//                             zero = 1'b1;
+//                         end
+//                         else begin
+//                             zero = 1'b0;
+//                         end
+//                     end
+//                 end
+//                 else begin
+//                     zero = 1'b0;
+//                 end
+//             `ysyx_24070003_OP_BNE: 
+//                 if(branch)
+//                     if(opdata1 != opdata2)begin
+//                         zero = 1'b1;
+//                     end
+//                     else begin
+//                         zero = 1'b0;
+//                     end
+//                 else begin
+//                     zero = 1'b0;
+//                 end
+//             `ysyx_24070003_OP_BEQ: 
+//                 if(branch)
+//                     if(opdata1 == opdata2)begin
+//                         zero = 1'b1;
+//                     end
+//                     else begin
+//                         zero = 1'b0;
+//                     end
+//                 else begin
+//                     zero = 1'b0;
+//                 end
+//             4'b1111: begin
+//                     zero = 1'b0;
+//                 end
+//             default: begin
+//                     zero = 1'b0;
+//                 end
+//         endcase
         
-    end
+//     end
 
 
 endmodule
