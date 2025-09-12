@@ -125,7 +125,7 @@ TARGET = my_design
 SRCS = $(shell find $(WORK_DIR)/iverilog_test -name "*.v")
 
 
-
+#make sim-iverilog IMG=~/ysyx-workbench/rt-thread-am/bsp/abstract-machine/build/rtthread-riscv32e-npc.bin
 # 使用objcopy从.bin文件生成.hex文件的规则
 ram.hex: $(IMG)
 	@echo "Converting $< to Verilog hex format using objcopy"

@@ -177,7 +177,7 @@ always @(posedge clock) begin
         end
         $stop;   // 立即停仿真
     end
-    else if(ifu_count > 'd100000) begin
+    else if(ifu_count > 'd10000) begin
         $display("\n=== TIMEOUT ===");
         $stop;   // 立即停仿真
     end
@@ -221,9 +221,9 @@ ram u_ram (
 //----------------------------------------------------------------------
 // 波形
 //----------------------------------------------------------------------
-// initial begin
-//     $dumpfile("tb.vcd");
-//     $dumpvars(0, tb_ysyx_24070003);
-// end
+initial begin
+    $dumpfile("tb.vcd");
+    $dumpvars(0, tb_ysyx_24070003);
+end
 
 endmodule
