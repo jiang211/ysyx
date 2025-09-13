@@ -115,14 +115,17 @@ NPC_FLAGS += $(IMG)
 
 WAVEFLAGS = gtkwave $(BUILD_DIR)/logs/$(TOPNAME).fst
 
-########################sim-iverilog#########################################
+########################sim-iverilog        sim-verilog-netlist#########################################
 
 CROSS_COMPILE = riscv64-unknown-elf-
 OBJCOPY = $(CROSS_COMPILE)objcopy
 SIMULATOR = iverilog
-SIM_OPTIONS = -g2012
+SIM_OPTIONS = -g2012 
 TARGET = my_design
-SRCS = $(shell find $(WORK_DIR)/iverilog_test -name "*.v")
+IVERILOG_SRCS = $(shell find $(WORK_DIR)/iverilog_test -name "*.v")
+IVERILOG_NETLIST_SRCS = $(shell find $(WORK_DIR)/netlist_test -name "*.v")
+IVERILOG_NETLIST_SRCS += $(NETLIST) 
+IVERILOG_NETLIST_SRCS += $(CELLS)
 
 
 #make sim-iverilog IMG=~/ysyx-workbench/rt-thread-am/bsp/abstract-machine/build/rtthread-riscv32e-npc.bin
@@ -134,9 +137,13 @@ ram.hex: $(IMG)
 
 sim-iverilog: ram.hex
 	@echo "Simulating with Icarus Verilog using $(IMG)"
-	$(SIMULATOR) $(SIM_OPTIONS) -o $(TARGET) -DIMGFILE=\"$(IMG)\" $(SRCS)
+	$(SIMULATOR) $(SIM_OPTIONS) -o $(TARGET) -DIMGFILE=\"$(IMG)\" $(IVERILOG_SRCS)
 	vvp $(TARGET)
 
+sim-iverilog-netlist: ram.hex
+	@echo "sim-iverilog-netlist with Icarus Verilog using $(IMG)"
+	$(SIMULATOR) $(SIM_OPTIONS) -o $(TARGET) -DIMGFILE=\"$(IMG)\" $(IVERILOG_NETLIST_SRCS)
+	vvp $(TARGET)
 ################################################################
 all : default
 

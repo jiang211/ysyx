@@ -10,8 +10,8 @@ always #5 clock = !clock;
 
 reg reset = 0;
 initial begin
-     # 100 reset = 1;
-     # 10 reset = 0;
+     # 10 reset = 1;
+     # 155 reset = 0;
      
 end
 
@@ -162,22 +162,22 @@ ysyx_24070003 dut (
     .io_slave_rresp    (io_slave_rresp),
     .io_slave_rdata    (io_slave_rdata),
     .io_slave_rlast    (io_slave_rlast),
-    .io_slave_rid      (io_slave_rid),
-    .ebreak            (ebreak),
-    .a0                 (a0),
-    .ifu_count          (ifu_count)
+    .io_slave_rid      (io_slave_rid)
+    // .ebreak            (ebreak),
+    // .a0                 (a0),
+    // .ifu_count          (ifu_count)
 );
-always @(posedge clock) begin
-    if (ebreak) begin
-        if(a0 == 1'b0) begin
-        $display("\n=== EBREAK GOOD ===");
-        end else begin
-        $display("\n=== EBREAK BAD ===");
+// always @(posedge clock) begin
+//     if (ebreak) begin
+//         if(a0 == 1'b0) begin
+//         $display("\n=== EBREAK GOOD ===");
+//         end else begin
+//         $display("\n=== EBREAK BAD ===");
         
-        end
-        $stop;   // 立即停仿真
-    end
-end 
+//         end
+//         $stop;   // 立即停仿真
+//     end
+// end 
 //----------------------------------------------------------------------
 //  外部 ram
 //----------------------------------------------------------------------

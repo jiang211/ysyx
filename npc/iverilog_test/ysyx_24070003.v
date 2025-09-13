@@ -1,15 +1,5 @@
 module ysyx_24070003(
-    /*
-    input clk,
-    input rstn,
-    //input [31:0] instr1,
-    output [31:0] instr,
-    //output reg[31:0] pc,
-    output [31:0] dnpc,
-    output [31:0] pc,
-    output ebreak,
-    output reg difftest_valid
-    */
+    
     input   wire        clock,
     input   wire        reset,
     input   wire        io_interrupt,
@@ -1269,7 +1259,7 @@ parameter SDRAM_TAG_BITS = 26;
 
 reg [SDRAM_TAG_BITS-1:0] tags [0:SDRAM_NUM_BLOCKS-1];  // 标签存储
 reg [SDRAM_BLOCK_SIZE * 8-1:0] data [0:SDRAM_NUM_BLOCKS-1];           // 数据存储
-reg valid [0:SDRAM_NUM_BLOCKS-1];                 // 有效位
+reg [SDRAM_NUM_BLOCKS-1:0]valid ;                 // 有效位
 
               // 有效位
 parameter  IDLE = 0,
@@ -1532,10 +1522,7 @@ end
 
 always @(posedge clock) begin
     if(fence_i | reset) begin
-        for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
-            valid[i] <= 0;  // 复位时所有块无效
-            tags[index_reg1] <= 0;
-        end
+        valid <= 0;  // 复位时所有块无效
     end
     else if(state == AXI_READ) begin
         valid[index_reg1] <= 1'b1;
@@ -1578,7 +1565,7 @@ module ysyx_24070003_btb(
 
 
 localparam WAY_NUM = 2;
-localparam INDEX_WIDTH = 2;
+localparam INDEX_WIDTH = 3;
 localparam ADDR_WIDTH = 32;
 localparam OFFSET_WITH = 2;
 localparam TAG_WIDTH = ADDR_WIDTH - OFFSET_WITH - INDEX_WIDTH;
@@ -1587,14 +1574,14 @@ wire [INDEX_WIDTH-1:0] cur_index;
 wire [TAG_WIDTH-1:0] cur_tag;
 wire [INDEX_WIDTH-1:0] update_index;
 wire [TAG_WIDTH-1:0] update_tag;
-wire [WAY_NUM-1:0] hit;
-wire [WAY_NUM-1:0] update_hit;
+wire hit;
+wire update_hit;
 //wire cur_hit;
 wire upd_hit;
 
-reg [TAG_WIDTH-1:0] btb_tag [2 ** INDEX_WIDTH -1:0][WAY_NUM-1:0];     // 标签存储
-reg [29:0] btb_target [2 ** INDEX_WIDTH -1:0][WAY_NUM-1:0];  // 目标地址存储
-reg btb_valid [2 ** INDEX_WIDTH -1:0][WAY_NUM-1:0];          // 有效位
+reg [TAG_WIDTH-1:0] btb_tag [2 ** INDEX_WIDTH -1:0];     // 标签存储
+reg [29:0] btb_target [2 ** INDEX_WIDTH -1:0];  // 目标地址存储
+reg [2 ** INDEX_WIDTH -1:0]btb_valid;          // 有效位
 
 
 
@@ -1603,54 +1590,26 @@ assign cur_tag = cur_pc[ADDR_WIDTH-1:INDEX_WIDTH+OFFSET_WITH];
 assign update_index = update_pc[INDEX_WIDTH+OFFSET_WITH-1:OFFSET_WITH];
 assign update_tag = update_pc[ADDR_WIDTH-1:INDEX_WIDTH+OFFSET_WITH];
 
-assign hit[0] = btb_valid[cur_index][0] && (btb_tag[cur_index][0] == cur_tag);
-assign hit[1] = btb_valid[cur_index][1] && (btb_tag[cur_index][1] == cur_tag);
-
-assign pred_valid = hit[0] || hit[1];
-
-assign update_hit[0] = ~btb_valid[update_index][0] ;
-assign update_hit[1] = ~btb_valid[update_index][1] ;
+assign hit = (btb_valid[cur_index]) ? (btb_tag[cur_index] == cur_tag) : 0;
 
 
 
-assign pred_pc = (pred_valid) ? {btb_target[cur_index][hit[1]],2'b00} : cur_pc;
+assign update_hit = ~btb_valid[update_index] ;
 
-reg update_way;
-always @(posedge clock) begin
-    if(reset)begin 
-        update_way <= 0;
-    end
-    else if(update_valid)begin
-        update_way <= ~update_way;
-    end
-end
 
-integer i,j;
+
+assign pred_pc = (hit) ? {btb_target[cur_index],2'b00} : cur_pc;
+
+
 always @(posedge clock) begin
     if(reset)begin
-        for (i = 0; i < 2 ** INDEX_WIDTH; i = i + 1) begin
-            for (j = 0; j < WAY_NUM; j = j + 1) begin
-                btb_tag[i][j] <= 0;
-                btb_valid[i][j] <= 0;
-            end
-        end
+        btb_valid <= 8'b0000;
     end
     else if(update_valid)begin
-        if(update_hit[0]) begin
-            btb_tag[update_index][0] <= update_tag;
-            btb_target[update_index][0] <= target_pc[31:2];
-            btb_valid[update_index][0] <= 1;
-        end
-        else if(update_hit[1]) begin
-            btb_tag[update_index][1] <= update_tag;
-            btb_target[update_index][1] <= target_pc[31:2];
-            btb_valid[update_index][1] <= 1;
-        end
-        else begin
-            btb_tag[update_index][update_way] <= update_tag;
-            btb_target[update_index][update_way] <= target_pc[31:2];
-            btb_valid[update_index][update_way] <= 1;
-        end
+            btb_tag[update_index] <= update_tag;
+            btb_target[update_index] <= target_pc[31:2];
+            btb_valid[update_index] <= 1;
+    
     end
 end
 

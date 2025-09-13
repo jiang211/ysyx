@@ -38,12 +38,12 @@ module ram(
 // ==========================================================
 //  行为级存储本体，仅仿真用
 // ==========================================================
-reg [7:0] mem [0:1024*1024*48-1];   // 16 MB，按 32-bit word 寻址
+reg [7:0] mem [0:1024*1024*4-1];   // 16 MB，按 32-bit word 寻址
 
 initial begin
   integer i;
     // 初始化SRAM为0，避免x态
-    for (i = 0; i < 1024 * 1024 * 48; i = i + 1) begin
+    for (i = 0; i < 1024 * 1024 * 4; i = i + 1) begin
         mem[i] = 8'h00;
     end
     //$readmemh(`MEM_INIT_PATH, sram_array);
@@ -56,7 +56,7 @@ function [31:0] addr2w;
     input [31:0] a;
     reg [31:0] temp;
     begin
-        temp = a - 32'h80000000;
+        temp = a - 32'h30000000;
         addr2w = {temp[31:2], 2'b00};
     end
 endfunction
