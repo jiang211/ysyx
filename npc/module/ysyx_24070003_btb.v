@@ -43,7 +43,7 @@ assign hit = (btb_valid[cur_index]) ? (btb_tag[cur_index] == cur_tag) : 0;
 
 assign update_hit = ~btb_valid[update_index] ;
 
-
+assign pred_valid = hit;
 
 assign pred_pc = (hit) ? {btb_target[cur_index],2'b00} : cur_pc;
 
