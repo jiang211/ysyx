@@ -162,11 +162,11 @@ ysyx_24070003_alu my_alu(
     .alu_out        (alu_out    ),
     .zero           (zero       )
 );
-wire [3:0] pc_sel = {IDU_EXU_jal || IDU_EXU_B_type, IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal || zero, IDU_EXU_jalr};
+wire [2:0] pc_sel = {IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal || zero, IDU_EXU_jalr};
 wire [31:0] pc_opdata1;
 wire [31:0] pc_opdata2;
 
-assign pc_opdata1 = (pc_sel[1] || pc_sel[3]) ? pc_data : RS1_data;
+assign pc_opdata1 = (pc_sel[1]) ? pc_data : RS1_data;
 assign pc_opdata2 = imm_data;
 wire [31:0] next_pc = pc_opdata1 + pc_opdata2;
 //wire btb_pre_error = (IDU_EXU_pre_dnpc != EXU_IFU_pc) && (IDU_EXU_jal || IDU_EXU_B_type);
