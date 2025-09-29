@@ -1303,8 +1303,14 @@ wire icache_stall = LSU_IFU_stall || IDU_IFU_STALL;
 
 assign hit_reg1 = (valid[index_reg1] && (tags[index_reg1] == tag_reg1));
 reg first_req;
+reg reset_r;
+wire negedeg_reset;
 always @(posedge clock) begin
-    if (reset | flush | flush_r)                    first_req <= 1'b1;
+    reset_r <= reset;
+end
+assign negedeg_reset = ~reset_r & reset;
+always @(posedge clock) begin
+    if (negedeg_reset | flush | flush_r)                    first_req <= 1'b1;
     else if (reg1_valid && hit_reg1)
                                   first_req <= 1'b0;  // 只要曾经命中过，就退出首次
 end
