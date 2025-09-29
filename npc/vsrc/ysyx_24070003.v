@@ -469,17 +469,17 @@ ysyx_24070003_icache  my_icache(
 );
 
 
-ysyx_24070003_btb my_btb(
-    .clock                          (clock              ),
-    .reset                          (reset              ),
-    .cur_pc                         (ifu_current_pc     ),
-    .update_pc                      (IDU_EXU_PC         ),
-    .target_pc                      (EXU_BTB_PC         ),
-    .update_valid                   (EXU_BTB_updata_valid),
+// ysyx_24070003_btb my_btb(
+//     .clock                          (clock              ),
+//     .reset                          (reset              ),
+//     .cur_pc                         (ifu_current_pc     ),
+//     .update_pc                      (IDU_EXU_PC         ),
+//     .target_pc                      (EXU_BTB_PC         ),
+//     .update_valid                   (EXU_BTB_updata_valid),
 
-    .pred_pc                        (BTB_pred_pc        ),
-    .pred_valid                     (BTB_pred_valid     )
-);
+//     .pred_pc                        (BTB_pred_pc        ),
+//     .pred_valid                     (BTB_pred_valid     )
+// );
 
 
 ysyx_24070003_axi_arbiter my_axi_arbiter(
