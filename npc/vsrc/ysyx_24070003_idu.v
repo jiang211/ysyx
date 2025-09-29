@@ -2,7 +2,7 @@
 module ysyx_24070003_idu(
     input wire [31:0] INSTR,
     input wire [31:0] IFU_IDU_PC,
-    input [31:0]IFU_IDU_pre_dnpc,
+    //input [31:0]IFU_IDU_pre_dnpc,
     input       flush,
     //input wire EXU_IFU_flush,
     input clock,
@@ -51,7 +51,7 @@ module ysyx_24070003_idu(
     output reg IDU_EXU_C_type        ,
     //output reg IDU_EXU_STALL         ,
     output reg [31:0] IDU_EXU_PC  ,
-    output reg [31:0] IDU_EXU_pre_dnpc,
+    //output reg [31:0] IDU_EXU_pre_dnpc,
 
     output reg IDU_EXU_exu_raw_rs1,
     output reg IDU_EXU_exu_raw_rs2,
@@ -314,7 +314,7 @@ begin
 
     //IDU_EXU_STALL               <=        1'b0;
     IDU_EXU_PC                  <=        32'b0;
-    IDU_EXU_pre_dnpc                <=        32'b0;
+    //IDU_EXU_pre_dnpc                <=        32'b0;
     // calcu_type_count               <=        64'b0;
     // Jump_type_count               <=        64'b0;
     // BJump_type_count               <=        64'b0;
@@ -362,7 +362,7 @@ begin
     IDU_EXU_B_type              <=        1'b0;
     //IDU_EXU_STALL               <=        1'b0;
     IDU_EXU_PC                  <=        32'b0;
-    IDU_EXU_pre_dnpc                <=        32'b0;
+    //IDU_EXU_pre_dnpc                <=        32'b0;
 
     IDU_EXU_exu_raw_rs1           <=        1'b0;
     IDU_EXU_exu_raw_rs2           <=        1'b0;
@@ -414,7 +414,7 @@ begin
     IDU_EXU_B_type              <=        B_type    ;
     //IDU_EXU_STALL               <=        IFU_IDU_STALL;
     IDU_EXU_PC                  <=        IFU_IDU_PC;
-    IDU_EXU_pre_dnpc                <=        IFU_IDU_pre_dnpc;
+    //IDU_EXU_pre_dnpc                <=        IFU_IDU_pre_dnpc;
 
     IDU_EXU_exu_raw_rs1           <=        rs1_raw_exu;
     IDU_EXU_exu_raw_rs2           <=        rs2_raw_exu;
@@ -461,7 +461,7 @@ begin
     IDU_EXU_B_type              <=  IDU_EXU_B_type    ;
     //IDU_EXU_STALL               <=//IDU_EXU_STALL   ;  
     IDU_EXU_PC                  <=  IDU_EXU_PC        ;  
-    IDU_EXU_pre_dnpc                <=  IDU_EXU_pre_dnpc      ;  
+    //IDU_EXU_pre_dnpc                <=  IDU_EXU_pre_dnpc      ;  
 
     IDU_EXU_exu_raw_rs1           <=        IDU_EXU_exu_raw_rs1;
     IDU_EXU_exu_raw_rs2           <=        IDU_EXU_exu_raw_rs2;

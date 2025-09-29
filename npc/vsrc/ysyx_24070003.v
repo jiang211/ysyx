@@ -410,11 +410,11 @@ ysyx_24070003_ifu my_ifu(
    // .inst_addr_o                  (inst_addr_o        ),
     .IFU_IDU_PC                     (IFU_IDU_PC         ),
     .cur_pc                         (ifu_current_pc     ),
-    .BTB_pred_pc                    (BTB_pred_pc        ),
-    .BTB_pred_valid                 (BTB_pred_valid     ),
+    //.BTB_pred_pc                    (BTB_pred_pc        ),
+    //.BTB_pred_valid                 (BTB_pred_valid     ),
     .IFU_IDU_INSTR                  (instr              ),
     //.instr_in                     (instr_in           ),
-    .BTB_pre_DNPC                   (BTB_pre_DNPC       ),
+    //.BTB_pre_DNPC                   (BTB_pre_DNPC       ),
 
     .ifu_count                      (ifu_count          ),
 
@@ -441,14 +441,14 @@ ysyx_24070003_icache  my_icache(
     //.IFU_AXI4_rvalid              (IFU_AXI4_rvalid    ),
     .IFU_AXI4_rready                (IFU_AXI4_rready    ),
 
-    .BTB_pre_DNPC                   (BTB_pre_DNPC       ),
+    //.BTB_pre_DNPC                   (BTB_pre_DNPC       ),
     .IDU_IFU_STALL                  (stall              ),
     .LSU_IFU_stall                  (LSU_IFU_stall      ),
 
 
     .ICACHE_IFU_rdata               (IFU_AXI4_rdata     ),
     .ICACHE_IFU_raddr               (ICACHE_IFU_raddr   ),
-    .ICACHE_IFU_pre_dnpc            (ICACHE_IFU_pre_dnpc),
+    //.ICACHE_IFU_pre_dnpc            (ICACHE_IFU_pre_dnpc),
     .ICACHE_IFU_valid               (IFU_AXI4_rvalid    ),
     .ICACHE_IFU_stall               (ICACHE_IFU_stall   ),
 
@@ -569,7 +569,7 @@ ysyx_24070003_idu my_idu(
     .rst_n                          (reset              ),
     .flush                          (flush              ),
     .fence_i                        (fence_i            ),
-    .IFU_IDU_pre_dnpc               (ICACHE_IFU_pre_dnpc),
+    //.IFU_IDU_pre_dnpc               (ICACHE_IFU_pre_dnpc),
    // .IFU_IDU_STALL                (IFU_IDU_STALL      ),
     .IFU_IDU_valid                  (IFU_IDU_valid      ),
     .IDU_IFU_ready                  (IDU_IFU_ready      ),
@@ -614,7 +614,7 @@ ysyx_24070003_idu my_idu(
     .IDU_EXU_B_type                 (IDU_EXU_B_type     ),
     //.IDU_EXU_STALL                (IDU_EXU_STALL      ),
     .IDU_EXU_PC                     (IDU_EXU_PC         ),
-    .IDU_EXU_pre_dnpc               (IDU_EXU_pre_dnpc   ),
+    //.IDU_EXU_pre_dnpc               (IDU_EXU_pre_dnpc   ),
 
     .IDU_EXU_exu_raw_rs1            (IDU_EXU_exu_raw_rs1),
     .IDU_EXU_exu_raw_rs2            (IDU_EXU_exu_raw_rs2),
@@ -653,7 +653,7 @@ ysyx_24070003_exu my_exu(
     .IDU_EXU_lsu_raw_rs1            (IDU_EXU_lsu_raw_rs1),
     .IDU_EXU_lsu_raw_rs2            (IDU_EXU_lsu_raw_rs2),
     .LSU_forward_data               (LSU_forward_data   ),
-    .IDU_EXU_pre_dnpc               (IDU_EXU_pre_dnpc   ),
+    //.IDU_EXU_pre_dnpc               (IDU_EXU_pre_dnpc   ),
     //.IDU_EXU_STALL                (IDU_EXU_STALL      ),
     .IDU_EXU_ebreak                 (IDU_EXU_ebreak     ),
     .IDU_EXU_csr_rst                (IDU_EXU_csr_rst    ),
@@ -728,9 +728,9 @@ ysyx_24070003_exu my_exu(
 
     .EXU_IDU_REG_ADDR               (EXU_IDU_REG_ADDR   )     ,
     .EXU_IDU_REG_WEN                (EXU_IDU_REG_WEN    ),
-    .EXU_IDU_REN                    (EXU_IDU_REN        ),
-    .EXU_BTB_PC                     (EXU_BTB_PC         ),
-    .EXU_BTB_updata_valid           (EXU_BTB_updata_valid)
+    .EXU_IDU_REN                    (EXU_IDU_REN        )
+   // .EXU_BTB_PC                     (EXU_BTB_PC         ),
+    //.EXU_BTB_updata_valid           (EXU_BTB_updata_valid)
 );
 
 assign LSU_RDATA = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RDATA : LSU_AXI4_RDATA;

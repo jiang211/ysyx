@@ -7,8 +7,8 @@ module ysyx_24070003_ifu(
     input  IDU_IFU_ready, //IDU是否准备好接收IFU的指令
     input [31:0]EXU_IFU_pc,
     input       EXU_IFU_flush,
-    input [31:0] BTB_pred_pc,
-    input       BTB_pred_valid,
+    //input [31:0] BTB_pred_pc,
+    //input       BTB_pred_valid,
     input [1:0] resp,
     //output [31:0] inst_addr_o,
     output [31:0]IFU_IDU_INSTR,
@@ -21,7 +21,7 @@ module ysyx_24070003_ifu(
 
     input  fence_i,
     input  stall,
-    output [31:0]     BTB_pre_DNPC,
+    //output [31:0]     BTB_pre_DNPC,
 
     output reg [63:0] ifu_count,
 
@@ -41,7 +41,7 @@ reg [31:0] pc;
 
 
 assign cur_pc = pc;
-assign BTB_pre_DNPC = BTB_pred_pc;
+//assign BTB_pre_DNPC = BTB_pred_pc;
 always@(posedge clock)
 begin 
    if(rstn | (resp != 2'b00))begin
@@ -57,9 +57,9 @@ begin
     else if(stall) begin
     pc <= pc;
     end
-    else if(BTB_pred_valid && IDU_IFU_ready && (~ICACHE_IFU_stall)) begin
-    pc <= BTB_pred_pc;
-    end
+    //else if(BTB_pred_valid && IDU_IFU_ready && (~ICACHE_IFU_stall)) begin
+    //pc <= BTB_pred_pc;
+    //end
     else if(IDU_IFU_ready && (~ICACHE_IFU_stall))begin
     pc <= pc + 32'h4;
     end

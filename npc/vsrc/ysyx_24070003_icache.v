@@ -7,13 +7,13 @@ module ysyx_24070003_icache(
     input          IFU_AXI4_arvalid,
     // output reg        IFU_AXI4_rvalid,
     input             IFU_AXI4_rready,
-    input  [31:0]     BTB_pre_DNPC,
+    //input  [31:0]     BTB_pre_DNPC,
     input             IDU_IFU_STALL,
     input             LSU_IFU_stall,
 
     output    [31:0]  ICACHE_IFU_rdata,
     output    [31:0]  ICACHE_IFU_raddr,
-    output    [31:0]  ICACHE_IFU_pre_dnpc,
+    //output    [31:0]  ICACHE_IFU_pre_dnpc,
     output            ICACHE_IFU_valid,
 
     // output reg [63:0] ICACHE_hit_count,
@@ -103,11 +103,11 @@ assign allow_update = (!icache_stall && IFU_AXI4_rready && !fence_i &&
 always @(posedge clock) begin
     if(reset) begin
         pc_reg1 <= 0;
-        reg1_pre_dnpc <= 0;
+        //reg1_pre_dnpc <= 0;
     end
     else if(allow_update) begin
         pc_reg1 <= IFU_AXI4_araddr;
-        reg1_pre_dnpc <= BTB_pre_DNPC;
+        //reg1_pre_dnpc <= BTB_pre_DNPC;
     end
 end
 
@@ -132,7 +132,7 @@ always @(posedge clock) begin
                 2'b11: data_reg3 <= data[index_reg1][127:96];
             endcase
             addr_reg3 <= pc_reg1;
-            per_pc_reg3 <= reg1_pre_dnpc;
+            //per_pc_reg3 <= reg1_pre_dnpc;
        
     end
     else if(!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)begin
@@ -143,13 +143,13 @@ always @(posedge clock) begin
             2'b11: data_reg3 <= ICACHE_AXI4_rdata;
         endcase
         addr_reg3 <= pc_reg1;
-        per_pc_reg3 <= reg1_pre_dnpc;
+        //per_pc_reg3 <= reg1_pre_dnpc;
     end
 end
 
 assign ICACHE_IFU_rdata = data_reg3;
 assign ICACHE_IFU_raddr = addr_reg3;
-assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
+//assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
 assign ICACHE_IFU_valid = data_valid & (~flush);
 
 assign ICACHE_IFU_stall = ~allow_update;

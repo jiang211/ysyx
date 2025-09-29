@@ -24,7 +24,7 @@ module ysyx_24070003_exu(
     input [8:0] IDU_EXU_RW_sign,
     input [2:0] csr_op,
     input [31:0] csr_data,
-    input [31:0] IDU_EXU_pre_dnpc,
+    //input [31:0] IDU_EXU_pre_dnpc,
 
     input IDU_EXU_exu_raw_rs1,
     input IDU_EXU_exu_raw_rs2,
@@ -86,10 +86,10 @@ module ysyx_24070003_exu(
 
     output [4:0]  EXU_IDU_REG_ADDR,
     output        EXU_IDU_REG_WEN,
-    output        EXU_IDU_REN,
+    output        EXU_IDU_REN
 
-    output [31:0] EXU_BTB_PC,
-    output        EXU_BTB_updata_valid
+    //output [31:0] EXU_BTB_PC,
+    //output        EXU_BTB_updata_valid
     
 );
 wire [31:0] RS1_data;
@@ -169,14 +169,14 @@ wire [31:0] pc_opdata2;
 assign pc_opdata1 = (pc_sel[1] || pc_sel[3]) ? pc_data : RS1_data;
 assign pc_opdata2 = imm_data;
 wire [31:0] next_pc = pc_opdata1 + pc_opdata2;
-wire btb_pre_error = (IDU_EXU_pre_dnpc != EXU_IFU_pc) && (IDU_EXU_jal || IDU_EXU_B_type);
-assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jalr || btb_pre_error) && (IDU_EXU_valid && EXU_IDU_ready);
+//wire btb_pre_error = (IDU_EXU_pre_dnpc != EXU_IFU_pc) && (IDU_EXU_jal || IDU_EXU_B_type);
+assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jalr || IDU_EXU_jal || (zero)) && (IDU_EXU_valid && EXU_IDU_ready);
 
 assign EXU_IDU_ready = LSU_EXU_ready;  
 
 ///assign EXU_BTB_PC = (pc_sel[3]) ? next_pc_jal : next_pc_jalr;
-assign EXU_BTB_PC = next_pc;
-assign EXU_BTB_updata_valid = (IDU_EXU_jal || IDU_EXU_B_type) && (IDU_EXU_valid && EXU_IDU_ready);
+//assign EXU_BTB_PC = next_pc;
+//assign EXU_BTB_updata_valid = (IDU_EXU_jal || IDU_EXU_B_type) && (IDU_EXU_valid && EXU_IDU_ready);
 
 always @(posedge clock) begin 
     if(rstn) begin
