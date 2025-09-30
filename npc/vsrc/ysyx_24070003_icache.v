@@ -92,24 +92,24 @@ assign hit = (valid[index_reg1] && (tags[index_reg1] == tag_reg1) && IFU_ICACHE_
 
 always @(posedge clock) begin
     if(!icache_stall && IFU_ICACHE_rready && hit && state == IDLE) begin
-            case (pc_reg1[3:2])
+            case (IFU_ICACHE_araddr[3:2])
                 2'b00: data_reg3 <= data[index_reg1][31:0];
                 2'b01: data_reg3 <= data[index_reg1][63:32];
                 2'b10: data_reg3 <= data[index_reg1][95:64];
                 2'b11: data_reg3 <= data[index_reg1][127:96];
             endcase
-            addr_reg3 <= pc_reg1;
+            addr_reg3 <= IFU_ICACHE_araddr;
             //per_pc_reg3 <= reg1_pre_dnpc;
        
     end
     else if(!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)begin
-        case (pc_reg1[3:2])
+        case (IFU_ICACHE_araddr[3:2])
             2'b00: data_reg3 <= data[index_reg1][31:0];
             2'b01: data_reg3 <= data[index_reg1][63:32];
             2'b10: data_reg3 <= data[index_reg1][95:64];
             2'b11: data_reg3 <= ICACHE_AXI4_rdata;
         endcase
-        addr_reg3 <= pc_reg1;
+        addr_reg3 <= IFU_ICACHE_araddr;
         //per_pc_reg3 <= reg1_pre_dnpc;
     end
 end
@@ -295,9 +295,9 @@ always @(posedge clock) begin
     else if((ICACHE_AXI4_arready && ICACHE_AXI4_arvalid))begin
         ICACHE_AXI4_arvalid <= 1'b0;
     end
-    else  if(state == IDLE && (!hit_reg1) && (!flush) && IFU_ICACHE_rready)begin
+    else  if(state == IDLE && (!hit) && (!flush) && IFU_ICACHE_rready)begin
         ICACHE_AXI4_arvalid <= 1'b1;
-        ICACHE_AXI4_araddr <= {pc_reg1[31:4], 4'b0} ; 
+        ICACHE_AXI4_araddr <= {IFU_ICACHE_araddr[31:4], 4'b0} ; 
     end
     
 end
