@@ -128,7 +128,7 @@ always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
     end
-    else if(flush || flush_r || fence_i) begin
+    else if(flush || fence_i) begin
         data_valid <= 0;
     end
     else if((!icache_stall && state == IDLE && hit && (~flush)) || (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)) begin
