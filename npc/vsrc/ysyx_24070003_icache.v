@@ -305,7 +305,7 @@ always @(posedge clock) begin
     else if((ICACHE_AXI4_arready && ICACHE_AXI4_arvalid))begin
         ICACHE_AXI4_arvalid <= 1'b0;
     end
-    else  if(state == IDLE && (!hit) && (!flush) && IFU_ICACHE_rready)begin
+    else  if(state == FLUSH_WAIT && (!flush))begin
         ICACHE_AXI4_arvalid <= 1'b1;
         ICACHE_AXI4_araddr <= {IFU_ICACHE_araddr[31:4], 4'b0} ; 
     end
