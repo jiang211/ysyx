@@ -119,7 +119,7 @@ assign ICACHE_IFU_raddr = addr_reg3;
 //assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
 assign ICACHE_IFU_valid = data_valid & (~flush);
 
-wire allow_update = (state == IDLE && ICACHE_IFU_valid) || (state == AXI_READ && ICACHE_AXI4_rlast);
+wire allow_update = (state == IDLE && !icache_stall && IFU_ICACHE_rready && hit) || (state == AXI_READ && ICACHE_AXI4_rlast);
 assign ICACHE_IFU_stall = ~allow_update;
 
 
@@ -176,7 +176,7 @@ always @(posedge clock) begin
         end
         AXI_READ: begin
             if(ICACHE_AXI4_rvalid && ICACHE_AXI4_rlast) begin
-                state <= UPDATED_CACHE; 
+                state <= IDLE; 
             end
             else begin
                 state <= AXI_READ;
