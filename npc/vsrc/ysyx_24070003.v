@@ -418,12 +418,12 @@ ysyx_24070003_ifu my_ifu(
 
     .ifu_count                      (ifu_count          ),
 
-    .IFU_ICACHE_araddr                (IFU_AXI4_araddr    ),
-    .IFU_ICACHE_arvalid               (IFU_AXI4_arvalid   ),
+    .IFU_AXI4_araddr                (IFU_AXI4_araddr    ),
+    .IFU_AXI4_arvalid               (IFU_AXI4_arvalid   ),
     //.IFU_AXI4_arready               (IFU_AXI4_arready   ),
-    .ICACHE_IFU_rdata                 (IFU_AXI4_rdata     ),
+    .IFU_AXI4_rdata                 (IFU_AXI4_rdata     ),
     .ICACHE_IFU_rvalid              (IFU_AXI4_rvalid    ),
-    .IFU_ICACHE_rready                (IFU_AXI4_rready    ),
+    .IFU_AXI4_rready                (IFU_AXI4_rready    ),
     .ICACHE_IFU_raddr               (ICACHE_IFU_raddr   ),
     .ICACHE_IFU_stall               (ICACHE_IFU_stall   )
     
@@ -435,11 +435,11 @@ ysyx_24070003_icache  my_icache(
     .reset                          (reset              ),
     .fence_i                        (fence_i            ),
     .flush                          (flush              ),
-    .IFU_ICACHE_araddr                (IFU_AXI4_araddr    ),
-    .IFU_ICACHE_arvalid               (IFU_AXI4_arvalid   ),
+    .IFU_AXI4_araddr                (IFU_AXI4_araddr    ),
+    .IFU_AXI4_arvalid               (IFU_AXI4_arvalid   ),
    // .IFU_AXI4_rdata               (IFU_AXI4_rdata     ),
     //.IFU_AXI4_rvalid              (IFU_AXI4_rvalid    ),
-    .IFU_ICACHE_rready                (IFU_AXI4_rready    ),
+    .IFU_AXI4_rready                (IFU_AXI4_rready    ),
 
     //.BTB_pre_DNPC                   (BTB_pre_DNPC       ),
     .IDU_IFU_STALL                  (stall              ),
