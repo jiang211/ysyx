@@ -3,10 +3,10 @@ module ysyx_24070003_icache(
     input reset,
     input fence_i,
     input flush,
-    input  [31:0]  IFU_AXI4_araddr,
-    input          IFU_AXI4_arvalid,
+    input  [31:0]  IFU_ICACHE_araddr,
+    input          IFU_ICACHE_arvalid,
     // output reg        IFU_AXI4_rvalid,
-    input             IFU_AXI4_rready,
+    input             IFU_ICACHE_rready,
     //input  [31:0]     BTB_pre_DNPC,
     input             IDU_IFU_STALL,
     input             LSU_IFU_stall,
@@ -49,7 +49,8 @@ reg [SDRAM_NUM_BLOCKS-1:0]valid ;                // 有效位
               // 有效位
 parameter  IDLE = 0,
             AXI_WAIT = 1,
-            AXI_READ = 2;
+            AXI_READ = 2,
+            UPDATED_CACHE = 3;
 reg [1:0] state;
 // typedef enum logic [2:0] {
 //     IDLE,        // 空闲状态
@@ -67,7 +68,7 @@ integer i;
 reg [31:0]  pc_reg1;
 reg reg1_valid;
 reg [31:0] reg1_pre_dnpc;
-
+wire hit;
 wire hit_reg1;
 
 
@@ -80,51 +81,17 @@ reg flush_r;
 
 
 
-wire [SDRAM_TAG_BITS-1:0] tag_reg1 = pc_reg1[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
-wire [SDRAM_INDEX_BITS-1:0] index_reg1 = pc_reg1[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
+wire [SDRAM_TAG_BITS-1:0] tag_reg1 = IFU_ICACHE_araddr[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
+wire [SDRAM_INDEX_BITS-1:0] index_reg1 = IFU_ICACHE_araddr[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
 
 
 wire icache_stall = LSU_IFU_stall || IDU_IFU_STALL;
 
-assign hit_reg1 = (valid[index_reg1] && (tags[index_reg1] == tag_reg1));
-reg first_req;
-always @(posedge clock) begin
-    if (reset | flush | flush_r)                    first_req <= 1'b1;
-    else if (reg1_valid && hit_reg1)
-                                  first_req <= 1'b0;  // 只要曾经命中过，就退出首次
-end
+assign hit = (valid[index_reg1] && (tags[index_reg1] == tag_reg1) && IFU_ICACHE_arvalid);
 
-// 更新条件
-wire allow_update;
-assign allow_update = (!icache_stall && IFU_AXI4_rready && !fence_i &&
-                      (state == IDLE) &&
-                      (first_req & (~reg1_valid) || hit_reg1)) | (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r)); 
 
 always @(posedge clock) begin
-    if(reset) begin
-        pc_reg1 <= 0;
-        //reg1_pre_dnpc <= 0;
-    end
-    else if(allow_update) begin
-        pc_reg1 <= IFU_AXI4_araddr;
-        //reg1_pre_dnpc <= BTB_pre_DNPC;
-    end
-end
-
-always @(posedge clock) begin
-    if(reset) begin
-        reg1_valid  <= 0;
-    end
-    else if(flush) begin
-        reg1_valid <= 0;
-    end
-    else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
-        reg1_valid <= 1'b1;
-    end
-end
-
-always @(posedge clock) begin
-    if(!icache_stall && IFU_AXI4_rready && reg1_valid && hit_reg1 && state == IDLE) begin
+    if(!icache_stall && IFU_ICACHE_rready && hit && state == IDLE) begin
             case (pc_reg1[3:2])
                 2'b00: data_reg3 <= data[index_reg1][31:0];
                 2'b01: data_reg3 <= data[index_reg1][63:32];
@@ -152,7 +119,7 @@ assign ICACHE_IFU_raddr = addr_reg3;
 //assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
 assign ICACHE_IFU_valid = data_valid & (~flush);
 
-assign ICACHE_IFU_stall = ~allow_update;
+assign ICACHE_IFU_stall = (state != IDLE);
 
 
 always @(posedge clock) begin
@@ -162,10 +129,10 @@ always @(posedge clock) begin
     else if(flush || flush_r || fence_i) begin
         data_valid <= 0;
     end
-    else if((!icache_stall && state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)) begin
+    else if((!icache_stall && state == IDLE && hit && (~flush)) || (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)) begin
         data_valid <= 1'b1;
     end
-    else if(ICACHE_IFU_valid && IFU_AXI4_rready)begin
+    else if(ICACHE_IFU_valid && IFU_ICACHE_rready)begin
         data_valid <= 1'b0;
     end
 end
@@ -189,8 +156,8 @@ always @(posedge clock) begin
     else begin
         case (state)
         IDLE: begin
-            if(reg1_valid && (!(LSU_IFU_stall || IDU_IFU_STALL)) && IFU_AXI4_rready) begin
-                if(hit_reg1)begin
+            if(IFU_ICACHE_arvalid && (!(LSU_IFU_stall || IDU_IFU_STALL)) && IFU_ICACHE_rready) begin
+                if(hit)begin
                     state <= IDLE;
                 end
                 else if(!flush)begin
@@ -208,11 +175,14 @@ always @(posedge clock) begin
         end
         AXI_READ: begin
             if(ICACHE_AXI4_rvalid && ICACHE_AXI4_rlast) begin
-                state <= IDLE; 
+                state <= UPDATED_CACHE; 
             end
             else begin
                 state <= AXI_READ;
             end
+        end
+        UPDATED_CACHE: begin
+            state <= IDLE;
         end
         default: begin
             state <= IDLE;
@@ -325,7 +295,7 @@ always @(posedge clock) begin
     else if((ICACHE_AXI4_arready && ICACHE_AXI4_arvalid))begin
         ICACHE_AXI4_arvalid <= 1'b0;
     end
-    else  if(state == IDLE && (!hit_reg1) && reg1_valid && (!flush) && IFU_AXI4_rready)begin
+    else  if(state == IDLE && (!hit_reg1) && (!flush) && IFU_ICACHE_rready)begin
         ICACHE_AXI4_arvalid <= 1'b1;
         ICACHE_AXI4_araddr <= {pc_reg1[31:4], 4'b0} ; 
     end

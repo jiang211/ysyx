@@ -26,12 +26,12 @@ module ysyx_24070003_ifu(
     output reg [63:0] ifu_count,
 
     // AXI-Lite4 Interface
-    output reg [31:0] IFU_AXI4_araddr,
-    output            IFU_AXI4_arvalid,
+    output reg [31:0] IFU_ICACHE_araddr,
+    output            IFU_ICACHE_arvalid,
     // input             IFU_AXI4_arready,
-    input  [31:0]     IFU_AXI4_rdata,
+    input  [31:0]     ICACHE_IFU_rdata,
     input             ICACHE_IFU_rvalid,
-    output reg        IFU_AXI4_rready,
+    output reg        IFU_ICACHE_rready,
     input  [31:0]     ICACHE_IFU_raddr,
     input             ICACHE_IFU_stall
     
@@ -63,23 +63,21 @@ begin
     else if(IDU_IFU_ready && (~ICACHE_IFU_stall))begin
     pc <= pc + 32'h4;
     end
-    
 end
-
 
 
 assign IFU_IDU_valid = ICACHE_IFU_rvalid;
 
-assign IFU_AXI4_araddr = pc;
+assign IFU_ICACHE_araddr = pc;
 
-assign IFU_AXI4_arvalid = (~stall && !EXU_IFU_flush && !fence_i);
+assign IFU_ICACHE_arvalid = (~stall && !EXU_IFU_flush && !fence_i);
 
 
-assign IFU_IDU_INSTR = IFU_AXI4_rdata;
+assign IFU_IDU_INSTR = ICACHE_IFU_rdata;
 assign IFU_IDU_PC   = ICACHE_IFU_raddr;   // 早就发出的地址
 
 
-assign IFU_AXI4_rready = IDU_IFU_ready;
+assign IFU_ICACHE_rready = IDU_IFU_ready;
 
 always @(posedge clock) begin
     if (rstn) begin
