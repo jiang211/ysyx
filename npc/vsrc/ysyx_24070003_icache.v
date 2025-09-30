@@ -48,10 +48,11 @@ reg [SDRAM_NUM_BLOCKS-1:0]valid ;                // 有效位
 
               // 有效位
 parameter  IDLE = 0,
-            AXI_WAIT = 1,
-            AXI_READ = 2,
-            UPDATED_CACHE = 3;
-reg [1:0] state;
+            FLUSH_WAIT = 1,
+            AXI_WAIT = 2,
+            AXI_READ = 3,
+            UPDATED_CACHE = 4;
+reg [2:0] state;
 // typedef enum logic [2:0] {
 //     IDLE,        // 空闲状态
 //     AXI_WAIT,
@@ -127,7 +128,7 @@ always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
     end
-    else if(flush || fence_i) begin
+    else if(flush || flush_r || fence_i) begin
         data_valid <= 0;
     end
     else if((!icache_stall && state == IDLE && hit && (~flush)) || (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)) begin
@@ -162,8 +163,16 @@ always @(posedge clock) begin
                     state <= IDLE;
                 end
                 else if(!flush)begin
-                    state <= AXI_WAIT;
+                    state <= FLUSH_WAIT;
                 end
+            end
+        end
+        FLUSH_WAIT: begin //防止前面最后一下指令需要冲刷，然后进入状态机，白跑一个访存
+            if(flush) begin
+                state <= IDLE;
+            end
+            else begin
+                state <= AXI_WAIT;
             end
         end
         AXI_WAIT: begin
