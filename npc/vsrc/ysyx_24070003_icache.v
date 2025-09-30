@@ -158,7 +158,7 @@ always @(posedge clock) begin
     else begin
         case (state)
         IDLE: begin
-            if(IFU_ICACHE_arvalid && (!(LSU_IFU_stall || IDU_IFU_STALL)) && IFU_ICACHE_rready) begin
+            if(IFU_ICACHE_arvalid && (!icache_stall) && IFU_ICACHE_rready) begin
                 if(hit)begin
                     state <= IDLE;
                 end
@@ -171,7 +171,7 @@ always @(posedge clock) begin
             if(flush) begin
                 state <= IDLE;
             end
-            else begin
+            else if(!icache_stall)begin
                 state <= AXI_WAIT;
             end
         end
@@ -305,7 +305,7 @@ always @(posedge clock) begin
     else if((ICACHE_AXI4_arready && ICACHE_AXI4_arvalid))begin
         ICACHE_AXI4_arvalid <= 1'b0;
     end
-    else  if(state == FLUSH_WAIT && (!flush))begin
+    else  if(state == FLUSH_WAIT && (!flush) && (!icache_stall))begin
         ICACHE_AXI4_arvalid <= 1'b1;
         ICACHE_AXI4_araddr <= {IFU_ICACHE_araddr[31:4], 4'b0} ; 
     end
