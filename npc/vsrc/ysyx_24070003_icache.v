@@ -119,7 +119,8 @@ assign ICACHE_IFU_raddr = addr_reg3;
 //assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
 assign ICACHE_IFU_valid = data_valid & (~flush);
 
-assign ICACHE_IFU_stall = (state != IDLE) || (!ICACHE_IFU_valid);
+wire allow_update = (state == IDLE && ICACHE_IFU_valid) || (state == AXI_READ && ICACHE_AXI4_rlast);
+assign ICACHE_IFU_stall = ~allow_update;
 
 
 always @(posedge clock) begin
