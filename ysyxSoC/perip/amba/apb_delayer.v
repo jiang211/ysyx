@@ -31,9 +31,9 @@ module apb_delayer(
   assign out_pwrite  = in_pwrite;
   assign out_pwdata  = in_pwdata;
   assign out_pstrb   = in_pstrb;
-  assign in_pready   = out_pready;
-  assign in_prdata   = out_prdata;
-  assign in_pslverr  = out_pslverr;
+  // assign in_pready   = out_pready;
+  // assign in_prdata   = out_prdata;
+  // assign in_pslverr  = out_pslverr;
 
   ///////////////////////////  fmax = 638   r = 500 s = 32  (6.38-1) * 32 ////////////
   localparam DELAY_COUNT = 172;
