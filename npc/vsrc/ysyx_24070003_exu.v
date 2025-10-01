@@ -3,7 +3,7 @@ module ysyx_24070003_exu(
     input clock,
     input rstn,
     //input IDU_EXU_STALL,
-    output      reg       EXU_IDU_ready,          // 从执行单元(EXU)到IDU的就绪信号
+    output             EXU_IDU_ready,          // 从执行单元(EXU)到IDU的就绪信号
     input               IDU_EXU_valid,          // IDU到EXU的有效信号
     input       LSU_EXU_ready,
     output      reg EXU_LSU_valid,

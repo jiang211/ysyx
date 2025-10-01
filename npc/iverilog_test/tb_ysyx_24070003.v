@@ -177,6 +177,10 @@ always @(posedge clock) begin
         end
         $stop;   // 立即停仿真
     end
+    // else if(ifu_count >= 'd100000)begin
+    //     $display("\n=== TIME OUT ===");
+    //     $stop; 
+    // end
 end 
 //----------------------------------------------------------------------
 //  外部 ram

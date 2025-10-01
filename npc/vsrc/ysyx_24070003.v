@@ -96,7 +96,7 @@ reg [63:0]                           total_access                   ;
 reg [63:0]                           access_time                    ;
 reg [63:0]                           miss_penalty                   ;
 
-wire [31:0]                          instr                          ;
+(* keep *)wire [31:0]                          instr                          ;
 wire [31:0]                          IFU_IDU_PC                     ;
 // wire [31:0]                          IFU_IDU_dnpc                   ;
 wire [31:0]                          AXI4_MASTER_ARADDR             ;
@@ -115,7 +115,7 @@ wire [31:0]                          ICACHE_AXI4_rdata              ;
 wire [31:0]                          ICACHE_AXI4_araddr             ;
 //wire [31:0]                          AXI4_SRAM_ARADDR               ;
 //wire [31:0]                          AXI4_SRAM_RDATA                ;
-wire [31:0]                          IFU_AXI4_araddr                ;
+(* keep *)wire [31:0]                          IFU_AXI4_araddr                ;
 wire [31:0]                          BTB_pred_pc                    ;
 wire [31:0]                          ICACHE_IFU_pre_dnpc            ;
 //wire [31:0]                          AXI4_SRAM_AWADDR               ;
@@ -178,15 +178,15 @@ wire                                 LSU_EXU_ready                  ;
 wire                                 EXU_LSU_valid                  ;
 wire                                 IFU_AXI4_arvalid               ;
 // wire                                 IFU_AXI4_arready               ;
-wire                                 IFU_AXI4_rvalid                ;
-wire                                 IFU_AXI4_rready                ;
+(* keep *)wire                                 IFU_AXI4_rvalid                ;
+(* keep *)wire                                 IFU_AXI4_rready                ;
 wire                                 ICACHE_IFU_stall               ;
-wire                                 flush                          ;
+(* keep *)wire                                 flush                          ;
 wire                                 BTB_pred_valid                 ;
-wire                                 ICACHE_AXI4_arvalid            ;
-wire                                 ICACHE_AXI4_arready            ;
-wire                                 ICACHE_AXI4_rvalid             ;
-wire                                 ICACHE_AXI4_rready             ;
+(* keep *)wire                                 ICACHE_AXI4_arvalid            ;
+(* keep *)wire                                 ICACHE_AXI4_arready            ;
+(* keep *)wire                                 ICACHE_AXI4_rvalid             ;
+(* keep *)wire                                 ICACHE_AXI4_rready             ;
 wire                                 LSU_IFU_stall                  ;
 //wire                                 AXI4_SRAM_ARVALID              ;
 //wire                                 AXI4_SRAM_ARREADY              ;
@@ -236,7 +236,7 @@ wire                                 IDU_EXU_jalr                   ;
 wire                                 IDU_EXU_C_type                 ;
 wire                                 IDU_EXU_B_type                 ;
 wire                                 fence_i                        ;
-wire                                 stall                          ;
+(* keep *)wire                                 stall                          ;
 wire                                 IDU_EXU_exu_raw_rs1            ;
 wire                                 IDU_EXU_exu_raw_rs2            ;
 wire                                 IDU_EXU_lsu_raw_rs1            ;
@@ -915,29 +915,29 @@ always @(posedge clock ) begin
         total_count <= total_count + 1;
     end
 end
-always @(posedge clock ) begin
-    if(EXU_LSU_ebreak) begin
-        $display("total_count               = %040d\n",total_count);
-        $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
-        $display("lsu_count                 = %040d\n",lsu_count);
-        $display("ifu_count                 = %040d\n",ifu_count);
-        $display("calcu_type_count          = %040d\n",calcu_type_count);
-        $display("Jump_type_count           = %040d\n",Jump_type_count);
-        $display("BJump_type_count          = %040d\n",BJump_type_count);
-        $display("LOAD_type_count           = %040d\n",LOAD_type_count);
-        $display("STORE_type_count          = %040d\n",STORE_type_count);
-        $display("C_type_count              = %040d\n",C_type_count);
-        $display("lsu_average_count         = %040d\n",lsu_during_count/lsu_count);
-        $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
-        $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
-        $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
-        $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
-        $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
-        $display("total_access              = %040d\n",total_access);
-        $display("access_time               = %040d\n",access_time);
-        $display("miss_penalty              = %040d\n",miss_penalty);
-    end
-end
+// always @(posedge clock ) begin
+//     if(EXU_LSU_ebreak) begin
+//         $display("total_count               = %040d\n",total_count);
+//         $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
+//         $display("lsu_count                 = %040d\n",lsu_count);
+//         $display("ifu_count                 = %040d\n",ifu_count);
+//         $display("calcu_type_count          = %040d\n",calcu_type_count);
+//         $display("Jump_type_count           = %040d\n",Jump_type_count);
+//         $display("BJump_type_count          = %040d\n",BJump_type_count);
+//         $display("LOAD_type_count           = %040d\n",LOAD_type_count);
+//         $display("STORE_type_count          = %040d\n",STORE_type_count);
+//         $display("C_type_count              = %040d\n",C_type_count);
+//         $display("lsu_average_count         = %040d\n",lsu_during_count/lsu_count);
+//         $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
+//         $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
+//         $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
+//         $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
+//         $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
+//         $display("total_access              = %040d\n",total_access);
+//         $display("access_time               = %040d\n",access_time);
+//         $display("miss_penalty              = %040d\n",miss_penalty);
+//     end
+// end
 import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
 reg [31:0] dpi_monitor_data[0:5];
 // 初始化时绑定指针

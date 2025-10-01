@@ -3,7 +3,7 @@ module ysyx_24070003_ifu(
     input rstn,
     //input WBU_IFU_JUMP,
      //IDU是否准备好接收IFU的指令
-    output reg IFU_IDU_valid, //IFU传递给IDU的指令是否有效
+    output IFU_IDU_valid, //IFU传递给IDU的指令是否有效
     input  IDU_IFU_ready, //IDU是否准备好接收IFU的指令
     input [31:0]EXU_IFU_pc,
     input       EXU_IFU_flush,
@@ -26,12 +26,12 @@ module ysyx_24070003_ifu(
     output reg [63:0] ifu_count,
 
     // AXI-Lite4 Interface
-    output reg [31:0] IFU_ICACHE_araddr,
+    output  [31:0] IFU_ICACHE_araddr,
     output            IFU_ICACHE_arvalid,
     // input             IFU_AXI4_arready,
     input  [31:0]     ICACHE_IFU_rdata,
     input             ICACHE_IFU_rvalid,
-    output reg        IFU_ICACHE_rready,
+    output         IFU_ICACHE_rready,
     input  [31:0]     ICACHE_IFU_raddr,
     input             ICACHE_IFU_stall
     

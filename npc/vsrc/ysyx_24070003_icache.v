@@ -24,14 +24,14 @@ module ysyx_24070003_icache(
     // output reg [63:0] ifu_during_count,
 
     output reg [31:0] ICACHE_AXI4_araddr,
-    output reg        ICACHE_AXI4_arvalid,
+    output            ICACHE_AXI4_arvalid,
     input             ICACHE_AXI4_arready,
     input  [31:0]     ICACHE_AXI4_rdata,
     input             ICACHE_AXI4_rvalid,
     input             ICACHE_AXI4_rlast,
     output            ICACHE_IFU_stall,
     output            ICACHE_AXI4_rready,
-    output reg [7:0]  ICACHE_AXI4_arlen
+    output     [7:0]  ICACHE_AXI4_arlen
     
 );
 
@@ -52,7 +52,7 @@ parameter  IDLE = 0,
             AXI_WAIT = 2,
             AXI_READ = 3,
             UPDATED_CACHE = 4;
-reg [2:0] state;
+(* keep *)reg [2:0] state;
 // typedef enum logic [2:0] {
 //     IDLE,        // 空闲状态
 //     AXI_WAIT,
@@ -295,18 +295,13 @@ always @(posedge clock) begin
     end
 end
 
-
-
+(* keep *) reg app;
+assign ICACHE_AXI4_arvalid = (state == AXI_WAIT);
 always @(posedge clock) begin
     if(reset)begin
-        ICACHE_AXI4_arvalid <= 0;
         ICACHE_AXI4_araddr <= 0;
     end
-    else if((ICACHE_AXI4_arready && ICACHE_AXI4_arvalid))begin
-        ICACHE_AXI4_arvalid <= 1'b0;
-    end
-    else  if(state == FLUSH_WAIT && (!flush) && (!icache_stall))begin
-        ICACHE_AXI4_arvalid <= 1'b1;
+    else if(state == FLUSH_WAIT && (!flush) && (!icache_stall))begin
         ICACHE_AXI4_araddr <= {IFU_ICACHE_araddr[31:4], 4'b0} ; 
     end
     

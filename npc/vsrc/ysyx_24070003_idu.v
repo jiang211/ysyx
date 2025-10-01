@@ -12,7 +12,7 @@ module ysyx_24070003_idu(
     input               IFU_IDU_valid,          // 从IFU到IDU的有效信号
     output           IDU_IFU_ready,          // IDU到IFU的就绪信号
     input               EXU_IDU_ready,          // 从执行单元(EXU)到IDU的就绪信号
-    output reg          IDU_EXU_valid,          // IDU到EXU的有效信号
+    output              IDU_EXU_valid,          // IDU到EXU的有效信号
     //output reg[6:0] IDU_EXU_opcode,
     output reg[4:0] IDU_EXU_rd,
     output reg[4:0] IDU_EXU_rs1,
@@ -147,7 +147,7 @@ wire J_type_1;
 wire [1:0] alu_op;
 wire I_type_2 = (opcode == 7'b1100111);
 assign J_type_1 = (opcode == 7'b1101111) || I_type_2; 
-assign C_type = (opcode == 7'b1110011);
+
 
 wire I_type_3 = (opcode == 7'b0000011);
 wire I_type_4 = (opcode == 7'b1010011);
@@ -322,7 +322,7 @@ begin
     // LOAD_type_count               <=        64'b0;
     // STORE_type_count               <=        64'b0;
     end
-    else if(stall || flush)begin
+    else if(flush)begin
    // IDU_EXU_opcode        <=        opcode   ;     
     IDU_EXU_rd            <=        5'b0;
     IDU_EXU_rs1           <=        5'b0;  
