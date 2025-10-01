@@ -1,0 +1,613 @@
+From 50783fdf60d951c9801a95c561d98299a47420df Mon Sep 17 00:00:00 2001
+From: 221220000-Zhang San <zhangsan@foo.com>
+Date: Wed, 8 Jan 2025 14:41:11 +0800
+Subject: [PATCH 02/28] NJU-ProjectN/nanos-lite ics2021 initialized
+
+NJU-ProjectN/nanos-lite 2a141760e31be246a7316942293a97873925bc2f Makefile: use header files in newlib-navy
+---
+ nanos-lite/.gitignore         |  8 ++++++++
+ nanos-lite/Makefile           | 34 ++++++++++++++++++++++++++++++++
+ nanos-lite/README.md          | 15 ++++++++++++++
+ nanos-lite/include/common.h   | 15 ++++++++++++++
+ nanos-lite/include/debug.h    | 30 ++++++++++++++++++++++++++++
+ nanos-lite/include/fs.h       | 10 ++++++++++
+ nanos-lite/include/memory.h   | 14 +++++++++++++
+ nanos-lite/include/proc.h     | 21 ++++++++++++++++++++
+ nanos-lite/resources/logo.txt | 29 +++++++++++++++++++++++++++
+ nanos-lite/src/.gitignore     |  2 ++
+ nanos-lite/src/device.c       | 36 ++++++++++++++++++++++++++++++++++
+ nanos-lite/src/fs.c           | 36 ++++++++++++++++++++++++++++++++++
+ nanos-lite/src/irq.c          | 14 +++++++++++++
+ nanos-lite/src/loader.c       | 22 +++++++++++++++++++++
+ nanos-lite/src/main.c         | 37 +++++++++++++++++++++++++++++++++++
+ nanos-lite/src/mm.c           | 31 +++++++++++++++++++++++++++++
+ nanos-lite/src/proc.c         | 33 +++++++++++++++++++++++++++++++
+ nanos-lite/src/ramdisk.c      | 33 +++++++++++++++++++++++++++++++
+ nanos-lite/src/resources.S    | 11 +++++++++++
+ nanos-lite/src/syscall.c      | 10 ++++++++++
+ 20 files changed, 441 insertions(+)
+ create mode 100644 nanos-lite/.gitignore
+ create mode 100644 nanos-lite/Makefile
+ create mode 100644 nanos-lite/README.md
+ create mode 100644 nanos-lite/include/common.h
+ create mode 100644 nanos-lite/include/debug.h
+ create mode 100644 nanos-lite/include/fs.h
+ create mode 100644 nanos-lite/include/memory.h
+ create mode 100644 nanos-lite/include/proc.h
+ create mode 100644 nanos-lite/resources/logo.txt
+ create mode 100644 nanos-lite/src/.gitignore
+ create mode 100644 nanos-lite/src/device.c
+ create mode 100644 nanos-lite/src/fs.c
+ create mode 100644 nanos-lite/src/irq.c
+ create mode 100644 nanos-lite/src/loader.c
+ create mode 100644 nanos-lite/src/main.c
+ create mode 100644 nanos-lite/src/mm.c
+ create mode 100644 nanos-lite/src/proc.c
+ create mode 100644 nanos-lite/src/ramdisk.c
+ create mode 100644 nanos-lite/src/resources.S
+ create mode 100644 nanos-lite/src/syscall.c
+
+diff --git a/nanos-lite/.gitignore b/nanos-lite/.gitignore
+new file mode 100644
+index 0000000..5d12530
+--- /dev/null
++++ b/nanos-lite/.gitignore
+@@ -0,0 +1,8 @@
++*.*
++*
++!*/
++!Makefile*
++!*.[cSh]
++!.gitignore
++!README.md
++!resources/logo.txt
+diff --git a/nanos-lite/Makefile b/nanos-lite/Makefile
+new file mode 100644
+index 0000000..64e02b0
+--- /dev/null
++++ b/nanos-lite/Makefile
+@@ -0,0 +1,34 @@
++#HAS_NAVY = 1
++RAMDISK_FILE = build/ramdisk.img
++
++NAME = nanos-lite
++SRCS = $(shell find -L ./src/ -name "*.c" -o -name "*.cpp" -o -name "*.S")
++include $(AM_HOME)/Makefile
++
++ifeq ($(ARCH),native)
++ISA = am_native
++else
++INC_PATH += include $(NAVY_HOME)/libs/libc/include
++endif
++
++./src/resources.S: $(RAMDISK_FILE)
++	@touch $@
++
++ifeq ($(HAS_NAVY),)
++files = $(RAMDISK_FILE) src/files.h src/syscall.h
++# create an empty file if it does not exist
++$(foreach f,$(files),$(if $(wildcard $f),, $(shell touch $f)))
++else
++
++ifeq ($(wildcard $(NAVY_HOME)/libs/libos/src/syscall.h),)
++  $(error $$NAVY_HOME must be a Navy-apps repo)
++endif
++
++update:
++	$(MAKE) -s -C $(NAVY_HOME) ISA=$(ISA) ramdisk
++	@ln -sf $(NAVY_HOME)/build/ramdisk.img $(RAMDISK_FILE)
++	@ln -sf $(NAVY_HOME)/build/ramdisk.h src/files.h
++	@ln -sf $(NAVY_HOME)/libs/libos/src/syscall.h src/syscall.h
++
++.PHONY: update
++endif
+diff --git a/nanos-lite/README.md b/nanos-lite/README.md
+new file mode 100644
+index 0000000..883c53d
+--- /dev/null
++++ b/nanos-lite/README.md
+@@ -0,0 +1,15 @@
++# Nanos-lite
++
++Nanos-lite is the simplified version of Nanos (http://cslab.nju.edu.cn/opsystem).
++It is ported to the [AM project](https://github.com/NJU-ProjectN/abstract-machine.git).
++It is a two-tasking operating system with the following features
++* ramdisk device drivers
++* ELF program loader
++* memory management with paging
++* a simple file system
++  * with fix number and size of files
++  * without directory
++  * some device files
++* 9 system calls
++  * open, read, write, lseek, close, gettimeofday, brk, exit, execve
++* scheduler with two tasks
+diff --git a/nanos-lite/include/common.h b/nanos-lite/include/common.h
+new file mode 100644
+index 0000000..a5abb87
+--- /dev/null
++++ b/nanos-lite/include/common.h
+@@ -0,0 +1,15 @@
++#ifndef __COMMON_H__
++#define __COMMON_H__
++
++/* Uncomment these macros to enable corresponding functionality. */
++//#define HAS_CTE
++//#define HAS_VME
++//#define MULTIPROGRAM
++//#define TIME_SHARING
++
++#include <am.h>
++#include <klib.h>
++#include <klib-macros.h>
++#include <debug.h>
++
++#endif
+diff --git a/nanos-lite/include/debug.h b/nanos-lite/include/debug.h
+new file mode 100644
+index 0000000..b66a047
+--- /dev/null
++++ b/nanos-lite/include/debug.h
+@@ -0,0 +1,30 @@
++#ifndef __DEBUG_H__
++#define __DEBUG_H__
++
++#include <common.h>
++
++#define Log(format, ...) \
++  printf("\33[1;35m[%s,%d,%s] " format "\33[0m\n", \
++      __FILE__, __LINE__, __func__, ## __VA_ARGS__)
++
++#undef panic
++#define panic(format, ...) \
++  do { \
++    Log("\33[1;31msystem panic: " format, ## __VA_ARGS__); \
++    halt(1); \
++  } while (0)
++
++#ifdef assert
++# undef assert
++#endif
++
++#define assert(cond) \
++  do { \
++    if (!(cond)) { \
++      panic("Assertion failed: %s", #cond); \
++    } \
++  } while (0)
++
++#define TODO() panic("please implement me")
++
++#endif
+diff --git a/nanos-lite/include/fs.h b/nanos-lite/include/fs.h
+new file mode 100644
+index 0000000..8fc94a2
+--- /dev/null
++++ b/nanos-lite/include/fs.h
+@@ -0,0 +1,10 @@
++#ifndef __FS_H__
++#define __FS_H__
++
++#include <common.h>
++
++#ifndef SEEK_SET
++enum {SEEK_SET, SEEK_CUR, SEEK_END};
++#endif
++
++#endif
+diff --git a/nanos-lite/include/memory.h b/nanos-lite/include/memory.h
+new file mode 100644
+index 0000000..c1f72ba
+--- /dev/null
++++ b/nanos-lite/include/memory.h
+@@ -0,0 +1,14 @@
++#ifndef __MEMORY_H__
++#define __MEMORY_H__
++
++#include <common.h>
++
++#ifndef PGSIZE
++#define PGSIZE 4096
++#endif
++
++#define PG_ALIGN __attribute((aligned(PGSIZE)))
++
++void* new_page(size_t);
++
++#endif
+diff --git a/nanos-lite/include/proc.h b/nanos-lite/include/proc.h
+new file mode 100644
+index 0000000..f628bf2
+--- /dev/null
++++ b/nanos-lite/include/proc.h
+@@ -0,0 +1,21 @@
++#ifndef __PROC_H__
++#define __PROC_H__
++
++#include <common.h>
++#include <memory.h>
++
++#define STACK_SIZE (8 * PGSIZE)
++
++typedef union {
++  uint8_t stack[STACK_SIZE] PG_ALIGN;
++  struct {
++    Context *cp;
++    AddrSpace as;
++    // we do not free memory, so use `max_brk' to determine when to call _map()
++    uintptr_t max_brk;
++  };
++} PCB;
++
++extern PCB *current;
++
++#endif
+diff --git a/nanos-lite/resources/logo.txt b/nanos-lite/resources/logo.txt
+new file mode 100644
+index 0000000..0a0bccd
+--- /dev/null
++++ b/nanos-lite/resources/logo.txt
+@@ -0,0 +1,29 @@
++######################%'``|######################$
++###################$` ..`.  '&###################$
++#################$` .`::::'`  '&#################$
++###############$` .`::;!;::::`. '&###############$
++#############$` .`:::::|$%;::::`  '&#############$
++###########$` .'::::::!%$$$%;::::`. '&###########$
++#########$` .'::::::!%$$$$$%;::::::`  '&#########$
++#######$` .'::::::!%$%|$$$$%;::::::::`. '&#######$
++#####$` .'::::::!%$%;:|$$$$|;::::::::::`  '&#####$
++###$` .';;;;;;!%$%;;;;|$$$$|;::::;|%!::::`. '&###$
++#&' .';;;%%!!%$%;;;;;;%$$$$|;;;;;;;|$%!;:::`. '@#$
++%.  ';;;;;|$$%!;;;;;;!%$$$$!;;;;;!%$%%$%!;;:`  '&$
++|    `;;;;;;|$%!;;;;;!$$$$%!;;;!%$%!;;;;;;:`   .%$
++@:  ;!``;;;;;;;;;;;;;|$$$$%!;!%$%!;;;;;;:`'!'  :@$
++;   '%$!``;;;;;;;;;;;|$$$$%!%$%!;;;;;;:`'|$|`   |$
++|    .:%$!`';;;;;;;;!%$$$$$$%!;;;;;;:`'|$|'    .%$
++#$`    .:%$|`';;;;;;!%$$$$%!;;;;;;:`'|$|'     ;##$
++###$`    .:%$|`';;;;;!%$%|!;;;;;;`'%$|'     ;####$
++#####$`    .:%$|`';!!!!!!!!!!!;`'%$%'     ;######$
++#######$`    .:$$|`';!!!!!!!;`'%$%'     ;########$
++#########$`    .:$$|`';!!!;`'%$%'     ;##########$
++###########$`    .:$&|`.`.'%&%'     ;@###########$
++#############$`    .:$&$$&&%'     ;##############$
++###############$`    .:$&%'     ;@###############$
++#################$`           ;##################$
++
++                  **Project-N**
++ Nanjing University Computer System Project Series
++       Build a computer system from scratch!
+diff --git a/nanos-lite/src/.gitignore b/nanos-lite/src/.gitignore
+new file mode 100644
+index 0000000..225938b
+--- /dev/null
++++ b/nanos-lite/src/.gitignore
+@@ -0,0 +1,2 @@
++files.h
++syscall.h
+diff --git a/nanos-lite/src/device.c b/nanos-lite/src/device.c
+new file mode 100644
+index 0000000..37a2f3d
+--- /dev/null
++++ b/nanos-lite/src/device.c
+@@ -0,0 +1,36 @@
++#include <common.h>
++
++#if defined(MULTIPROGRAM) && !defined(TIME_SHARING)
++# define MULTIPROGRAM_YIELD() yield()
++#else
++# define MULTIPROGRAM_YIELD()
++#endif
++
++#define NAME(key) \
++  [AM_KEY_##key] = #key,
++
++static const char *keyname[256] __attribute__((used)) = {
++  [AM_KEY_NONE] = "NONE",
++  AM_KEYS(NAME)
++};
++
++size_t serial_write(const void *buf, size_t offset, size_t len) {
++  return 0;
++}
++
++size_t events_read(void *buf, size_t offset, size_t len) {
++  return 0;
++}
++
++size_t dispinfo_read(void *buf, size_t offset, size_t len) {
++  return 0;
++}
++
++size_t fb_write(const void *buf, size_t offset, size_t len) {
++  return 0;
++}
++
++void init_device() {
++  Log("Initializing devices...");
++  ioe_init();
++}
+diff --git a/nanos-lite/src/fs.c b/nanos-lite/src/fs.c
+new file mode 100644
+index 0000000..a9d2670
+--- /dev/null
++++ b/nanos-lite/src/fs.c
+@@ -0,0 +1,36 @@
++#include <fs.h>
++
++typedef size_t (*ReadFn) (void *buf, size_t offset, size_t len);
++typedef size_t (*WriteFn) (const void *buf, size_t offset, size_t len);
++
++typedef struct {
++  char *name;
++  size_t size;
++  size_t disk_offset;
++  ReadFn read;
++  WriteFn write;
++} Finfo;
++
++enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_FB};
++
++size_t invalid_read(void *buf, size_t offset, size_t len) {
++  panic("should not reach here");
++  return 0;
++}
++
++size_t invalid_write(const void *buf, size_t offset, size_t len) {
++  panic("should not reach here");
++  return 0;
++}
++
++/* This is the information about all files in disk. */
++static Finfo file_table[] __attribute__((used)) = {
++  [FD_STDIN]  = {"stdin", 0, 0, invalid_read, invalid_write},
++  [FD_STDOUT] = {"stdout", 0, 0, invalid_read, invalid_write},
++  [FD_STDERR] = {"stderr", 0, 0, invalid_read, invalid_write},
++#include "files.h"
++};
++
++void init_fs() {
++  // TODO: initialize the size of /dev/fb
++}
+diff --git a/nanos-lite/src/irq.c b/nanos-lite/src/irq.c
+new file mode 100644
+index 0000000..624a0ac
+--- /dev/null
++++ b/nanos-lite/src/irq.c
+@@ -0,0 +1,14 @@
++#include <common.h>
++
++static Context* do_event(Event e, Context* c) {
++  switch (e.event) {
++    default: panic("Unhandled event ID = %d", e.event);
++  }
++
++  return c;
++}
++
++void init_irq(void) {
++  Log("Initializing interrupt/exception handler...");
++  cte_init(do_event);
++}
+diff --git a/nanos-lite/src/loader.c b/nanos-lite/src/loader.c
+new file mode 100644
+index 0000000..9e908f3
+--- /dev/null
++++ b/nanos-lite/src/loader.c
+@@ -0,0 +1,22 @@
++#include <proc.h>
++#include <elf.h>
++
++#ifdef __LP64__
++# define Elf_Ehdr Elf64_Ehdr
++# define Elf_Phdr Elf64_Phdr
++#else
++# define Elf_Ehdr Elf32_Ehdr
++# define Elf_Phdr Elf32_Phdr
++#endif
++
++static uintptr_t loader(PCB *pcb, const char *filename) {
++  TODO();
++  return 0;
++}
++
++void naive_uload(PCB *pcb, const char *filename) {
++  uintptr_t entry = loader(pcb, filename);
++  Log("Jump to entry = %p", entry);
++  ((void(*)())entry) ();
++}
++
+diff --git a/nanos-lite/src/main.c b/nanos-lite/src/main.c
+new file mode 100644
+index 0000000..883600b
+--- /dev/null
++++ b/nanos-lite/src/main.c
+@@ -0,0 +1,37 @@
++#include <common.h>
++
++void init_mm(void);
++void init_device(void);
++void init_ramdisk(void);
++void init_irq(void);
++void init_fs(void);
++void init_proc(void);
++
++int main() {
++  extern const char logo[];
++  printf("%s", logo);
++  Log("'Hello World!' from Nanos-lite");
++  Log("Build time: %s, %s", __TIME__, __DATE__);
++
++  init_mm();
++
++  init_device();
++
++  init_ramdisk();
++
++#ifdef HAS_CTE
++  init_irq();
++#endif
++
++  init_fs();
++
++  init_proc();
++
++  Log("Finish initialization");
++
++#ifdef HAS_CTE
++  yield();
++#endif
++
++  panic("Should not reach here");
++}
+diff --git a/nanos-lite/src/mm.c b/nanos-lite/src/mm.c
+new file mode 100644
+index 0000000..661b580
+--- /dev/null
++++ b/nanos-lite/src/mm.c
+@@ -0,0 +1,31 @@
++#include <memory.h>
++
++static void *pf = NULL;
++
++void* new_page(size_t nr_page) {
++  return NULL;
++}
++
++#ifdef HAS_VME
++static void* pg_alloc(int n) {
++  return NULL;
++}
++#endif
++
++void free_page(void *p) {
++  panic("not implement yet");
++}
++
++/* The brk() system call handler. */
++int mm_brk(uintptr_t brk) {
++  return 0;
++}
++
++void init_mm() {
++  pf = (void *)ROUNDUP(heap.start, PGSIZE);
++  Log("free physical pages starting from %p", pf);
++
++#ifdef HAS_VME
++  vme_init(pg_alloc, free_page);
++#endif
++}
+diff --git a/nanos-lite/src/proc.c b/nanos-lite/src/proc.c
+new file mode 100644
+index 0000000..70efb8f
+--- /dev/null
++++ b/nanos-lite/src/proc.c
+@@ -0,0 +1,33 @@
++#include <proc.h>
++
++#define MAX_NR_PROC 4
++
++static PCB pcb[MAX_NR_PROC] __attribute__((used)) = {};
++static PCB pcb_boot = {};
++PCB *current = NULL;
++
++void switch_boot_pcb() {
++  current = &pcb_boot;
++}
++
++void hello_fun(void *arg) {
++  int j = 1;
++  while (1) {
++    Log("Hello World from Nanos-lite with arg '%p' for the %dth time!", (uintptr_t)arg, j);
++    j ++;
++    yield();
++  }
++}
++
++void init_proc() {
++  switch_boot_pcb();
++
++  Log("Initializing processes...");
++
++  // load program here
++
++}
++
++Context* schedule(Context *prev) {
++  return NULL;
++}
+diff --git a/nanos-lite/src/ramdisk.c b/nanos-lite/src/ramdisk.c
+new file mode 100644
+index 0000000..0e33d58
+--- /dev/null
++++ b/nanos-lite/src/ramdisk.c
+@@ -0,0 +1,33 @@
++#include <common.h>
++
++extern uint8_t ramdisk_start;
++extern uint8_t ramdisk_end;
++#define RAMDISK_SIZE ((&ramdisk_end) - (&ramdisk_start))
++
++/* The kernel is monolithic, therefore we do not need to
++ * translate the address `buf' from the user process to
++ * a physical one, which is necessary for a microkernel.
++ */
++
++/* read `len' bytes starting from `offset' of ramdisk into `buf' */
++size_t ramdisk_read(void *buf, size_t offset, size_t len) {
++  assert(offset + len <= RAMDISK_SIZE);
++  memcpy(buf, &ramdisk_start + offset, len);
++  return len;
++}
++
++/* write `len' bytes starting from `buf' into the `offset' of ramdisk */
++size_t ramdisk_write(const void *buf, size_t offset, size_t len) {
++  assert(offset + len <= RAMDISK_SIZE);
++  memcpy(&ramdisk_start + offset, buf, len);
++  return len;
++}
++
++void init_ramdisk() {
++  Log("ramdisk info: start = %p, end = %p, size = %d bytes",
++      &ramdisk_start, &ramdisk_end, RAMDISK_SIZE);
++}
++
++size_t get_ramdisk_size() {
++  return RAMDISK_SIZE;
++}
+diff --git a/nanos-lite/src/resources.S b/nanos-lite/src/resources.S
+new file mode 100644
+index 0000000..453d578
+--- /dev/null
++++ b/nanos-lite/src/resources.S
+@@ -0,0 +1,11 @@
++.section .data
++.global ramdisk_start, ramdisk_end
++ramdisk_start:
++.incbin "build/ramdisk.img"
++ramdisk_end:
++
++.section .rodata
++.globl logo
++logo:
++.incbin "resources/logo.txt"
++.byte 0
+diff --git a/nanos-lite/src/syscall.c b/nanos-lite/src/syscall.c
+new file mode 100644
+index 0000000..9ec6dc0
+--- /dev/null
++++ b/nanos-lite/src/syscall.c
+@@ -0,0 +1,10 @@
++#include <common.h>
++#include "syscall.h"
++void do_syscall(Context *c) {
++  uintptr_t a[4];
++  a[0] = c->GPR1;
++
++  switch (a[0]) {
++    default: panic("Unhandled syscall ID = %d", a[0]);
++  }
++}
+-- 
+2.34.1
+

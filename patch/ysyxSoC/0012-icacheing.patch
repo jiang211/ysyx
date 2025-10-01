@@ -1,0 +1,337 @@
+From 3c01b0194ca2c39303e97687effcf400a0084045 Mon Sep 17 00:00:00 2001
+From: 221220000-Zhang San <zhangsan@foo.com>
+Date: Fri, 15 Aug 2025 11:03:17 +0800
+Subject: [PATCH 12/28] "icacheing"
+
+---
+ npc/Makefile                     |   9 ++-
+ npc/csrc/include/config.h        |   2 +-
+ npc/vsrc/icache.v                | 135 +++++++++++++++++++++++++++++++
+ npc/vsrc/ysyx_24070003_cpu.v     |  50 ++++++++++--
+ yosys-sta/Makefile               |   2 +-
+ ysyxSoC/perip/amba/apb_delayer.v |   8 +-
+ 6 files changed, 190 insertions(+), 16 deletions(-)
+ create mode 100644 npc/vsrc/icache.v
+
+diff --git a/npc/Makefile b/npc/Makefile
+index 86f4bc5..4eae83a 100755
+--- a/npc/Makefile
++++ b/npc/Makefile
+@@ -101,7 +101,7 @@ $(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
+ 
+ NPC_FLAGS += $(ARGS)
+ #NPC_FLAGS += -b
+-NPC_FLAGS +=  --log=$(BUILD_DIR)/log/npc-log.txt
++NPC_FLAGS +=  --log=$(BUILD_DIR)/npc-log.txt
+ 
+ NPC_FLAGS += --diff=$(NEMU_HOME)/build/riscv32-nemu-interpreter-so
+ 
+@@ -135,15 +135,18 @@ run: $(BIN)
+ 
+ PERF_FILE = PERF.md
+ SIM_LOG = $(BUILD_DIR)/sim.log
++TIME_FILE = /home/jx/ysyx-workbench/yosys-sta/result/ysyx_24070003_cpu/ysyx_24070003_cpu.rpt
++FACE_FILE = /home/jx/ysyx-workbench/yosys-sta/result/ysyx_24070003_cpu/synth_stat.txt
++#  要先在yosys-sta下运行出综合文件，再运行perf.sh脚本
+ # 初始化性能记录文件（首次运行时创建表头）
+ init-perf:
+ 	@echo "创建性能记录文件..."
+-	@echo "| 测试时间 | Commit | 说明 | 周期数 | 指令数 | IPC | 频率 | 面积 | LSU计数 | IFU计数 | 计算类指令 | 跳转指令 | 加载指令 | 存储指令 | C类指令 | LSU平均 | IFU平均 | 加载平均 | 存储平均 |" > ${PERF_FILE}
++	@echo "| 测试时间 | Commit | 说明 | 周期数 | 指令数 | IPC | 综合频率 | 综合面积 | LSU计数 | IFU计数 | 计算类指令 | 跳转指令 | 加载指令 | 存储指令 | C类指令 | LSU平均 | IFU平均 | 加载平均 | 存储平均 |" > ${PERF_FILE}
+ 	@echo "|----------|--------|------|--------|--------|-----|------|------|---------|---------|------------|----------|----------|----------|--------|---------|---------|----------|----------|" >> ${PERF_FILE}
+ 
+ perf: 
+ 	@echo "记录性能数据..."
+-	@bash perf.sh $(SIM_LOG) $(PERF_FILE)
++	@bash perf.sh $(SIM_LOG) $(PERF_FILE) $(TIME_FILE) $(FACE_FILE)
+ 	@echo "记录已添加到 $(PERF_FILE)"
+ 	@tail -n1 $(PERF_FILE)
+ 
+diff --git a/npc/csrc/include/config.h b/npc/csrc/include/config.h
+index b0ddef9..c51c3aa 100755
+--- a/npc/csrc/include/config.h
++++ b/npc/csrc/include/config.h
+@@ -12,7 +12,7 @@
+ //#endif
+ //_______________________________end of the CONFIG_TRACE parameters--------------------------
+ 
+-//#define CONFIG_DIFFTEST
++#define CONFIG_DIFFTEST
+ 
+ #define CONFIG_PC_RESET_OFFSET 0x0
+ 
+diff --git a/npc/vsrc/icache.v b/npc/vsrc/icache.v
+new file mode 100644
+index 0000000..ae66c6e
+--- /dev/null
++++ b/npc/vsrc/icache.v
+@@ -0,0 +1,135 @@
++module icache(
++    input clock,
++    input reset,
++    input reg [31:0]  IFU_AXI4_araddr,
++    input reg         IFU_AXI4_arvalid,
++    output reg        IFU_AXI4_arready,
++    output reg [31:0] IFU_AXI4_rdata,
++    output reg        IFU_AXI4_rvalid,
++    input             IFU_AXI4_rready,
++
++    output reg [31:0] ICACHE_AXI4_araddr,
++    output reg        ICACHE_AXI4_arvalid,
++    input             ICACHE_AXI4_arready,
++    input  [31:0]     ICACHE_AXI4_rdata,
++    input             ICACHE_AXI4_rvalid,
++    output reg        ICACHE_AXI4_rready,
++    output reg [63:0] ICACHE_hit_count,
++    output reg [63:0] ICACHE_miss_count,
++    output reg [63:0] total_access
++);
++
++parameter BLOCK_SIZE = 4;      // 4字节块大小
++parameter NUM_BLOCKS = 16;     // 16个缓存块
++parameter OFFSET_BITS = 2;     // 2^2 = 4字节 (块内偏移)
++parameter INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
++parameter TAG_BITS = 26;       // 32 - (2+4) = 26位标签
++
++
++reg [TAG_BITS-1:0] tags [0:NUM_BLOCKS-1];  // 标签存储
++reg [31:0] data [0:NUM_BLOCKS-1];           // 数据存储
++reg valid [0:NUM_BLOCKS-1];                 // 有效位
++
++typedef enum logic [1:0] {
++    IDLE,        // 空闲状态
++    CHECK_CACHE, // 检查缓存
++    AXI_READ,    // 从内存读取
++    SEND_DATA // 更新缓存
++} state_t;
++
++reg [1:0] state;
++reg [31:0] saved_addr;  // 保存当前请求地址
++reg [INDEX_BITS-1:0] saved_index;  // 保存当前索引
++reg [TAG_BITS-1:0] saved_tag;
++
++wire [TAG_BITS-1:0] current_tag = IFU_AXI4_araddr[31:OFFSET_BITS+INDEX_BITS];
++wire [INDEX_BITS-1:0] current_index = IFU_AXI4_araddr[OFFSET_BITS+INDEX_BITS-1:OFFSET_BITS];
++wire [OFFSET_BITS-1:0] current_offset = IFU_AXI4_araddr[OFFSET_BITS-1:0];
++
++integer i;
++
++
++always @(posedge clock) begin
++    if (reset) begin
++        state <= IDLE;
++        IFU_AXI4_arready <= 0;
++        IFU_AXI4_rvalid <= 0;
++        ICACHE_AXI4_arvalid <= 0;
++        ICACHE_AXI4_rready <= 0;
++        saved_addr <= 0;
++        saved_tag <= 0;
++        ICACHE_hit_count <= 0;
++        ICACHE_miss_count <= 0;
++        for (i = 0; i < NUM_BLOCKS; i = i + 1) begin
++            valid[i] <= 0;  // 复位时所有块无效
++        end
++    end else begin
++        case (state)
++            IDLE: begin
++                IFU_AXI4_arready <= 1'b1;
++                IFU_AXI4_rvalid <= 1'b0;
++                if (IFU_AXI4_arvalid && IFU_AXI4_arready) begin
++                    total_access <= total_access + 1;
++                    IFU_AXI4_arready <= 1'b0;
++                    saved_addr <= IFU_AXI4_araddr;
++                    saved_index <= current_index;
++                    saved_tag <= current_tag;
++                    state <= CHECK_CACHE;
++                end
++            end
++            
++            CHECK_CACHE: begin
++                // 检查是否命中：有效且标签匹配
++                if (valid[saved_index] && (tags[saved_index] == saved_tag)) begin
++                    // 命中：直接返回数据
++                    IFU_AXI4_rdata <= data[saved_index];
++                    IFU_AXI4_rvalid <= 1'b1;
++                    state <= SEND_DATA;
++                    ICACHE_hit_count <= ICACHE_hit_count + 1;
++                end else begin
++                    // 未命中：启动内存读取
++                    ICACHE_AXI4_arvalid <= 1'b1;
++                    ICACHE_AXI4_araddr <= saved_addr; // 对齐地址
++                    if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
++                        ICACHE_AXI4_rready <= 1'b1;
++                        ICACHE_AXI4_arvalid <= 1'b0;
++                        ICACHE_miss_count <= ICACHE_miss_count + 1;
++                        state <= AXI_READ;
++                    end
++                    else begin
++                        state <= CHECK_CACHE;
++                    end
++                end
++            end
++            
++            AXI_READ: begin
++                ICACHE_AXI4_rready <= 1'b1;
++                if (ICACHE_AXI4_rvalid && ICACHE_AXI4_rready) begin
++                    ICACHE_AXI4_rready <= 1'b0;
++                    // 更新缓存
++                    tags[saved_index] <= saved_addr[31:OFFSET_BITS+INDEX_BITS];
++                    data[saved_index] <= ICACHE_AXI4_rdata;
++                    valid[saved_index] <= 1;
++                    
++                    // 返回数据给IFU
++                    IFU_AXI4_rdata <= ICACHE_AXI4_rdata;
++                    IFU_AXI4_rvalid <= 1'b1;
++                    state <= SEND_DATA;
++                end
++                // 否则保持等待状态
++            end
++            
++            SEND_DATA: begin
++                if (IFU_AXI4_rvalid && IFU_AXI4_rready) begin
++                    // IFU接收数据，完成本次请求
++                    IFU_AXI4_rvalid <= 1'b0;
++                    state <= IDLE;
++                end
++            end
++            default: state <= IDLE;
++        endcase
++    end
++end
++
++endmodule
++
+diff --git a/npc/vsrc/ysyx_24070003_cpu.v b/npc/vsrc/ysyx_24070003_cpu.v
+index 8a2dff3..db007e2 100755
+--- a/npc/vsrc/ysyx_24070003_cpu.v
++++ b/npc/vsrc/ysyx_24070003_cpu.v
+@@ -216,6 +216,29 @@ ifu my_ifu(
+     .ifu_during_count (ifu_during_count)
+ );
+ 
++wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr;
++wire ICACHE_AXI4_arvalid,ICACHE_AXI4_arready,ICACHE_AXI4_rvalid,ICACHE_AXI4_rready;
++icache  my_icache(
++    .clock                   (clock),
++    .reset                   (reset),
++    .IFU_AXI4_araddr         (IFU_AXI4_araddr),
++    .IFU_AXI4_arvalid        (IFU_AXI4_arvalid),
++    .IFU_AXI4_arready        (IFU_AXI4_arready),
++    .IFU_AXI4_rdata          (IFU_AXI4_rdata),
++    .IFU_AXI4_rvalid         (IFU_AXI4_rvalid),
++    .IFU_AXI4_rready         (IFU_AXI4_rready),
++
++    .ICACHE_AXI4_araddr      (ICACHE_AXI4_araddr),
++    .ICACHE_AXI4_arvalid     (ICACHE_AXI4_arvalid),
++    .ICACHE_AXI4_arready     (ICACHE_AXI4_arready),
++    .ICACHE_AXI4_rdata       (ICACHE_AXI4_rdata),
++    .ICACHE_AXI4_rvalid      (ICACHE_AXI4_rvalid),
++    .ICACHE_AXI4_rready      (ICACHE_AXI4_rready),
++    .ICACHE_hit_count        (ICACHE_hit_count),
++    .ICACHE_miss_count       (ICACHE_miss_count),
++    .total_access            (total_access)
++);
++
+ wire AXI4_SRAM_ARVALID,AXI4_SRAM_ARREADY,AXI4_SRAM_RVALID,AXI4_SRAM_RREADY;
+ wire AXI4_SRAM_AWVALID,AXI4_SRAM_AWREADY,AXI4_SRAM_WVALID,AXI4_SRAM_WREADY,AXI4_SRAM_BVALID,AXI4_SRAM_BREADY;
+ wire [31:0] AXI4_SRAM_ARADDR,AXI4_SRAM_RDATA,AXI4_SRAM_AWADDR,AXI4_SRAM_WDATA;
+@@ -235,13 +258,13 @@ axi_arbiter my_axi_arbiter(
+     .rstn                   (reset),   
+     
+     // IFU 接口 (指令获取)
+-    .ifu_araddr             (IFU_AXI4_araddr),
+-    .ifu_arvalid            (IFU_AXI4_arvalid),
+-    .ifu_arready             (IFU_AXI4_arready),
++    .ifu_araddr             (ICACHE_AXI4_araddr),
++    .ifu_arvalid            (ICACHE_AXI4_arvalid),
++    .ifu_arready             (ICACHE_AXI4_arready),
+     
+-    .ifu_rdata              (IFU_AXI4_rdata),            
+-    .ifu_rvalid               (IFU_AXI4_rvalid)  ,
+-    .ifu_rready             (IFU_AXI4_rready),
++    .ifu_rdata              (ICACHE_AXI4_rdata),            
++    .ifu_rvalid               (ICACHE_AXI4_rvalid)  ,
++    .ifu_rready             (ICACHE_AXI4_rready),
+     
+     // LSU 接口 (加载/存储)
+     .lsu_araddr              (LSU_AXI4_ARADDR)   ,
+@@ -806,9 +829,19 @@ always @(posedge clock ) begin
+         ref_skip <= WBU_TOP_skip;
+     end
+ end
+-reg [63:0] lsu_count,ifu_count,calcu_type_count,Jump_type_count,LOAD_type_count,STORE_type_count,C_type_count,lsu_during_count,ifu_during_count,lsu_load_count,lsu_store_count;
++reg [63:0] lsu_count,ifu_count,calcu_type_count,Jump_type_count,LOAD_type_count,STORE_type_count,C_type_count,lsu_during_count,ifu_during_count,lsu_load_count,lsu_store_count,total_count;
++reg [63:0] ICACHE_hit_count,ICACHE_miss_count,total_access;
++always @(posedge clock ) begin
++    if(reset) begin
++        total_count <= 0;
++    end else begin
++        total_count <= total_count + 1;
++    end
++end
+ always @(posedge clock ) begin
+     if(IDU_EXU_ebreak) begin
++        $display("total_count               = %040d\n",total_count);
++        $display("total_instr               = %040d\n",calcu_type_count + Jump_type_count + LOAD_type_count + STORE_type_count + C_type_count);
+         $display("lsu_count                 = %040d\n",lsu_count);
+         $display("ifu_count                 = %040d\n",ifu_count);
+         $display("calcu_type_count          = %040d\n",calcu_type_count);
+@@ -820,6 +853,9 @@ always @(posedge clock ) begin
+         $display("ifu_average_count         = %040d\n",ifu_during_count/ifu_count);
+         $display("load_instr_average_count  = %040d\n",lsu_load_count/LOAD_type_count);
+         $display("store_instr_average_count = %040d\n",lsu_store_count/STORE_type_count);
++        $display("ICACHE hit_count          = %040d\n",ICACHE_hit_count);
++        $display("ICACHE miss_count         = %040d\n",ICACHE_miss_count);
++        $display("total_access              = %040d\n",total_access);
+     end
+ end
+ import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
+diff --git a/yosys-sta/Makefile b/yosys-sta/Makefile
+index b9b3803..da0a470 100644
+--- a/yosys-sta/Makefile
++++ b/yosys-sta/Makefile
+@@ -10,7 +10,7 @@ export CLK_FREQ_MHZ ?= 5000
+ export CLK_PORT_NAME ?= clock
+ PDK = nangate45
+ 
+-RESULT_DIR = $(O)/$(DESIGN)-$(CLK_FREQ_MHZ)MHz
++RESULT_DIR = $(O)/$(DESIGN)
+ SCRIPT_DIR = $(PROJ_PATH)/scripts
+ NETLIST_SYN_V   = $(RESULT_DIR)/$(DESIGN).netlist.syn.v
+ NETLIST_FIXED_V = $(RESULT_DIR)/$(DESIGN).netlist.fixed.v
+diff --git a/ysyxSoC/perip/amba/apb_delayer.v b/ysyxSoC/perip/amba/apb_delayer.v
+index dd3236e..85d1c30 100644
+--- a/ysyxSoC/perip/amba/apb_delayer.v
++++ b/ysyxSoC/perip/amba/apb_delayer.v
+@@ -35,7 +35,7 @@ module apb_delayer(
+   // assign in_prdata   = out_prdata;
+   // assign in_pslverr  = out_pslverr;
+ 
+-  /////////////////////////////  fmax = 539   r = 5.38  s = 32 ////////////
++  /////////////////////////////  fmax = 970   r = 9.7 s = 32 ////////////
+   
+   
+   reg [31:0] count;
+@@ -51,16 +51,16 @@ module apb_delayer(
+         IDLE: begin
+           if(in_psel) begin
+             state <= WAIT;
+-            count <= count + 32'd140;
++            count <= count + 32'd278;
+           end
+         end
+         WAIT: begin
+           if(out_pready) begin
+             state <= DELAY;
+-            count <= (count + 32'd140) >> 5;
++            count <= (count + 32'd278) >> 5;
+           end
+           else begin
+-            count <= count + 32'd140;
++            count <= count + 32'd278;
+           end
+         end
+         DELAY: begin
+-- 
+2.34.1
+
