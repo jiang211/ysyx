@@ -31,7 +31,15 @@ VERILATOR_FLAGS += --Wno-SYNCASYNCNET
 VERILATOR_FLAGS += --Wno-WIDTHEXPAND
 VERILATOR_FLAGS += --autoflush
 #VERILATOR_FLAGS += --debug --gdbbt
+ARCH ?= riscv32e-npc
 
+# 2. 根据 ARCH 决定复位地址
+ifeq ($(ARCH),riscv32e-ysyxSoC)
+  BOOT_PC := 1
+else
+  BOOT_PC := 0
+endif
+VERILATOR_FLAGS += -DBOOT_PC=$(BOOT_PC)
 YSYXSOC ?= $(HOME)/ysyx-workbench/ysyxSoC  # 默认路径，按需修改
 WORK_DIR = $(shell pwd)
 BUILD_DIR = $(WORK_DIR)/build
@@ -123,9 +131,15 @@ SIMULATOR = iverilog
 SIM_OPTIONS = -g2012 
 TARGET = my_design
 IVERILOG_SRCS = $(shell find $(WORK_DIR)/iverilog_test -name "*.v")
-IVERILOG_NETLIST_SRCS = $(shell find $(WORK_DIR)/netlist_test -name "*.v")
-IVERILOG_NETLIST_SRCS += $(NETLIST) 
-IVERILOG_NETLIST_SRCS += $(CELLS)
+NETLIST  ?=
+CELLS    ?=
+ifeq ($(NETLIST)$(CELLS),)
+IVERILOG_NETLIST_SRCS := $(shell find $(WORK_DIR)/netlist_test -name "*.v" 2>/dev/null)
+else
+IVERILOG_NETLIST_SRCS := $(NETLIST) $(CELLS)
+endif
+
+IVERILOG_NETLIST_SRCS += $(NETLIST) $(CELLS)
 
 
 #make sim-iverilog IMG=~/ysyx-workbench/rt-thread-am/bsp/abstract-machine/build/rtthread-riscv32e-npc.bin

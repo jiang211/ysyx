@@ -152,7 +152,7 @@ assign J_type_1 = (opcode == 7'b1101111) || I_type_2;
 wire I_type_3 = (opcode == 7'b0000011);
 wire I_type_4 = (opcode == 7'b1010011);
 wire jalr = (opcode == 7'b1100111);
-wire jal  = (opcode == 7'b1101111);
+(* keep *)wire jal  = (opcode == 7'b1101111);
 wire U_type_1 = (opcode == 7'b0110111);
 
 wire csw = ( C_type && funct3 == 3'b001 );
@@ -322,53 +322,6 @@ begin
     // LOAD_type_count               <=        64'b0;
     // STORE_type_count               <=        64'b0;
     end
-//     else if(flush)begin
-//    // IDU_EXU_opcode        <=        opcode   ;     
-//     IDU_EXU_rd            <=        5'b0;
-//     IDU_EXU_rs1           <=        5'b0;  
-//     IDU_EXU_rs2           <=        5'b0;
-//     IDU_EXU_csr_rst       <=        3'b0;    
-//     IDU_EXU_imm           <=        32'b0;
-
-//     IDU_EXU_alu_op              <=        4'b0;     
-//     IDU_EXU_u_alu_type          <=        1'b0;   
-//     //IDU_EXU_mul_high            <=        1'b0;
-//     IDU_EXU_alu_src1            <=       2'b0;
-//     IDU_EXU_alu_src2            <=        2'b0;  
-//     IDU_EXU_branch              <=        1'b0;
-//  //   IDU_EXU_mem_to_reg          <=        1'b0;    
-//     IDU_EXU_mem_read            <=        1'b0;
-//     //IDU_EXU_mem_write           <=        1'b0;     
-//     IDU_EXU_reg_write           <=        1'b0;   
-//     IDU_EXU_jal                 <=        1'b0;
-//     IDU_EXU_jalr                <=        1'b0;
-//     // IDU_EXU_lw                  <=        1'b0;  
-//     // IDU_EXU_lh                  <=        1'b0;
-//     // IDU_EXU_lb                  <=        1'b0;    
-//     // IDU_EXU_lbu                 <=        1'b0;
-//     // IDU_EXU_lhu                 <=        1'b0;     
-//     // IDU_EXU_sw                  <=        1'b0;   
-//     // IDU_EXU_sb                  <=        1'b0;
-//     // IDU_EXU_sh                  <=        1'b0;
-//     IDU_EXU_RW_sign             <=        8'b0;
-//     IDU_EXU_csr_op              <=        3'b0;     
-//     IDU_EXU_ebreak              <=        1'b0;
-//     IDU_EXU_ecall               <=        1'b0;     
-//     IDU_EXU_mret                <=        1'b0;   
-//     //IDU_EXU_U_type_1            <=        1'b0;
-//     //IDU_EXU_J_type_1            <=        1'b0;
-//     //IDU_EXU_pcsrc               <=        1'b0;  
-//     IDU_EXU_C_type              <=        1'b0;
-//     IDU_EXU_B_type              <=        1'b0;
-//     //IDU_EXU_STALL               <=        1'b0;
-//     IDU_EXU_PC                  <=        32'b0;
-//     //IDU_EXU_pre_dnpc                <=        32'b0;
-
-//     IDU_EXU_exu_raw_rs1           <=        1'b0;
-//     IDU_EXU_exu_raw_rs2           <=        1'b0;
-//     IDU_EXU_lsu_raw_rs1           <=        1'b0;
-//     IDU_EXU_lsu_raw_rs2           <=        1'b0;
-//     end
     else if(IFU_IDU_valid && IDU_IFU_ready)begin
         // if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
         // else if(J_type) begin Jump_type_count <= Jump_type_count + 1'b1; end

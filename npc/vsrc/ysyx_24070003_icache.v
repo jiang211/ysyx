@@ -47,11 +47,11 @@ reg [SDRAM_BLOCK_SIZE * 8-1:0] data [0:SDRAM_NUM_BLOCKS-1];           // 数据�
 reg [SDRAM_NUM_BLOCKS-1:0]valid ;                // 有效位
 
               // 有效位
-parameter  IDLE = 0,
-            FLUSH_WAIT = 1,
-            AXI_WAIT = 2,
-            AXI_READ = 3,
-            UPDATED_CACHE = 4;
+parameter  IDLE = 3'd0,
+            FLUSH_WAIT = 3'd1,
+            AXI_WAIT = 3'd2,
+            AXI_READ = 3'd3,
+            UPDATED_CACHE = 3'd4;
 (* keep *)reg [2:0] state;
 // typedef enum logic [2:0] {
 //     IDLE,        // 空闲状态
@@ -69,7 +69,7 @@ integer i;
 reg [31:0]  pc_reg1;
 reg reg1_valid;
 reg [31:0] reg1_pre_dnpc;
-wire hit;
+(* keep *)wire hit;
 wire hit_reg1;
 
 
@@ -134,7 +134,7 @@ always @(posedge clock) begin
     else if((!icache_stall && state == IDLE && hit && (~flush)) || (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)) begin
         data_valid <= 1'b1;
     end
-    else if(ICACHE_IFU_valid && IFU_ICACHE_rready)begin
+    else if(IFU_ICACHE_rready)begin
         data_valid <= 1'b0;
     end
 end

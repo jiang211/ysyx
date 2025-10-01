@@ -1238,14 +1238,14 @@ module ysyx_24070003_icache(
     // output reg [63:0] ifu_during_count,
 
     output reg [31:0] ICACHE_AXI4_araddr,
-    output reg        ICACHE_AXI4_arvalid,
+    output            ICACHE_AXI4_arvalid,
     input             ICACHE_AXI4_arready,
     input  [31:0]     ICACHE_AXI4_rdata,
     input             ICACHE_AXI4_rvalid,
     input             ICACHE_AXI4_rlast,
     output            ICACHE_IFU_stall,
     output            ICACHE_AXI4_rready,
-    output reg [7:0]  ICACHE_AXI4_arlen
+    output     [7:0]  ICACHE_AXI4_arlen
     
 );
 
@@ -1266,7 +1266,7 @@ parameter  IDLE = 0,
             AXI_WAIT = 2,
             AXI_READ = 3,
             UPDATED_CACHE = 4;
-reg [2:0] state;
+(* keep *)reg [2:0] state;
 // typedef enum logic [2:0] {
 //     IDLE,        // 空闲状态
 //     AXI_WAIT,
@@ -1509,18 +1509,13 @@ always @(posedge clock) begin
     end
 end
 
-
-
+(* keep *) reg app;
+assign ICACHE_AXI4_arvalid = (state == AXI_WAIT);
 always @(posedge clock) begin
     if(reset)begin
-        ICACHE_AXI4_arvalid <= 0;
         ICACHE_AXI4_araddr <= 0;
     end
-    else if((ICACHE_AXI4_arready && ICACHE_AXI4_arvalid))begin
-        ICACHE_AXI4_arvalid <= 1'b0;
-    end
-    else  if(state == FLUSH_WAIT && (!flush) && (!icache_stall))begin
-        ICACHE_AXI4_arvalid <= 1'b1;
+    else if(state == FLUSH_WAIT && (!flush) && (!icache_stall))begin
         ICACHE_AXI4_araddr <= {IFU_ICACHE_araddr[31:4], 4'b0} ; 
     end
     
@@ -1529,7 +1524,6 @@ end
 
 
 endmodule
-
 
 
 
@@ -1857,53 +1851,6 @@ begin
     // LOAD_type_count               <=        64'b0;
     // STORE_type_count               <=        64'b0;
     end
-//     else if(flush)begin
-//    // IDU_EXU_opcode        <=        opcode   ;     
-//     IDU_EXU_rd            <=        5'b0;
-//     IDU_EXU_rs1           <=        5'b0;  
-//     IDU_EXU_rs2           <=        5'b0;
-//     IDU_EXU_csr_rst       <=        3'b0;    
-//     IDU_EXU_imm           <=        32'b0;
-
-//     IDU_EXU_alu_op              <=        4'b0;     
-//     IDU_EXU_u_alu_type          <=        1'b0;   
-//     //IDU_EXU_mul_high            <=        1'b0;
-//     IDU_EXU_alu_src1            <=       2'b0;
-//     IDU_EXU_alu_src2            <=        2'b0;  
-//     IDU_EXU_branch              <=        1'b0;
-//  //   IDU_EXU_mem_to_reg          <=        1'b0;    
-//     IDU_EXU_mem_read            <=        1'b0;
-//     //IDU_EXU_mem_write           <=        1'b0;     
-//     IDU_EXU_reg_write           <=        1'b0;   
-//     IDU_EXU_jal                 <=        1'b0;
-//     IDU_EXU_jalr                <=        1'b0;
-//     // IDU_EXU_lw                  <=        1'b0;  
-//     // IDU_EXU_lh                  <=        1'b0;
-//     // IDU_EXU_lb                  <=        1'b0;    
-//     // IDU_EXU_lbu                 <=        1'b0;
-//     // IDU_EXU_lhu                 <=        1'b0;     
-//     // IDU_EXU_sw                  <=        1'b0;   
-//     // IDU_EXU_sb                  <=        1'b0;
-//     // IDU_EXU_sh                  <=        1'b0;
-//     IDU_EXU_RW_sign             <=        8'b0;
-//     IDU_EXU_csr_op              <=        3'b0;     
-//     IDU_EXU_ebreak              <=        1'b0;
-//     IDU_EXU_ecall               <=        1'b0;     
-//     IDU_EXU_mret                <=        1'b0;   
-//     //IDU_EXU_U_type_1            <=        1'b0;
-//     //IDU_EXU_J_type_1            <=        1'b0;
-//     //IDU_EXU_pcsrc               <=        1'b0;  
-//     IDU_EXU_C_type              <=        1'b0;
-//     IDU_EXU_B_type              <=        1'b0;
-//     //IDU_EXU_STALL               <=        1'b0;
-//     IDU_EXU_PC                  <=        32'b0;
-//     //IDU_EXU_pre_dnpc                <=        32'b0;
-
-//     IDU_EXU_exu_raw_rs1           <=        1'b0;
-//     IDU_EXU_exu_raw_rs2           <=        1'b0;
-//     IDU_EXU_lsu_raw_rs1           <=        1'b0;
-//     IDU_EXU_lsu_raw_rs2           <=        1'b0;
-//     end
 
     else if(IFU_IDU_valid && IDU_IFU_ready)begin
         // if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
