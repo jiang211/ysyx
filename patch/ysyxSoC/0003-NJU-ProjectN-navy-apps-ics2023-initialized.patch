@@ -1,7 +1,7 @@
 From 289b1b00907e7cb6c82db01fb6584dfb8b164483 Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Wed, 8 Jan 2025 14:53:42 +0800
-Subject: [PATCH 03/28] NJU-ProjectN/navy-apps ics2023 initialized
+Subject: [PATCH 03/30] NJU-ProjectN/navy-apps ics2023 initialized
 
 NJU-ProjectN/navy-apps e8346911c80af39b63e47d8aba5878e43231ad63 libos,native: add comment for the format of /proc/dispinfo
 ---

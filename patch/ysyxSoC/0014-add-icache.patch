@@ -1,7 +1,7 @@
 From 006dc9275322178264560381cecdae280957ee34 Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Fri, 15 Aug 2025 19:01:16 +0800
-Subject: [PATCH 14/28] "add icache"
+Subject: [PATCH 14/30] "add icache"
 
 ---
  nemu/scripts/native.mk       |   2 +

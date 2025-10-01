@@ -1,7 +1,7 @@
 From ace88aa378e386306d079e67555e8ccb98204a5b Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Sun, 17 Aug 2025 18:51:05 +0800
-Subject: [PATCH 16/28] "burst icache running"
+Subject: [PATCH 16/30] "burst icache running"
 
 ---
  npc/csrc/include/config.h                |   2 +-

@@ -1,7 +1,7 @@
 From 1f9b94dc1ba10c0232e680311dbf43340158fc6d Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Thu, 10 Jul 2025 17:13:49 +0800
-Subject: [PATCH 06/28] init
+Subject: [PATCH 06/30] init
 
 ---
  abstract-machine/am/include/arch/riscv.h      |   8 +-

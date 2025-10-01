@@ -1,7 +1,7 @@
 From 5b2d52356ed99fadb72209e75d460157573ade80 Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Sun, 24 Aug 2025 15:32:42 +0800
-Subject: [PATCH 18/28] "simple pipeline"
+Subject: [PATCH 18/30] "simple pipeline"
 
 ---
  npc/csrc/one.cpp |  2 +-

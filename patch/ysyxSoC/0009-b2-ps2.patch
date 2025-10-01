@@ -1,7 +1,7 @@
 From a5f6c585131f793e3a3cb426b045692ea38f9c12 Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Mon, 11 Aug 2025 10:25:48 +0800
-Subject: [PATCH 09/28] "b2/ps2"
+Subject: [PATCH 09/30] "b2/ps2"
 
 ---
  abstract-machine/am/src/riscv/ysyxSoC/ioe.c   |    6 +-

@@ -1,7 +1,7 @@
 From 57865aa3451c024a7be76f5c6239e28de29f05ed Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Wed, 3 Sep 2025 16:45:01 +0800
-Subject: [PATCH 20/28] 'area"
+Subject: [PATCH 20/30] 'area"
 
 ---
  abstract-machine/scripts/platform/npc.mk      |    3 +

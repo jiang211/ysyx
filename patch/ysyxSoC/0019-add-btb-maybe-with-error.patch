@@ -1,7 +1,7 @@
 From 1bff3b1a58982254d87e16150de8f2bfcf42fbca Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Thu, 28 Aug 2025 11:11:43 +0800
-Subject: [PATCH 19/28] "add btb maybe with error"
+Subject: [PATCH 19/30] "add btb maybe with error"
 
 ---
  nemu/include/cpu/decode.h    |   3 +

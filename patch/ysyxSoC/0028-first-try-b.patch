@@ -1,7 +1,7 @@
 From b8b93210cf36e27cb075ffb0396bc6dc58c3522c Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Wed, 1 Oct 2025 16:58:34 +0800
-Subject: [PATCH 28/28] "first try b"
+Subject: [PATCH 28/30] "first try b"
 
 ---
  abstract-machine/am/src/riscv/ysyxSoC/uart.c  |     1 +
