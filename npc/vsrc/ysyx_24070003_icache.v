@@ -52,7 +52,7 @@ parameter  IDLE = 3'd0,
             AXI_WAIT = 3'd2,
             AXI_READ = 3'd3,
             UPDATED_CACHE = 3'd4;
-(* keep *)reg [2:0] state;
+reg [2:0] state;
 // typedef enum logic [2:0] {
 //     IDLE,        // 空闲状态
 //     AXI_WAIT,
@@ -69,7 +69,7 @@ integer i;
 reg [31:0]  pc_reg1;
 reg reg1_valid;
 reg [31:0] reg1_pre_dnpc;
-(* keep *)wire hit;
+wire hit;
 wire hit_reg1;
 
 
@@ -295,7 +295,7 @@ always @(posedge clock) begin
     end
 end
 
-(* keep *) reg app;
+
 assign ICACHE_AXI4_arvalid = (state == AXI_WAIT);
 always @(posedge clock) begin
     if(reset)begin

@@ -1,0 +1,35 @@
+From 29457b561a6da99080ce5ef7272b279fdb3dc49f Mon Sep 17 00:00:00 2001
+From: 221220000-Zhang San <zhangsan@foo.com>
+Date: Fri, 15 Aug 2025 11:16:33 +0800
+Subject: [PATCH 13/28] =?UTF-8?q?"wc=EF=BC=8C=E6=88=91=E4=BB=A5=E5=89=8D?=
+ =?UTF-8?q?=E6=B2=A1=E5=9C=A8npc=E7=9B=AE=E5=BD=95=E4=B8=8B=E5=8C=85?=
+ =?UTF-8?q?=E5=90=AB=E4=B8=BB=E7=9B=AE=E5=BD=95=E4=B8=8B=E7=9A=84makefile?=
+ =?UTF-8?q?=EF=BC=8C=E7=8E=B0=E5=9C=A8=E7=BE=A4=E9=87=8C=E6=9C=89=E4=BA=BA?=
+ =?UTF-8?q?=E8=AF=B4=E4=BB=96=E5=88=86=E6=94=AF=E5=87=BA=E9=97=AE=E9=A2=98?=
+ =?UTF-8?q?=EF=BC=8C=E6=88=91=E5=8E=BB=E7=9C=8B=E4=BA=86=E6=88=91=E7=9A=84?=
+ =?UTF-8?q?tracer-ysyx=E6=89=8D=E5=8F=91=E7=8E=B0=E5=8F=AA=E6=9C=89nemu?=
+ =?UTF-8?q?=E7=9A=84"?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ npc/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/npc/Makefile b/npc/Makefile
+index 4eae83a..eb8f261 100755
+--- a/npc/Makefile
++++ b/npc/Makefile
+@@ -120,7 +120,7 @@ all : default
+ wave :  ./build/ysyxSoCFull
+ 	gtkwave *.fst
+ 
+-
++-include $(NEMU_HOME)/../Makefile
+ 
+ gdb : $(BIN)
+ 	@gdb --args $(BIN) $(NPC_FLAGS) 
+-- 
+2.34.1
+

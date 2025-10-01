@@ -1,0 +1,251 @@
+From eba259662c5b31463c81747151fbf3844090f9e0 Mon Sep 17 00:00:00 2001
+From: 221220000-Zhang San <zhangsan@foo.com>
+Date: Wed, 3 Sep 2025 22:57:29 +0800
+Subject: [PATCH 22/28] "area : 27555"
+
+---
+ npc/vsrc/ysyx_24070003.v     | 13 +++++++------
+ npc/vsrc/ysyx_24070003_exu.v | 15 ++++++++-------
+ npc/vsrc/ysyx_24070003_idu.v | 16 ++++++++--------
+ npc/vsrc/ysyx_24070003_lsu.v |  8 ++++----
+ 4 files changed, 27 insertions(+), 25 deletions(-)
+
+diff --git a/npc/vsrc/ysyx_24070003.v b/npc/vsrc/ysyx_24070003.v
+index 73e17a5..d19bf01 100755
+--- a/npc/vsrc/ysyx_24070003.v
++++ b/npc/vsrc/ysyx_24070003.v
+@@ -326,7 +326,7 @@ wire [2:0]                           WBU_CSR_ADDR                   ;
+ wire [2:0]                           LSU_WBU_csr_rst                ;
+ wire [2:0]                           WBU_CSR_RADDR                  ;
+ wire [2:0]                           LSU_AXI4_wsize                 ;   
+-wire [2:0]                           csr_op                         ;
++
+ //wire [5:0]                           funct7                         ;
+ wire [1:0]                           resp                           ;
+ wire [7:0]                           ICACHE_AXI4_arlen              ;
+@@ -553,7 +553,8 @@ ysyx_24070003_clint my_clint(
+ );
+ 
+ 
+-wire [7:0] IDU_EXU_RW_sign,EXU_LSU_RW_sign;
++wire [8:0] IDU_EXU_RW_sign,EXU_LSU_RW_sign;
++wire [2:0]                           csr_op                         ;
+ ysyx_24070003_idu my_idu(
+    // .EXU_IFU_flush                (EXU_IFU_flush      ),
+     .clock                            (clock              ),
+@@ -582,7 +583,7 @@ ysyx_24070003_idu my_idu(
+     .IDU_EXU_branch                 (branch             ),
+    // .IDU_EXU_mem_to_reg           (mem_to_reg         ),
+     .IDU_EXU_mem_read               (mem_read           ),
+-    .IDU_EXU_mem_write              (mem_write          ),    
++    //.IDU_EXU_mem_write              (mem_write          ),    
+     .IDU_EXU_reg_write              (reg_write          ),
+     .IDU_EXU_jal                    (IDU_EXU_jal        ),
+     .IDU_EXU_jalr                   (IDU_EXU_jalr       ),
+@@ -650,7 +651,7 @@ ysyx_24070003_exu my_exu(
+     .IDU_EXU_ebreak                 (IDU_EXU_ebreak     ),
+     .IDU_EXU_csr_rst                (IDU_EXU_csr_rst    ),
+     .IDU_EXU_ren                    (mem_read           ),
+-    .IDU_EXU_wen                    (mem_write          ),
++    //.IDU_EXU_wen                    (mem_write          ),
+     .IDU_EXU_reg                    (reg_write          ),
+     .IDU_EXU_jal                    (IDU_EXU_jal        ),
+     .IDU_EXU_jalr                   (IDU_EXU_jalr       ),
+@@ -690,7 +691,7 @@ ysyx_24070003_exu my_exu(
+     .alu_op                         (alu_op             ),
+     .EXU_LSU_rd                     (EXU_LSU_rd         ),   
+     .EXU_LSU_ren                    (EXU_LSU_ren        ),
+-    .EXU_LSU_wen                    (EXU_LSU_wen        ),
++    //.EXU_LSU_wen                    (EXU_LSU_wen        ),
+     .EXU_LSU_reg                    (EXU_LSU_reg        ),
+     .EXU_LSU_ebreak                 (EXU_LSU_ebreak     ),
+     //.EXU_IFU_jal                  (EXU_IFU_jal        ),
+@@ -751,7 +752,7 @@ ysyx_24070003_lsu my_lsu(
+     .EXU_LSU_C_type                 (EXU_LSU_C_type     ),
+     .EXU_LSU_csr_rst                (EXU_LSU_csr_rst    ),
+     .EXU_LSU_ren                    (EXU_LSU_ren        ),
+-    .EXU_LSU_wen                    (EXU_LSU_wen        ),
++    //.EXU_LSU_wen                    (EXU_LSU_wen        ),
+     //.IDU_EXU_ren                  (mem_read           ),
+     //.IDU_EXU_wen                  (mem_write          ),
+     .EXU_LSU_reg                    (EXU_LSU_reg        ),
+diff --git a/npc/vsrc/ysyx_24070003_exu.v b/npc/vsrc/ysyx_24070003_exu.v
+index 3ad63e1..c528460 100644
+--- a/npc/vsrc/ysyx_24070003_exu.v
++++ b/npc/vsrc/ysyx_24070003_exu.v
+@@ -7,7 +7,7 @@ module ysyx_24070003_exu(
+     input       LSU_EXU_ready,
+     output      reg EXU_LSU_valid,
+     input IDU_EXU_ren,
+-    input IDU_EXU_wen,
++    //input IDU_EXU_wen,
+     input IDU_EXU_reg,
+     input IDU_EXU_ebreak,
+     input IDU_EXU_jal,
+@@ -20,7 +20,7 @@ module ysyx_24070003_exu(
+     // input IDU_EXU_sw,
+     // input IDU_EXU_sb,
+     // input IDU_EXU_sh,
+-    input [7:0] IDU_EXU_RW_sign,
++    input [8:0] IDU_EXU_RW_sign,
+     input [2:0] csr_op,
+     input [31:0] csr_data,
+     input [31:0] IDU_EXU_pre_dnpc,
+@@ -55,7 +55,7 @@ module ysyx_24070003_exu(
+     input [4:0] IDU_EXU_rd,
+     output[4:0] EXU_LSU_rd,
+     output reg EXU_LSU_ren,
+-    output reg EXU_LSU_wen,
++    //output reg EXU_LSU_wen,
+     output reg EXU_LSU_reg,
+     output reg EXU_LSU_ebreak,
+     //output reg EXU_IFU_jal,
+@@ -68,7 +68,7 @@ module ysyx_24070003_exu(
+     // output reg EXU_LSU_sw,
+     // output reg EXU_LSU_sb,
+     // output reg EXU_LSU_sh,
+-    output reg [7:0]  EXU_LSU_RW_sign,
++    output reg [8:0]  EXU_LSU_RW_sign,
+     output reg [31:0] EXU_LSU_csr_data,
+     output reg [31:0] EXU_LSU_csr_in,
+     output     [31:0] EXU_IFU_pc,
+@@ -102,6 +102,7 @@ wire [31:0] alu_out;
+ wire [31:0] csr_in;
+ 
+ assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
++//MuxKeyInternal #(2, 2, 32, 1) i0 (RS1_data, {IDU_EXU_exu_raw_rs1,IDU_EXU_lsu_raw_rs1}, EXU_LSU_alu_out, {2'b00,rs1_data,2'b01,LSU_forward_data});
+ assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
+ 
+ // assign csr_in = ( {32{IDU_EXU_csw}} & (RS1_data)) |
+@@ -175,7 +176,7 @@ begin
+     EXU_LSU_alu_out           <=        32'b0;
+     EXU_LSU_rd                <=        5'b0;
+     EXU_LSU_ren               <=        1'b0;
+-    EXU_LSU_wen               <=        1'b0;
++    //EXU_LSU_wen               <=        1'b0;
+     //EXU_LSU_reg               <=        1'b0;
+     EXU_LSU_ebreak               <=        1'b0;
+     //EXU_IFU_jal               <=        1'b0;
+@@ -206,7 +207,7 @@ begin
+     //EXU_IFU_zero              <=        zero;
+     EXU_LSU_rd                <=        IDU_EXU_rd;
+     EXU_LSU_ren               <=        IDU_EXU_ren;
+-    EXU_LSU_wen               <=        IDU_EXU_wen;
++    //EXU_LSU_wen               <=        IDU_EXU_wen;
+     EXU_LSU_reg               <=        IDU_EXU_reg;
+     EXU_LSU_ebreak               <=        IDU_EXU_ebreak;
+     EXU_LSU_RW_sign             <=      IDU_EXU_RW_sign;
+@@ -237,7 +238,7 @@ begin
+     EXU_LSU_alu_out           <=        EXU_LSU_alu_out;
+     EXU_LSU_rd                <=        EXU_LSU_rd;
+     EXU_LSU_ren               <=        EXU_LSU_ren;
+-    EXU_LSU_wen               <=        EXU_LSU_wen;
++    //EXU_LSU_wen               <=        EXU_LSU_wen;
+     //EXU_LSU_reg               <=        1'b0;
+     EXU_LSU_ebreak               <=        EXU_LSU_ebreak;
+     //EXU_IFU_jal               <=        1'b0;
+diff --git a/npc/vsrc/ysyx_24070003_idu.v b/npc/vsrc/ysyx_24070003_idu.v
+index 749ef6d..739ed4e 100755
+--- a/npc/vsrc/ysyx_24070003_idu.v
++++ b/npc/vsrc/ysyx_24070003_idu.v
+@@ -26,7 +26,7 @@ module ysyx_24070003_idu(
+     output reg IDU_EXU_branch        ,
+    // output reg IDU_EXU_mem_to_reg    ,
+     output reg IDU_EXU_mem_read      ,
+-    output reg IDU_EXU_mem_write     ,
++    //output reg IDU_EXU_mem_write     ,
+     output reg IDU_EXU_reg_write     ,
+     output reg IDU_EXU_jal           ,
+     output reg IDU_EXU_jalr          ,
+@@ -38,7 +38,7 @@ module ysyx_24070003_idu(
+     // output reg IDU_EXU_sw            ,
+     // output reg IDU_EXU_sb            ,
+     // output reg IDU_EXU_sh            ,
+-    output reg [7:0] IDU_EXU_RW_sign,
++    output reg [8:0] IDU_EXU_RW_sign,
+     output reg [2:0]IDU_EXU_csr_op,
+     output reg IDU_EXU_ebreak        ,
+     output reg IDU_EXU_ecall         ,
+@@ -167,8 +167,8 @@ wire sw   = (S_type && funct3 == 3'b010);
+ wire sb   = (S_type && funct3 == 3'b000);
+ wire sh   = (S_type && funct3 == 3'b001);
+ 
+-wire [7:0] rw_sign;
+-assign rw_sign = {lh,lw,lb,lbu,lhu,sw,sb,sh};
++wire [8:0] rw_sign;
++assign rw_sign = {mem_write,lh,lw,lb,lbu,lhu,sw,sb,sh};
+ // wire remu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b111);
+ // wire mulh = (R_type && funct7 == 7'b0000001 && funct3 == 3'b001);
+ // wire mulhu= (R_type && funct7 == 7'b0000001 && funct3 == 3'b011);
+@@ -283,7 +283,7 @@ begin
+     IDU_EXU_branch              <=        1'b0;
+  //   IDU_EXU_mem_to_reg          <=        1'b0;    
+     IDU_EXU_mem_read            <=        1'b0;
+-    IDU_EXU_mem_write           <=        1'b0;     
++    //IDU_EXU_mem_write           <=        1'b0;     
+     IDU_EXU_reg_write           <=        1'b0;   
+     IDU_EXU_jal                 <=        1'b0;
+     IDU_EXU_jalr                <=        1'b0;
+@@ -336,7 +336,7 @@ begin
+     IDU_EXU_branch              <=        1'b0;
+  //   IDU_EXU_mem_to_reg          <=        1'b0;    
+     IDU_EXU_mem_read            <=        1'b0;
+-    IDU_EXU_mem_write           <=        1'b0;     
++    //IDU_EXU_mem_write           <=        1'b0;     
+     IDU_EXU_reg_write           <=        1'b0;   
+     IDU_EXU_jal                 <=        1'b0;
+     IDU_EXU_jalr                <=        1'b0;
+@@ -388,7 +388,7 @@ begin
+     IDU_EXU_branch              <=        branch       ;
+    // IDU_EXU_mem_to_reg          <=        mem_to_reg   ;    
+     IDU_EXU_mem_read            <=        mem_read     ;
+-    IDU_EXU_mem_write           <=        mem_write    ;     
++    //IDU_EXU_mem_write           <=        mem_write    ;     
+     IDU_EXU_reg_write           <=        reg_write    ;   
+     IDU_EXU_jal                 <=        jal          ;
+     IDU_EXU_jalr                <=        jalr   ;
+@@ -435,7 +435,7 @@ begin
+     IDU_EXU_branch              <=  IDU_EXU_branch      ;
+    // IDU_EXU_mem_to_reg          <=/ IDU_EXU_mem_to_reg    
+     IDU_EXU_mem_read            <=  IDU_EXU_mem_read    ;
+-    IDU_EXU_mem_write           <=  IDU_EXU_mem_write      ;
++    //IDU_EXU_mem_write           <=  IDU_EXU_mem_write      ;
+     IDU_EXU_reg_write           <=  IDU_EXU_reg_write    ;
+     IDU_EXU_jal                 <=  IDU_EXU_jal         ;
+     IDU_EXU_jalr                <=  IDU_EXU_jalr        ;
+diff --git a/npc/vsrc/ysyx_24070003_lsu.v b/npc/vsrc/ysyx_24070003_lsu.v
+index 34da79b..8b16fe4 100755
+--- a/npc/vsrc/ysyx_24070003_lsu.v
++++ b/npc/vsrc/ysyx_24070003_lsu.v
+@@ -10,7 +10,7 @@ module ysyx_24070003_lsu(
+     output           LSU_EXU_ready,
+     output     reg      LSU_WBU_valid,
+     input           LSU_WBU_ready,
+-    input       [7:0] EXU_LSU_RW_sign,
++    input       [8:0] EXU_LSU_RW_sign,
+     // input           EXU_LSU_lw,
+     // input           EXU_LSU_lh,
+     // input           EXU_LSU_lb,
+@@ -29,7 +29,7 @@ module ysyx_24070003_lsu(
+     input      [2:0] EXU_LSU_csr_rst,
+ 
+     input           EXU_LSU_ren,
+-    input           EXU_LSU_wen,
++    //input           EXU_LSU_wen,
+ //input           IDU_EXU_ren,
+     //input           IDU_EXU_wen,
+     
+@@ -102,8 +102,8 @@ assign LSU_IDU_REG_ADDR = EXU_LSU_rd;
+ assign LSU_IDU_REG_WEN = EXU_LSU_reg && LSU_EXU_ready && EXU_LSU_valid;
+ //assign LSU_IDU_REN   = EXU_LSU_ren && LSU_EXU_ready && EXU_LSU_valid;
+ assign LSU_forward_data = LSU_WBU_DATA;
+-wire EXU_LSU_lh,EXU_LSU_lw,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh;
+-assign {EXU_LSU_lh,EXU_LSU_lw,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh} = EXU_LSU_RW_sign;
++wire EXU_LSU_wen,EXU_LSU_lh,EXU_LSU_lw,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh;
++assign {EXU_LSU_wen,EXU_LSU_lh,EXU_LSU_lw,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh} = EXU_LSU_RW_sign;
+ parameter  IDLE = 0,
+             START = 1,
+             READ_START = 2,
+-- 
+2.34.1
+

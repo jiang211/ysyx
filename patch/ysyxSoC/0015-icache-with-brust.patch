@@ -1,0 +1,879 @@
+From 9ac0fc1ae86493e900c8b9ee4cd1dd79e78ade9b Mon Sep 17 00:00:00 2001
+From: 221220000-Zhang San <zhangsan@foo.com>
+Date: Sun, 17 Aug 2025 11:56:02 +0800
+Subject: [PATCH 15/28] "icache with brust"
+
+---
+ nemu/src/cpu/cpu-exec.c                       |  28 +--
+ nemu/src/isa/riscv32/init.c                   |  33 +--
+ nemu/src/memory/paddr.c                       |   6 +-
+ npc/csrc/include/config.h                     |   2 +-
+ npc/csrc/one.cpp                              |   4 +-
+ npc/tool/cachesim.c                           |  51 ++++-
+ npc/vsrc/axi_arbiter.v                        |  42 ++--
+ npc/vsrc/icache.v                             | 215 ++++++++++++++----
+ npc/vsrc/lsu.v                                |  18 +-
+ npc/vsrc/ysyx_24070003_cpu.v                  |  16 +-
+ ysyxSoC/perip/amba/apb_delayer.v              |   8 +-
+ .../perip/sdram/core_sdram_axi4/sdram_axi.v   |   8 +-
+ .../sdram/core_sdram_axi4/sdram_axi_pmem.v    |   1 +
+ ysyxSoC/perip/sdram/sdram_top_axi.v           |  10 +-
+ 14 files changed, 311 insertions(+), 131 deletions(-)
+
+diff --git a/nemu/src/cpu/cpu-exec.c b/nemu/src/cpu/cpu-exec.c
+index 1b125e6..d4239c3 100644
+--- a/nemu/src/cpu/cpu-exec.c
++++ b/nemu/src/cpu/cpu-exec.c
+@@ -235,18 +235,18 @@ void print_iringbuf(InstructionRingBuffer *iringbuf ) {
+ 
+ ////////////end//////////////////
+ InstructionRingBuffer iringbuf;
+-static FILE *trace_fd = NULL;
+-
+-
+-void init_bincache(const char *cache_bin) {
+-  trace_fd = stdout;
+-  if (cache_bin != NULL) {
+-    FILE *fp = fopen(cache_bin, "wb");
+-    Assert(fp, "Can not open '%s'", cache_bin);
+-    trace_fd = fp;
+-  }
+-  Log("cache bin is written to %s", cache_bin ? cache_bin : "stdout");
+-}
++// static FILE *trace_fd = NULL;
++
++
++// void init_bincache(const char *cache_bin) {
++//   trace_fd = stdout;
++//   if (cache_bin != NULL) {
++//     FILE *fp = fopen(cache_bin, "wb");
++//     Assert(fp, "Can not open '%s'", cache_bin);
++//     trace_fd = fp;
++//   }
++//   Log("cache bin is written to %s", cache_bin ? cache_bin : "stdout");
++// }
+ static void exec_once(Decode *s, vaddr_t pc) {
+   s->pc = pc;
+   s->snpc = pc;
+@@ -256,8 +256,8 @@ static void exec_once(Decode *s, vaddr_t pc) {
+   
+   
+   // 写入 PC 地址（32位）
+-  uint32_t pc32 = (uint32_t)pc;
+-  fwrite(&pc32, sizeof(pc32), 1, trace_fd);
++  // uint32_t pc32 = (uint32_t)pc;
++  // fwrite(&pc32, sizeof(pc32), 1, trace_fd);
+  
+ #ifdef CONFIG_IRINGBUF
+   char logbuf[256] = {0};  // 创建一个临时日志缓冲区
+diff --git a/nemu/src/isa/riscv32/init.c b/nemu/src/isa/riscv32/init.c
+index 3161cd7..a38c6a4 100644
+--- a/nemu/src/isa/riscv32/init.c
++++ b/nemu/src/isa/riscv32/init.c
+@@ -15,7 +15,7 @@
+ 
+ #include <isa.h>
+ #include <memory/paddr.h>
+-#define YSYXSOC
++//#define YSYXSOC
+ 
+ // this is not consistent with uint8_t
+ // but it is ok since we do not access the array directly
+@@ -29,14 +29,15 @@ static const uint32_t img [] = {
+ 
+ static void restart() {
+   /* Set the initial program counter. */
+-  #ifndef YSYXSOC
+-  #ifndef CONFIG_TARGET_SHARE
+-  cpu.pc = RESET_VECTOR;
+-  #endif
+-  #else
+-  cpu.pc = 0x30000000;
+-  #endif
++  //#ifndef YSYXSOC
++  // #ifndef CONFIG_TARGET_SHARE
++  // cpu.pc = RESET_VECTOR;
++  // //#endif
++  // #else
++  // cpu.pc = 0x30000000;
++  // #endif
+   /* Set the initial values of the CSRs. */
++  cpu.pc = 0x30000000;
+   cpu.csr[1] = 0x1800;
+   /* The zero register is always 0. */
+   cpu.gpr[0] = 0;
+@@ -44,15 +45,15 @@ static void restart() {
+ 
+ void init_isa() {
+   /* Load built-in image. */
+-  #ifndef YSYXSOC
+-  #ifndef CONFIG_TARGET_SHARE
+-  memcpy(guest_to_host(RESET_VECTOR), img, sizeof(img));
+-  #endif
+-  #else
+-  memcpy(guest_to_host(0x30000000), img, sizeof(img));
+-  #endif
++  //#ifndef YSYXSOC
++  // #ifndef CONFIG_TARGET_SHARE
++  // memcpy(guest_to_host(RESET_VECTOR), img, sizeof(img));
++  // //#endif
++  // #else
++  // memcpy(guest_to_host(0x30000000), img, sizeof(img));
++  // #endif
+   
+-
++memcpy(guest_to_host(0x30000000), img, sizeof(img));
+   /* Initialize this virtual computer system. */
+   restart();
+ }
+diff --git a/nemu/src/memory/paddr.c b/nemu/src/memory/paddr.c
+index c866f17..74c548e 100644
+--- a/nemu/src/memory/paddr.c
++++ b/nemu/src/memory/paddr.c
+@@ -18,8 +18,8 @@
+ #include <device/mmio.h>
+ #include <isa.h>
+ 
+-#define YSYXSOC
+-#ifndef YSYXSOC
++//#define YSYXSOC
++//#ifndef YSYXSOC
+ 
+ #ifndef CONFIG_TARGET_SHARE  
+ #if   defined(CONFIG_PMEM_MALLOC)
+@@ -88,7 +88,7 @@ void paddr_write(paddr_t addr, int len, word_t data) {
+   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
+   out_of_bound(addr);
+ }
+-#endif
++//#endif
+ #else
+ 
+ 
+diff --git a/npc/csrc/include/config.h b/npc/csrc/include/config.h
+index b0ddef9..c51c3aa 100755
+--- a/npc/csrc/include/config.h
++++ b/npc/csrc/include/config.h
+@@ -12,7 +12,7 @@
+ //#endif
+ //_______________________________end of the CONFIG_TRACE parameters--------------------------
+ 
+-//#define CONFIG_DIFFTEST
++#define CONFIG_DIFFTEST
+ 
+ #define CONFIG_PC_RESET_OFFSET 0x0
+ 
+diff --git a/npc/csrc/one.cpp b/npc/csrc/one.cpp
+index 38cc8b6..9734cf9 100755
+--- a/npc/csrc/one.cpp
++++ b/npc/csrc/one.cpp
+@@ -1,4 +1,4 @@
+-//#define WAVE_ON  //
++#define WAVE_ON  //
+ #include <common.h>
+ #include <paddr.h>
+ 
+@@ -48,7 +48,7 @@ void init_verilator(int argc, char** argv, char** env) {
+   #ifdef WAVE_ON
+     Verilated::traceEverOn(true);
+     tfp = new VerilatedFstC;
+-    top->trace(tfp, 0);
++    top->trace(tfp, 99);
+     tfp->open("wave.fst");
+   #endif
+    
+diff --git a/npc/tool/cachesim.c b/npc/tool/cachesim.c
+index 5cac85d..df23fc5 100644
+--- a/npc/tool/cachesim.c
++++ b/npc/tool/cachesim.c
+@@ -5,12 +5,47 @@
+ #include <math.h>
+ 
+ // 缓存配置参数 (与 Verilog 代码匹配)
+-#define BLOCK_SIZE 4
++// #define BLOCK_SIZE 4
++// #define NUM_BLOCKS 16
++// #define OFFSET_BITS 2
++// #define INDEX_BITS 4
++// #define TAG_BITS 26
++// 访问统计:
++//   总访问次数: 266647888
++//   命中次数: 202922212
++//   缺失次数: 63725676
++//   命中率: 76.10%
++
++// 性能估算:
++//   总缺失时间 (TMT): 5098054080 周期
++// #define BLOCK_SIZE 8
++// #define NUM_BLOCKS 16
++// #define OFFSET_BITS 3
++// #define INDEX_BITS 4
++// #define TAG_BITS 25
++// 访问统计:
++//   总访问次数: 266647888
++//   命中次数: 246526407
++//   缺失次数: 20121481
++//   命中率: 92.45%
++
++// 性能估算:
++//   总缺失时间 (TMT): 3219436960 周期
++
++#define BLOCK_SIZE 16
+ #define NUM_BLOCKS 16
+-#define OFFSET_BITS 2
++#define OFFSET_BITS 4
+ #define INDEX_BITS 4
+-#define TAG_BITS 26
++#define TAG_BITS 24
+ 
++// 访问统计:
++//   总访问次数: 266647888
++//   命中次数: 260894573
++//   缺失次数: 5753315
++//   命中率: 97.84%
++
++// 性能估算:
++//   总缺失时间 (TMT): 1841060800 周期
+ // 缓存块结构
+ typedef struct {
+     int valid;          // 有效位
+@@ -80,7 +115,7 @@ void load_binary_trace(CacheSim* sim, const char* filename) {
+     fseek(file, 0, SEEK_SET);
+     
+     // 计算记录数 (每8字节一条记录)
+-    long num_entries = file_size / 8;
++    long num_entries = file_size / 4;
+     printf("文件大小: %ld 字节, 记录数: %ld\n", file_size, num_entries);
+     
+     uint32_t pc;
+@@ -96,9 +131,9 @@ void load_binary_trace(CacheSim* sim, const char* filename) {
+         cache_access(sim, pc);
+         
+         // 每100万条记录显示进度
+-        if (i % 1000000 == 0 && i > 0) {
+-            printf("已处理 %ld 万条记录...\n", i / 1000000);
+-        }
++        // if (i % 1000000 == 0 && i > 0) {
++        //     printf("已处理 %ld 万条记录...\n", i / 1000000);
++        // }
+     }
+     
+     fclose(file);
+@@ -147,7 +182,7 @@ int main(int argc, char* argv[]) {
+     printf("  命中率: %.2f%%\n", (double)sim.hit_count / sim.total_access * 100);
+     
+     // 计算总缺失时间 (TMT)
+-    uint64_t avg_miss_penalty = 10; // 假设平均缺失代价为 10 周期
++    uint64_t avg_miss_penalty = 320; // 假设平均缺失代价为 80 周期
+     uint64_t tmt = sim.miss_count * avg_miss_penalty;
+     printf("\n性能估算:\n");
+     printf("  总缺失时间 (TMT): %lu 周期\n", tmt);
+diff --git a/npc/vsrc/axi_arbiter.v b/npc/vsrc/axi_arbiter.v
+index df35d5d..73f389c 100644
+--- a/npc/vsrc/axi_arbiter.v
++++ b/npc/vsrc/axi_arbiter.v
+@@ -56,7 +56,11 @@ module axi_arbiter #(
+     
+     //input  [1:0]            sram_bresp,
+     input                   master_bvalid,
+-    output                  master_bready
++    output                  master_bready,
++
++    input   [7:0]           ICACHE_AXI4_arlen,
++    output  [7:0]           master_arlen,
++    input                   master_rlast
+ );
+ 
+ // 仲裁状态定义
+@@ -121,7 +125,7 @@ always @(posedge clk ) begin
+             end
+             
+             IFU_READ_WAIT: begin
+-                if (master_rvalid && master_rready) begin
++                if (master_rvalid && master_rready && master_rlast) begin
+                     state <= IDLE;
+                 end
+             end
+@@ -141,15 +145,25 @@ always @(posedge clk ) begin
+             
+             // LSU写操作
+             LSU_WRITE_START: begin
+-                if (master_awready) begin
++                if (master_awready && master_wready) begin
++                    state <= LSU_WRITE_RESP;
++                end
++                else if (master_awready) begin
+                     state <= LSU_WRITE_DATA;
+                 end
++                else if (master_bvalid && master_bready) begin
++                    state <= IDLE;
++                end
+             end
+             
+             LSU_WRITE_DATA: begin
++                
+                 if (master_wready) begin
+                     state <= LSU_WRITE_RESP;
+                 end
++                else if (master_bvalid && master_bready) begin
++                    state <= IDLE;
++                end
+             end
+             
+             LSU_WRITE_RESP: begin
+@@ -166,7 +180,7 @@ end
+ // 读地址通道仲裁
+ assign master_araddr = saved_araddr;/*(state == IFU_READ_START || state == IFU_READ_WAIT) ? saved_araddr :
+                      (state == LSU_READ_START || state == LSU_READ_WAIT) ? saved_araddr : '0;*/
+-
++assign master_arlen = (state == IFU_READ_START) ? ICACHE_AXI4_arlen : 8'b0;
+ assign master_arvalid = (state == IFU_READ_START || state == LSU_READ_START) ? 1'b1 : 1'b0;
+ 
+ assign ifu_arready = (state == IFU_READ_START) ? master_arready : 1'b0;
+@@ -176,26 +190,26 @@ assign lsu_arready = (state == LSU_READ_START) ? master_arready : 1'b0;
+ assign ifu_rdata = master_rdata;
+ assign lsu_rdata = master_rdata;
+ 
+-assign ifu_rvalid = (state == IFU_READ_WAIT) ? master_rvalid : 1'b0;
++assign ifu_rvalid = (state == IFU_READ_WAIT || state == IFU_READ_WAIT) ? master_rvalid : 1'b0;
+ assign lsu_rvalid = (state == LSU_READ_WAIT) ? master_rvalid : 1'b0;
+ 
+ assign master_rready = (state == IFU_READ_WAIT) ? ifu_rready :
+                      (state == LSU_READ_WAIT) ? lsu_rready : 1'b0;
+ 
+ // 写地址通道仲裁 (仅LSU)
+-assign master_awaddr = saved_awaddr;
+-assign master_awvalid = (state == LSU_WRITE_START) ? 1'b1 : 1'b0;
+-assign lsu_awready = (state == LSU_WRITE_START) ? master_awready : 1'b0;
++assign master_awaddr = lsu_awaddr;
++assign master_awvalid = lsu_awvalid;
++assign lsu_awready = master_awready;
+ 
+ // 写数据通道仲裁 (仅LSU)
+-assign master_wdata = saved_wdata;
+-assign master_wstrb = saved_wstrb;
+-assign master_wvalid = (state == LSU_WRITE_DATA) ? 1'b1 : 1'b0;
+-assign lsu_wready = (state == LSU_WRITE_DATA) ? master_wready : 1'b0;
++assign master_wdata = lsu_wdata;
++assign master_wstrb = lsu_wstrb;
++assign master_wvalid = lsu_wvalid;
++assign lsu_wready =  master_wready ;
+ 
+ // 写响应通道仲裁 (仅LSU)
+ //assign lsu_bresp = sram_bresp;
+-assign lsu_bvalid = (state == LSU_WRITE_RESP) ? master_bvalid : 1'b0;
+-assign master_bready = (state == LSU_WRITE_RESP) ? lsu_bready : 1'b0;
++assign lsu_bvalid =master_bvalid ;
++assign master_bready = lsu_bready ;
+ 
+ endmodule
+diff --git a/npc/vsrc/icache.v b/npc/vsrc/icache.v
+index fa7b670..bfbc844 100644
+--- a/npc/vsrc/icache.v
++++ b/npc/vsrc/icache.v
+@@ -14,6 +14,7 @@ module icache(
+     input  [31:0]     ICACHE_AXI4_rdata,
+     input             ICACHE_AXI4_rvalid,
+     output reg        ICACHE_AXI4_rready,
++    output reg [7:0]  ICACHE_AXI4_arlen,
+     output reg [63:0] ICACHE_hit_count,
+     output reg [63:0] ICACHE_miss_count,
+     output reg [63:0] total_access,
+@@ -21,33 +22,57 @@ module icache(
+     output reg [63:0] miss_penalty
+ );
+ 
+-parameter BLOCK_SIZE = 4;      // 4字节块大小
+-parameter NUM_BLOCKS = 16;     // 16个缓存块
+-parameter OFFSET_BITS = 2;     // 2^2 = 4字节 (块内偏移)
+-parameter INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
+-parameter TAG_BITS = 26;       // 32 - (2+4) = 26位标签
++parameter SDRAM_BLOCK_SIZE = 16;      // 4字节块大小
++parameter SDRAM_NUM_BLOCKS = 16;     // 16个缓存块
++parameter SDRAM_OFFSET_BITS = 4;     // 2^2 = 4字节 (块内偏移)
++parameter SDRAM_INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
++parameter SDRAM_TAG_BITS = 24;       // 32 - (2+4) = 26位标签
+ 
++parameter FLASH_BLOCK_SIZE = 4;      // 4字节块大小
++parameter FLASH_NUM_BLOCKS = 16;     // 16个缓存块
++parameter FLASH_OFFSET_BITS = 2;     // 2^1 = 1字节 (块内偏移)
++parameter FLASH_INDEX_BITS = 4;      // 2^4 = 16个块 (索引位)
++parameter FLASH_TAG_BITS = 26;       // 32 - (2+4) = 26位标签
+ 
+-reg [TAG_BITS-1:0] tags [0:NUM_BLOCKS-1];  // 标签存储
+-reg [31:0] data [0:NUM_BLOCKS-1];           // 数据存储
+-reg valid [0:NUM_BLOCKS-1];                 // 有效位
++reg [SDRAM_TAG_BITS-1:0] sdram_tags [0:SDRAM_NUM_BLOCKS-1];  // 标签存储
++reg [SDRAM_BLOCK_SIZE * 8-1:0] sdram_data [0:SDRAM_NUM_BLOCKS-1];           // 数据存储
++reg sdram_valid [0:SDRAM_NUM_BLOCKS-1];                 // 有效位
+ 
+-typedef enum logic [1:0] {
++reg [FLASH_TAG_BITS-1:0] flash_tags [0:FLASH_NUM_BLOCKS-1];  // 标签存储
++reg [FLASH_BLOCK_SIZE * 8-1:0] flash_data [0:FLASH_NUM_BLOCKS-1];           // 数据存储
++reg flash_valid [0:FLASH_NUM_BLOCKS-1];                 // 有效位
++
++wire is_sdram = (IFU_AXI4_araddr >= 32'ha0000000);
++typedef enum logic [2:0] {
+     IDLE,        // 空闲状态
+-    CHECK_CACHE, // 检查缓存
+-    AXI_READ,    // 从内存读取
++    SDRAM_CHECK_CACHE, // 检查缓存
++    FLASH_CHECK_CACHE, // 检查缓存
++    AXI_READ,    // 从FLASH读取
++    UPDATED_CACHE, // 更新缓存
+     SEND_DATA // 更新缓存
+ } state_t;
+ 
+-reg [1:0] state;
+-reg [31:0] saved_addr;  // 保存当前请求地址
+-reg [INDEX_BITS-1:0] saved_index;  // 保存当前索引
+-reg [TAG_BITS-1:0] saved_tag;
+ 
+-wire [TAG_BITS-1:0] current_tag = IFU_AXI4_araddr[31:OFFSET_BITS+INDEX_BITS];
+-wire [INDEX_BITS-1:0] current_index = IFU_AXI4_araddr[OFFSET_BITS+INDEX_BITS-1:OFFSET_BITS];
+-wire [OFFSET_BITS-1:0] current_offset = IFU_AXI4_araddr[OFFSET_BITS-1:0];
++state_t state;
++reg [31:0] sdram_saved_addr;  // 保存当前请求地址
++reg [SDRAM_INDEX_BITS-1:0] sdram_saved_index;  // 保存当前索引
++reg [SDRAM_TAG_BITS-1:0] sdram_saved_tag;
++
++reg [31:0] flash_saved_addr;  // 保存当前请求地址
++reg [FLASH_INDEX_BITS-1:0] flash_saved_index;  // 保存当前索引
++reg [FLASH_TAG_BITS-1:0] flash_saved_tag;
++
++reg [127:0] sdram_burst_buffer; 
++reg [31:0] flash_burst_buffer;
++wire [SDRAM_TAG_BITS-1:0] sdram_current_tag = IFU_AXI4_araddr[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
++wire [SDRAM_INDEX_BITS-1:0] sdram_current_index = IFU_AXI4_araddr[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
++wire [SDRAM_OFFSET_BITS-1:0] sdram_current_offset = IFU_AXI4_araddr[SDRAM_OFFSET_BITS-1:0];
+ 
++wire [FLASH_TAG_BITS-1:0] flash_current_tag = IFU_AXI4_araddr[31:FLASH_OFFSET_BITS+FLASH_INDEX_BITS];
++wire [FLASH_INDEX_BITS-1:0] flash_current_index = IFU_AXI4_araddr[FLASH_OFFSET_BITS+FLASH_INDEX_BITS-1:FLASH_OFFSET_BITS];
++wire [FLASH_OFFSET_BITS-1:0] flash_current_offset = IFU_AXI4_araddr[FLASH_OFFSET_BITS-1:0];
++
++reg [1:0] burst_count;
+ integer i;
+ 
+ 
+@@ -58,46 +83,73 @@ always @(posedge clock) begin
+         IFU_AXI4_rvalid <= 0;
+         ICACHE_AXI4_arvalid <= 0;
+         ICACHE_AXI4_rready <= 0;
+-        saved_addr <= 0;
+-        saved_tag <= 0;
++        sdram_saved_addr <= 0;
++        flash_saved_addr <= 0;
++        sdram_saved_index <= 0;
++        flash_saved_index <= 0;
++        sdram_saved_tag <= 0;
++        flash_saved_tag <= 0;
++        ICACHE_AXI4_arlen <= 0;
+         ICACHE_hit_count <= 0;
+         ICACHE_miss_count <= 0;
+         access_time <= 0;
+         miss_penalty <= 0;
+-        for (i = 0; i < NUM_BLOCKS; i = i + 1) begin
+-            valid[i] <= 0;  // 复位时所有块无效
++        ICACHE_AXI4_araddr <= 0;
++        sdram_burst_buffer <= 128'h0;
++        flash_burst_buffer <= 0;
++        for (i = 0; i < SDRAM_NUM_BLOCKS; i = i + 1) begin
++            sdram_valid[i] <= 0;  // 复位时所有块无效
++            flash_valid[i] <= 0;  // 复位时所有块无效
+         end
+     end else begin
+         case (state)
+             IDLE: begin
+                 IFU_AXI4_arready <= 1'b1;
+                 IFU_AXI4_rvalid <= 1'b0;
++                sdram_burst_buffer <= 128'h0;
+                 if (IFU_AXI4_arvalid && IFU_AXI4_arready) begin
+                     access_time <= access_time + 1'b1;
+                     total_access <= total_access + 1'b1;
+                     miss_penalty <= miss_penalty + 1'b1;
+                     IFU_AXI4_arready <= 1'b0;
+-                    saved_addr <= IFU_AXI4_araddr;
+-                    saved_index <= current_index;
+-                    saved_tag <= current_tag;
+-                    state <= CHECK_CACHE;
++                    if(is_sdram) begin
++                        sdram_saved_addr <= IFU_AXI4_araddr;
++                        sdram_saved_index <= sdram_current_index;
++                        sdram_saved_tag <= sdram_current_tag;
++                        state <= SDRAM_CHECK_CACHE;
++                    end else begin
++                        flash_saved_addr <= IFU_AXI4_araddr;
++                        flash_saved_index <= flash_current_index;
++                        flash_saved_tag <= flash_current_tag;
++                        state <= FLASH_CHECK_CACHE;
++                    end
++                    
+                 end
+             end
+             
+-            CHECK_CACHE: begin
++            SDRAM_CHECK_CACHE: begin
+                 // 检查是否命中：有效且标签匹配
+-                if (valid[saved_index] && (tags[saved_index] == saved_tag)) begin
++                if (sdram_valid[sdram_saved_index] && (sdram_tags[sdram_saved_index] == sdram_saved_tag)) begin
+                     access_time <= access_time + 1'b1;
+-                    // 命中：直接返回数据
+-                    IFU_AXI4_rdata <= data[saved_index];
++                    // 根据偏移选择正确的32位数据
++                    case (sdram_saved_addr[3:2])
++                        2'b00: IFU_AXI4_rdata <= sdram_data[sdram_saved_index][31:0];
++                        2'b01: IFU_AXI4_rdata <= sdram_data[sdram_saved_index][63:32];
++                        2'b10: IFU_AXI4_rdata <= sdram_data[sdram_saved_index][95:64];
++                        2'b11: IFU_AXI4_rdata <= sdram_data[sdram_saved_index][127:96];
++                    endcase
+                     IFU_AXI4_rvalid <= 1'b1;
+                     state <= SEND_DATA;
+                     ICACHE_hit_count <= ICACHE_hit_count + 1;
+                 end else begin
+                     // 未命中：启动内存读取
++                   
++                    ICACHE_AXI4_arlen <= 2'b11;  // 一次读取4个数据
++                    ICACHE_AXI4_araddr <= {sdram_saved_addr[31:4], 4'b0};
++                    
+                     miss_penalty <= miss_penalty + 1'b1;
+                     ICACHE_AXI4_arvalid <= 1'b1;
+-                    ICACHE_AXI4_araddr <= saved_addr; // 对齐地址
++                    // 地址对齐到16字节边界
+                     if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
+                         ICACHE_AXI4_rready <= 1'b1;
+                         ICACHE_AXI4_arvalid <= 1'b0;
+@@ -105,29 +157,100 @@ always @(posedge clock) begin
+                         state <= AXI_READ;
+                     end
+                     else begin
+-                        state <= CHECK_CACHE;
++                        state <= SDRAM_CHECK_CACHE;
+                     end
+                 end
+             end
+-            
+-            AXI_READ: begin
+-                ICACHE_AXI4_rready <= 1'b1;
+-                miss_penalty <= miss_penalty + 1'b1;
+-                if (ICACHE_AXI4_rvalid && ICACHE_AXI4_rready) begin
+-                    ICACHE_AXI4_rready <= 1'b0;
+-                    // 更新缓存
+-                    tags[saved_index] <= saved_addr[31:OFFSET_BITS+INDEX_BITS];
+-                    data[saved_index] <= ICACHE_AXI4_rdata;
+-                    valid[saved_index] <= 1;
+-                    
+-                    // 返回数据给IFU
+-                    IFU_AXI4_rdata <= ICACHE_AXI4_rdata;
++                
++            FLASH_CHECK_CACHE: begin
++                // 检查是否命中：有效且标签匹配
++                if (flash_valid[flash_saved_index] && (flash_tags[flash_saved_index] == flash_saved_tag)) begin
++                    access_time <= access_time + 1'b1;
++                    // 根据偏移选择正确的32位数据
++                    IFU_AXI4_rdata <= flash_data[flash_saved_index];
+                     IFU_AXI4_rvalid <= 1'b1;
+                     state <= SEND_DATA;
++                    ICACHE_hit_count <= ICACHE_hit_count + 1;
++                end else begin
++                    // 未命中：启动内存读取
++                    ICACHE_AXI4_arlen <= 2'b00;  // 一次读取1个数据
++                    ICACHE_AXI4_araddr <= {flash_saved_addr[31:2], 2'b0};
++                    miss_penalty <= miss_penalty + 1'b1;
++                    ICACHE_AXI4_arvalid <= 1'b1;
++                    // 地址对齐到16字节边界
++                    if(ICACHE_AXI4_arready && ICACHE_AXI4_arvalid) begin
++                        ICACHE_AXI4_rready <= 1'b1;
++                        ICACHE_AXI4_arvalid <= 1'b0;
++                        ICACHE_miss_count <= ICACHE_miss_count + 1;
++                        state <= AXI_READ;
++                    end
++                    else begin
++                        state <= FLASH_CHECK_CACHE;
++                    end
+                 end
+-                // 否则保持等待状态
+             end
+             
++            
++            AXI_READ: begin
++                if (ICACHE_AXI4_rvalid && ICACHE_AXI4_rready) begin
++                    // 存储接收到的数据
++                    if(is_sdram) begin
++                        case (burst_count)
++                            2'b00: sdram_burst_buffer[31:0] <= ICACHE_AXI4_rdata;
++                            2'b01: sdram_burst_buffer[63:32] <= ICACHE_AXI4_rdata;
++                            2'b10: sdram_burst_buffer[95:64] <= ICACHE_AXI4_rdata;
++                            2'b11: sdram_burst_buffer[127:96] <= ICACHE_AXI4_rdata;
++                        endcase
++                        
++                        burst_count <= burst_count + 1;
++                        miss_penalty <= miss_penalty + 1;
++                        
++                        if (burst_count == 2'b11) begin
++                            // 完成4个数据的接收
++                            ICACHE_AXI4_rready <= 1'b0;
++                            state <= UPDATED_CACHE;
++                            ICACHE_miss_count <= ICACHE_miss_count + 1;
++                        end
++                    end else begin
++                        flash_burst_buffer <= ICACHE_AXI4_rdata;
++                        
++                        miss_penalty <= miss_penalty + 1;
++                        
++                        
++                            // 完成4个数据的接收
++                        ICACHE_AXI4_rready <= 1'b0;
++                            // 更新缓存
++                        state <= UPDATED_CACHE;
++                        ICACHE_miss_count <= ICACHE_miss_count + 1;
++                   
++                    end
++                end else begin
++                    // 等待有效数据
++                    miss_penalty <= miss_penalty + 1;
++                end
++            end
++                
++            UPDATED_CACHE : begin
++                if(is_sdram) begin
++                    case (sdram_saved_addr[3:2])
++                        2'b00: IFU_AXI4_rdata <= sdram_burst_buffer[31:0];
++                        2'b01: IFU_AXI4_rdata <= sdram_burst_buffer[63:32];
++                        2'b10: IFU_AXI4_rdata <= sdram_burst_buffer[95:64];
++                        2'b11: IFU_AXI4_rdata <= sdram_burst_buffer[127:96];
++                    endcase
++                    sdram_tags[sdram_saved_index] <= sdram_saved_tag;
++                    sdram_data[sdram_saved_index] <= sdram_burst_buffer;
++                    sdram_valid[sdram_saved_index] <= 1'b1;
++                end else begin
++                    IFU_AXI4_rdata <= flash_burst_buffer;
++                    flash_tags[flash_saved_index] <= flash_saved_tag;
++                    flash_data[flash_saved_index] <= flash_burst_buffer;
++                    flash_valid[flash_saved_index] <= 1'b1;
++                end
++                ICACHE_miss_count <= ICACHE_miss_count + 1;
++                state <= SEND_DATA;
++                IFU_AXI4_rvalid <= 1'b1;
++            end
+             SEND_DATA: begin
+                 access_time <= access_time + 1'b1;
+                 miss_penalty <= miss_penalty + 1'b1;
+diff --git a/npc/vsrc/lsu.v b/npc/vsrc/lsu.v
+index 0326e49..d1ee1de 100755
+--- a/npc/vsrc/lsu.v
++++ b/npc/vsrc/lsu.v
+@@ -124,11 +124,11 @@ reg [2:0] state;
+                        ((LSU_AXI4_ARADDR[1:0] & 2'b11) == 2'b11) ? (LSU_RDATA >> 32'd24) : (LSU_RDATA >> 32'd0);
+ 
+     assign lsu_rdata_ = ((LSU_AXI4_ARADDR >= 32'h30000000) && (LSU_AXI4_ARADDR < 32'h40000000)) ? LSU_RDATA : lsu_rdata;
+-    assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata_[7]}},lsu_rdata_[7:0]}) |
+-                   ( {32{LSU_WBU_lh}} & {{16{lsu_rdata_[15]}}, (lsu_rdata_[15:0])}) |
+-                   ( {32{LSU_WBU_lw}} & lsu_rdata_) |
+-                   ( {32{LSU_WBU_lbu}} & {24'b0,lsu_rdata_[7:0]}) |
+-                   ( {32{LSU_WBU_lhu}} & {16'b0,lsu_rdata_[15:0]});
++    assign rdata = ( {32{LSU_WBU_lb}} & {{24{lsu_rdata[7]}},lsu_rdata[7:0]}) |
++                   ( {32{LSU_WBU_lh}} & {{16{lsu_rdata[15]}}, (lsu_rdata[15:0])}) |
++                   ( {32{LSU_WBU_lw}} & lsu_rdata) |
++                   ( {32{LSU_WBU_lbu}} & {24'b0,lsu_rdata[7:0]}) |
++                   ( {32{LSU_WBU_lhu}} & {16'b0,lsu_rdata[15:0]});
+ 
+     assign  LSU_WLEN = ( {4{EXU_LSU_sb}} & 4'b1 )  |
+                    ( {4{EXU_LSU_sh}} & 4'b11 )  |
+@@ -253,6 +253,7 @@ always @(posedge clk) begin
+                     LSU_AXI4_WSTRB <= lsu_wstrb;
+                     LSU_AXI4_AWVALID <= 1'b1;
+                     LSU_AXI4_WVALID <= 1'b1;
++                    LSU_AXI_wlast <= 1'b1; 
+                     LSU_AXI4_wsize <= awsize;
+                     state <= START;
+                 end else if ((EXU_LSU_ren )) begin
+@@ -266,7 +267,7 @@ always @(posedge clk) begin
+                             lsu_during_count <= lsu_during_count + 1'b1;
+                             lsu_store_count <= lsu_store_count + 1'b1;
+                             lsu_count <= lsu_count + 1'b1;
+-                            LSU_AXI_wlast <= 1'b0;
++                            LSU_AXI_wlast <= 1'b1;
+                             state <= WRITE_DATA;
+                             LSU_AXI4_AWVALID <= 1'b0;
+                             LSU_AXI4_WVALID <= 1'b0;
+@@ -275,7 +276,7 @@ always @(posedge clk) begin
+                             state <= WRITE_WIRE_1;
+                             LSU_AXI4_AWVALID <= 1'b0;
+                 end else if(LSU_AXI4_WVALID && LSU_AXI4_WREADY ) begin
+-                            LSU_AXI_wlast <= 1'b0;
++                            LSU_AXI_wlast <= 1'b1;
+                             state <= WRITE_WIRE_2;
+                             LSU_AXI4_WVALID <= 1'b0;
+                 end else if(LSU_AXI4_ARVALID && LSU_AXI4_ARREADY) begin
+@@ -294,7 +295,6 @@ always @(posedge clk) begin
+                 
+                 if (LSU_AXI4_RREADY && LSU_AXI4_RVALID) begin
+                     lsu_count <= lsu_count + 1'b1;
+-                    LSU_AXI_wlast <= 1'b1;
+                     LSU_AXI4_RREADY <= 1'b0;
+                     LSU_WBU_valid <= 1'b1;
+                     LSU_RDATA <= LSU_AXI4_RDATA;
+@@ -314,7 +314,7 @@ always @(posedge clk) begin
+                 
+                 if(LSU_AXI4_WVALID && LSU_AXI4_WREADY ) begin
+                     lsu_count <= lsu_count + 1'b1;
+-                    LSU_AXI_wlast <= 1'b0;
++                    LSU_AXI_wlast <= 1'b1;
+                     state <= WRITE_WIRE_2;
+                     LSU_AXI4_WVALID <= 1'b0;
+                     state <= WRITE_DATA;
+diff --git a/npc/vsrc/ysyx_24070003_cpu.v b/npc/vsrc/ysyx_24070003_cpu.v
+index e6ac85d..147830e 100755
+--- a/npc/vsrc/ysyx_24070003_cpu.v
++++ b/npc/vsrc/ysyx_24070003_cpu.v
+@@ -81,7 +81,7 @@ assign io_master_awvalid = AXI4_MASTER_AWVALID;
+ assign io_master_awaddr = AXI4_MASTER_AWADDR;
+ assign io_master_rready = AXI4_MASTER_RREADY;
+ assign io_master_awid = 'd0;//AXI4_MASTER_AWID;
+-assign io_master_awlen = 'd0;//AXI4_MASTER_AWLEN;
++assign io_master_awlen = 8'd0;//AXI4_MASTER_AWLEN;
+ assign io_master_awsize = LSU_AXI4_wsize;//AXI4_MASTER_AWSIZE;
+ assign io_master_awburst = 2'd01;//AXI4_MASTER_AWBURST;
+ assign io_master_wvalid = AXI4_MASTER_WVALID;
+@@ -92,8 +92,8 @@ assign io_master_bready = AXI4_MASTER_BREADY;
+ assign io_master_arvalid = AXI4_MASTER_ARVALID;
+ assign io_master_araddr = AXI4_MASTER_ARADDR;
+ assign io_master_arid = 'd0;//AXI4_MASTER_ARID;
+-assign io_master_arlen = 'd0;//AXI4_MASTER_ARLEN;
+-assign io_master_arsize = 'd0;//AXI4_MASTER_ARSIZE;
++assign io_master_arlen = AXI4_MASTER_ARLEN;//AXI4_MASTER_ARLEN;
++assign io_master_arsize = 'b10;//AXI4_MASTER_ARSIZE;
+ assign io_master_arburst = 2'd01;//AXI4_MASTER_ARBURST;
+ 
+ assign AXI4_MASTER_AWREADY = io_master_awready;
+@@ -218,6 +218,8 @@ ifu my_ifu(
+ 
+ wire [31:0] ICACHE_AXI4_rdata,ICACHE_AXI4_araddr;
+ wire ICACHE_AXI4_arvalid,ICACHE_AXI4_arready,ICACHE_AXI4_rvalid,ICACHE_AXI4_rready;
++wire [7:0] ICACHE_AXI4_arlen;
++wire [7:0] AXI4_MASTER_ARLEN;
+ icache  my_icache(
+     .clock                   (clock),
+     .reset                   (reset),
+@@ -238,7 +240,8 @@ icache  my_icache(
+     .ICACHE_miss_count       (ICACHE_miss_count),
+     .total_access            (total_access),
+     .access_time             (access_time),
+-    .miss_penalty            (miss_penalty)
++    .miss_penalty            (miss_penalty),
++    .ICACHE_AXI4_arlen       (ICACHE_AXI4_arlen)
+ );
+ 
+ wire AXI4_SRAM_ARVALID,AXI4_SRAM_ARREADY,AXI4_SRAM_RVALID,AXI4_SRAM_RREADY;
+@@ -309,7 +312,10 @@ axi_arbiter my_axi_arbiter(
+     
+     //.sram_bresp              (),
+     .master_bvalid             (AXI4_MASTER_BVALID),
+-    .master_bready             (AXI4_MASTER_BREADY)
++    .master_bready             (AXI4_MASTER_BREADY),
++    .ICACHE_AXI4_arlen          (ICACHE_AXI4_arlen),
++    .master_arlen               (AXI4_MASTER_ARLEN),
++    .master_rlast               (io_master_rlast)
+ );
+ 
+ 
+diff --git a/ysyxSoC/perip/amba/apb_delayer.v b/ysyxSoC/perip/amba/apb_delayer.v
+index 85d1c30..70d282c 100644
+--- a/ysyxSoC/perip/amba/apb_delayer.v
++++ b/ysyxSoC/perip/amba/apb_delayer.v
+@@ -35,7 +35,7 @@ module apb_delayer(
+   // assign in_prdata   = out_prdata;
+   // assign in_pslverr  = out_pslverr;
+ 
+-  /////////////////////////////  fmax = 970   r = 9.7 s = 32 ////////////
++  /////////////////////////////  fmax = 784   r = 7.8 s = 32 ////////////
+   
+   
+   reg [31:0] count;
+@@ -51,16 +51,16 @@ module apb_delayer(
+         IDLE: begin
+           if(in_psel) begin
+             state <= WAIT;
+-            count <= count + 32'd278;
++            count <= count + 32'd217;
+           end
+         end
+         WAIT: begin
+           if(out_pready) begin
+             state <= DELAY;
+-            count <= (count + 32'd278) >> 5;
++            count <= (count + 32'd217) >> 5;
+           end
+           else begin
+-            count <= count + 32'd278;
++            count <= count + 32'd217;
+           end
+         end
+         DELAY: begin
+diff --git a/ysyxSoC/perip/sdram/core_sdram_axi4/sdram_axi.v b/ysyxSoC/perip/sdram/core_sdram_axi4/sdram_axi.v
+index 64641f5..f6b4695 100644
+--- a/ysyxSoC/perip/sdram/core_sdram_axi4/sdram_axi.v
++++ b/ysyxSoC/perip/sdram/core_sdram_axi4/sdram_axi.v
+@@ -53,7 +53,7 @@ module sdram_axi
+     ,input  [  7:0]  inport_arlen_i
+     ,input  [  1:0]  inport_arburst_i
+     ,input           inport_rready_i
+-    ,input  [ 15:0]  sdram_data_input_i
++    ,input  [ 31:0]  sdram_data_input_i
+ 
+     // Outputs
+     ,output          inport_awready_o
+@@ -73,10 +73,10 @@ module sdram_axi
+     ,output          sdram_ras_o
+     ,output          sdram_cas_o
+     ,output          sdram_we_o
+-    ,output [  1:0]  sdram_dqm_o
+-    ,output [ 12:0]  sdram_addr_o
++    ,output [  3:0]  sdram_dqm_o
++    ,output [ 13:0]  sdram_addr_o
+     ,output [  1:0]  sdram_ba_o
+-    ,output [ 15:0]  sdram_data_output_o
++    ,output [ 31:0]  sdram_data_output_o
+     ,output          sdram_data_out_en_o
+ );
+ 
+diff --git a/ysyxSoC/perip/sdram/core_sdram_axi4/sdram_axi_pmem.v b/ysyxSoC/perip/sdram/core_sdram_axi4/sdram_axi_pmem.v
+index 3d6a5bb..cc46bf9 100644
+--- a/ysyxSoC/perip/sdram/core_sdram_axi4/sdram_axi_pmem.v
++++ b/ysyxSoC/perip/sdram/core_sdram_axi4/sdram_axi_pmem.v
+@@ -82,6 +82,7 @@ module sdram_axi_pmem
+ //-------------------------------------------------------------
+ // calculate_addr_next
+ //-------------------------------------------------------------
++/* verilator lint_off BLKSEQ */
+ function [31:0] calculate_addr_next;
+     input [31:0] addr;
+     input [1:0]  axtype;
+diff --git a/ysyxSoC/perip/sdram/sdram_top_axi.v b/ysyxSoC/perip/sdram/sdram_top_axi.v
+index f0fd6fd..3f0d6be 100644
+--- a/ysyxSoC/perip/sdram/sdram_top_axi.v
++++ b/ysyxSoC/perip/sdram/sdram_top_axi.v
+@@ -37,15 +37,15 @@ module sdram_top_axi(
+   output        sdram_ras,
+   output        sdram_cas,
+   output        sdram_we,
+-  output [12:0] sdram_a,
++  output [13:0] sdram_a,
+   output [ 1:0] sdram_ba,
+-  output [ 1:0] sdram_dqm,
+-  inout  [15:0] sdram_dq
++  output [ 3:0] sdram_dqm,
++  inout  [31:0] sdram_dq
+ );
+ 
+   wire sdram_dout_en;
+-  wire [15:0] sdram_dout;
+-  assign sdram_dq = sdram_dout_en ? sdram_dout : 16'bz;
++  wire [31:0] sdram_dout;
++  assign sdram_dq = sdram_dout_en ? sdram_dout : 32'bz;
+   sdram_axi #(
+     .SDRAM_MHZ(100),
+     .SDRAM_ADDR_W(24),
+-- 
+2.34.1
+

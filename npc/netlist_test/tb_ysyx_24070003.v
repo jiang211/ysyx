@@ -163,21 +163,17 @@ ysyx_24070003 dut (
     .io_slave_rdata    (io_slave_rdata),
     .io_slave_rlast    (io_slave_rlast),
     .io_slave_rid      (io_slave_rid)
-    // .ebreak            (ebreak),
-    // .a0                 (a0),
-    // .ifu_count          (ifu_count)
+    
 );
-// always @(posedge clock) begin
-//     if (ebreak) begin
-//         if(a0 == 1'b0) begin
-//         $display("\n=== EBREAK GOOD ===");
-//         end else begin
-//         $display("\n=== EBREAK BAD ===");
+always @(posedge clock) begin
+    if (dut.ebreak) begin
+       
+        $display("\n=== EBREAK ===");
+
         
-//         end
-//         $stop;   // 立即停仿真
-//     end
-// end 
+        $stop;   // 立即停仿真
+    end
+end 
 //----------------------------------------------------------------------
 //  外部 ram
 //----------------------------------------------------------------------
@@ -217,9 +213,9 @@ ram u_ram (
 //----------------------------------------------------------------------
 // 波形
 //----------------------------------------------------------------------
-initial begin
-    $dumpfile("tb.vcd");
-    $dumpvars(0, tb_ysyx_24070003);
-end
+// initial begin
+//     $dumpfile("tb.vcd");
+//     $dumpvars(0, tb_ysyx_24070003);
+// end
 
 endmodule

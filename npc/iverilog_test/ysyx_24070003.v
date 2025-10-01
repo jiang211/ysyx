@@ -60,12 +60,9 @@ module ysyx_24070003(
     output  wire        [1:0] io_slave_rresp,   
     output  wire            [31:0] io_slave_rdata ,
     output  wire      io_slave_rlast ,
-    output  wire        [3:0] io_slave_rid   ,
-    output  wire         ebreak,
-    output  wire [31:0] a0,
-    output  reg [63:0] ifu_count
+    output  wire        [3:0] io_slave_rid
 );
-
+ wire         ebreak;
 reg [63:0]                           lsu_count                      ;
 //reg [63:0]                           ifu_count                      ;
 reg [63:0]                           calcu_type_count               ;
@@ -861,8 +858,7 @@ ysyx_24070003_RegisterFile #(.ADDR_WIDTH(4), .DATA_WIDTH(32)) rf1(
         .rdata1                     (rs1_data           ),
         .raddr1                     (rs1[3:0]           ),
         .rdata2                     (rs2_data           ),
-        .raddr2                     (rs2[3:0]           ),
-        .a0                         (a0                 )
+        .raddr2                     (rs2[3:0]           )
     );
 assign WBU_CSR_RADDR = (IDU_EXU_ecall) ? 'd3 : (IDU_EXU_mret) ? 'd0 :IDU_EXU_csr_rst;
 ysyx_24070003_csr_reg #(.ADDR_WIDTH(3), .DATA_WIDTH(32)) csr1(
@@ -3096,8 +3092,7 @@ module ysyx_24070003_RegisterFile #(
     
     output [DATA_WIDTH-1:0] rdata2,
     
-    input [ADDR_WIDTH-1:0] raddr2,
-    output [31:0]           a0
+    input [ADDR_WIDTH-1:0] raddr2
 );
 
     reg [DATA_WIDTH-1:0] rf[15:0];
@@ -3112,22 +3107,7 @@ module ysyx_24070003_RegisterFile #(
     
     assign rdata1 = rf[raddr1];
     assign rdata2 = rf[raddr2];
-    
-    assign                       a0                  = rf[10];
-    wire [31:0] ra = rf[1];
-    wire [31:0] sp = rf[2]; 
-    wire [31:0] gp = rf[3]; 
-    wire [31:0] tp = rf[4]; 
-    wire [31:0] t0 = rf[5]; 
-    wire [31:0] t1 = rf[6]; 
-    wire [31:0] t2 = rf[7]; 
-    wire [31:0] s0 = rf[8]; 
-    wire [31:0] s1 = rf[9]; 
-    wire [31:0] a1 = rf[11]; 
-    wire [31:0] a2 = rf[12]; 
-    wire [31:0] a3 = rf[13]; 
-    wire [31:0] a4 = rf[14]; 
-    wire [31:0] a5 = rf[15]; 
+ 
    
 endmodule
 

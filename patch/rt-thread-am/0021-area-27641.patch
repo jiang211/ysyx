@@ -1,0 +1,747 @@
+From 1bfe5801e3632ce771a7c6d626a3e98ec2f1f845 Mon Sep 17 00:00:00 2001
+From: 221220000-Zhang San <zhangsan@foo.com>
+Date: Wed, 3 Sep 2025 22:08:06 +0800
+Subject: [PATCH 21/28] "area : 27641"
+
+---
+ Makefile                          |   2 +-
+ npc/csrc/include/config.h         |   2 +-
+ npc/vsrc/mux2_32bit.v             |  16 +++++
+ npc/vsrc/ysyx_24070003.v          |  81 +++++++++++-----------
+ npc/vsrc/ysyx_24070003_alu.v      |  17 +----
+ npc/vsrc/ysyx_24070003_clint.v    |   2 +-
+ npc/vsrc/ysyx_24070003_exu.v      | 109 ++++++++++++++---------------
+ npc/vsrc/ysyx_24070003_exu_test.v |  78 +++++++++++++--------
+ npc/vsrc/ysyx_24070003_idu.v      | 110 ++++++++++++++----------------
+ npc/vsrc/ysyx_24070003_lsu.v      |  21 +++---
+ yosys-sta/Makefile                |   2 +-
+ 11 files changed, 234 insertions(+), 206 deletions(-)
+ create mode 100644 npc/vsrc/mux2_32bit.v
+
+diff --git a/Makefile b/Makefile
+index bd87d8f..989dc36 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,4 +1,4 @@
+-STUID = 2023010201031
++STUID = ysyx_24070003
+ STUNAME = 江贤
+ 
+ # DO NOT modify the following code!!!
+diff --git a/npc/csrc/include/config.h b/npc/csrc/include/config.h
+index b0ddef9..c51c3aa 100755
+--- a/npc/csrc/include/config.h
++++ b/npc/csrc/include/config.h
+@@ -12,7 +12,7 @@
+ //#endif
+ //_______________________________end of the CONFIG_TRACE parameters--------------------------
+ 
+-//#define CONFIG_DIFFTEST
++#define CONFIG_DIFFTEST
+ 
+ #define CONFIG_PC_RESET_OFFSET 0x0
+ 
+diff --git a/npc/vsrc/mux2_32bit.v b/npc/vsrc/mux2_32bit.v
+new file mode 100644
+index 0000000..e2c079c
+--- /dev/null
++++ b/npc/vsrc/mux2_32bit.v
+@@ -0,0 +1,16 @@
++module mux2_32bit(
++    input [1:0] sel,
++    input [31:0] a, 
++    input [31:0] b,
++    input [31:0] default_data,
++    output reg [31:0] out
++);
++    always @(*) begin
++        case(sel)
++            2'b01: out = b;
++            2'b10: out = a;
++            default: out = default_data; // 或者可以是其他默认值，如32'b0
++        endcase
++    end
++endmodule
++
+diff --git a/npc/vsrc/ysyx_24070003.v b/npc/vsrc/ysyx_24070003.v
+index 692338c..73e17a5 100755
+--- a/npc/vsrc/ysyx_24070003.v
++++ b/npc/vsrc/ysyx_24070003.v
+@@ -326,6 +326,7 @@ wire [2:0]                           WBU_CSR_ADDR                   ;
+ wire [2:0]                           LSU_WBU_csr_rst                ;
+ wire [2:0]                           WBU_CSR_RADDR                  ;
+ wire [2:0]                           LSU_AXI4_wsize                 ;   
++wire [2:0]                           csr_op                         ;
+ //wire [5:0]                           funct7                         ;
+ wire [1:0]                           resp                           ;
+ wire [7:0]                           ICACHE_AXI4_arlen              ;
+@@ -548,11 +549,11 @@ ysyx_24070003_clint my_clint(
+     
+     // AXI-Lite4 Read Data Channel
+     .AXI4_CLINT_RDATA               (AXI4_CLINT_RDATA   ),
+-    .AXI4_CLINT_RVALID              (AXI4_CLINT_RVALID  ),
++    .AXI4_CLINT_RVALID              (AXI4_CLINT_RVALID  )
+ );
+ 
+ 
+-
++wire [7:0] IDU_EXU_RW_sign,EXU_LSU_RW_sign;
+ ysyx_24070003_idu my_idu(
+    // .EXU_IFU_flush                (EXU_IFU_flush      ),
+     .clock                            (clock              ),
+@@ -585,17 +586,16 @@ ysyx_24070003_idu my_idu(
+     .IDU_EXU_reg_write              (reg_write          ),
+     .IDU_EXU_jal                    (IDU_EXU_jal        ),
+     .IDU_EXU_jalr                   (IDU_EXU_jalr       ),
+-    .IDU_EXU_lw                     (IDU_EXU_lw         ),
+-    .IDU_EXU_lh                     (IDU_EXU_lh         ),  
+-    .IDU_EXU_lb                     (IDU_EXU_lb         ),
+-    .IDU_EXU_lbu                    (IDU_EXU_lbu        ),
+-    .IDU_EXU_lhu                    (IDU_EXU_lhu        ),
+-    .IDU_EXU_sw                     (IDU_EXU_sw         ),
+-    .IDU_EXU_sb                     (IDU_EXU_sb         ),
+-    .IDU_EXU_sh                     (IDU_EXU_sh         ),
+-    .IDU_EXU_csw                    (IDU_EXU_csw        ),
+-    .IDU_EXU_csc                    (IDU_EXU_csc        ),
+-    .IDU_EXU_css                    (IDU_EXU_css        ),
++    // .IDU_EXU_lw                     (IDU_EXU_lw         ),
++    // .IDU_EXU_lh                     (IDU_EXU_lh         ),  
++    // .IDU_EXU_lb                     (IDU_EXU_lb         ),
++    // .IDU_EXU_lbu                    (IDU_EXU_lbu        ),
++    // .IDU_EXU_lhu                    (IDU_EXU_lhu        ),
++    // .IDU_EXU_sw                     (IDU_EXU_sw         ),
++    // .IDU_EXU_sb                     (IDU_EXU_sb         ),
++    // .IDU_EXU_sh                     (IDU_EXU_sh         ),
++    .IDU_EXU_RW_sign                (IDU_EXU_RW_sign),
++    .IDU_EXU_csr_op                 (csr_op             ),
+     .IDU_EXU_ebreak                 (IDU_EXU_ebreak     ),
+     .IDU_EXU_ecall                  (IDU_EXU_ecall      ),
+     .IDU_EXU_mret                   (IDU_EXU_mret       ),
+@@ -654,17 +654,16 @@ ysyx_24070003_exu my_exu(
+     .IDU_EXU_reg                    (reg_write          ),
+     .IDU_EXU_jal                    (IDU_EXU_jal        ),
+     .IDU_EXU_jalr                   (IDU_EXU_jalr       ),
+-    .IDU_EXU_lw                     (IDU_EXU_lw         ),
+-    .IDU_EXU_lh                     (IDU_EXU_lh         ),
+-    .IDU_EXU_lb                     (IDU_EXU_lb         ),
+-    .IDU_EXU_lbu                    (IDU_EXU_lbu        ),
+-    .IDU_EXU_lhu                    (IDU_EXU_lhu        ),
+-    .IDU_EXU_sw                     (IDU_EXU_sw         ),
+-    .IDU_EXU_sb                     (IDU_EXU_sb         ),
+-    .IDU_EXU_sh                     (IDU_EXU_sh         ),
+-    .IDU_EXU_csw                    (IDU_EXU_csw        ),
+-    .IDU_EXU_csc                    (IDU_EXU_csc        ),
+-    .IDU_EXU_css                    (IDU_EXU_css        ),
++    .IDU_EXU_RW_sign                 (IDU_EXU_RW_sign),
++    // .IDU_EXU_lw                     (IDU_EXU_lw         ),
++    // .IDU_EXU_lh                     (IDU_EXU_lh         ),
++    // .IDU_EXU_lb                     (IDU_EXU_lb         ),
++    // .IDU_EXU_lbu                    (IDU_EXU_lbu        ),
++    // .IDU_EXU_lhu                    (IDU_EXU_lhu        ),
++    // .IDU_EXU_sw                     (IDU_EXU_sw         ),
++    // .IDU_EXU_sb                     (IDU_EXU_sb         ),
++    // .IDU_EXU_sh                     (IDU_EXU_sh         ),
++    .csr_op                         (csr_op             ),
+     .csr_data                       (csr_data           ),
+     .IDU_EXU_ecall                  (IDU_EXU_ecall      ),
+     .IDU_EXU_mret                   (IDU_EXU_mret       ),
+@@ -696,14 +695,15 @@ ysyx_24070003_exu my_exu(
+     .EXU_LSU_ebreak                 (EXU_LSU_ebreak     ),
+     //.EXU_IFU_jal                  (EXU_IFU_jal        ),
+     //.EXU_IFU_jalr                 (EXU_IFU_jalr       ),
+-    .EXU_LSU_lw                     (EXU_LSU_lw         ),
+-    .EXU_LSU_lh                     (EXU_LSU_lh         ),
+-    .EXU_LSU_lb                     (EXU_LSU_lb         ),
+-    .EXU_LSU_lbu                    (EXU_LSU_lbu        ),
+-    .EXU_LSU_lhu                    (EXU_LSU_lhu        ),
+-    .EXU_LSU_sw                     (EXU_LSU_sw         ),
+-    .EXU_LSU_sb                     (EXU_LSU_sb         ),
+-    .EXU_LSU_sh                     (EXU_LSU_sh         ),
++    // .EXU_LSU_lw                     (EXU_LSU_lw         ),
++    // .EXU_LSU_lh                     (EXU_LSU_lh         ),
++    // .EXU_LSU_lb                     (EXU_LSU_lb         ),
++    // .EXU_LSU_lbu                    (EXU_LSU_lbu        ),
++    // .EXU_LSU_lhu                    (EXU_LSU_lhu        ),
++    // .EXU_LSU_sw                     (EXU_LSU_sw         ),
++    // .EXU_LSU_sb                     (EXU_LSU_sb         ),
++    // .EXU_LSU_sh                     (EXU_LSU_sh         ),
++    .EXU_LSU_RW_sign                (EXU_LSU_RW_sign),
+     .EXU_LSU_csr_data               (EXU_LSU_csr_data   ),
+     .EXU_LSU_ecall                  (EXU_LSU_ecall      ),
+     .EXU_LSU_mret                   (EXU_LSU_mret       ),
+@@ -735,14 +735,15 @@ ysyx_24070003_lsu my_lsu(
+     //.LSU_WBU_JUMP                 (LSU_WBU_JUMP       ),
+     .EXU_LSU_dnpc                   (EXU_LSU_dnpc       ),
+     .EXU_LSU_PC                     (EXU_LSU_PC         ),
+-    .EXU_LSU_lw                     (EXU_LSU_lw         ),
+-    .EXU_LSU_lh                     (EXU_LSU_lh         ),
+-    .EXU_LSU_lb                     (EXU_LSU_lb         ),
+-    .EXU_LSU_lbu                    (EXU_LSU_lbu        ),
+-    .EXU_LSU_lhu                    (EXU_LSU_lhu        ),
+-    .EXU_LSU_sw                     (EXU_LSU_sw         ),
+-    .EXU_LSU_sb                     (EXU_LSU_sb         ),
+-    .EXU_LSU_sh                     (EXU_LSU_sh         ),
++    .EXU_LSU_RW_sign                (EXU_LSU_RW_sign),
++    // .EXU_LSU_lw                     (EXU_LSU_lw         ),
++    // .EXU_LSU_lh                     (EXU_LSU_lh         ),
++    // .EXU_LSU_lb                     (EXU_LSU_lb         ),
++    // .EXU_LSU_lbu                    (EXU_LSU_lbu        ),
++    // .EXU_LSU_lhu                    (EXU_LSU_lhu        ),
++    // .EXU_LSU_sw                     (EXU_LSU_sw         ),
++    // .EXU_LSU_sb                     (EXU_LSU_sb         ),
++    // .EXU_LSU_sh                     (EXU_LSU_sh         ),
+     .EXU_LSU_csr_data               (EXU_LSU_csr_data   ),
+     .EXU_LSU_csr_in                 (EXU_LSU_csr_in     ),
+     .EXU_LSU_ecall                  (EXU_LSU_ecall      ),
+diff --git a/npc/vsrc/ysyx_24070003_alu.v b/npc/vsrc/ysyx_24070003_alu.v
+index ffad088..8d21cbc 100755
+--- a/npc/vsrc/ysyx_24070003_alu.v
++++ b/npc/vsrc/ysyx_24070003_alu.v
+@@ -1,25 +1,14 @@
+ module ysyx_24070003_alu(
+     input clock,
+-    input [31:0] rs1_data,
+-    input [31:0] rs2_data,
+-    input [31:0] imm_data,
+-    input [31:0] pc_data,
+-    input alu_src1,
+-    input alu_src2,
++    input [31:0] opdata1,
++    input [31:0] opdata2,
+     input branch,
+     input u_alu_type,
+-    //input mul_high,
+-    input U_type_1,
+-    input J_type_1,
+     input [3:0] alu_crtl,
+     output reg [31:0] alu_out,
+     output  zero
+ );
+ 
+-wire [31:0] opdata1;
+-wire [31:0] opdata2;
+-assign opdata1 = (alu_src1)? rs1_data : (U_type_1) ? 32'h00000000 : pc_data;
+-assign opdata2 = (alu_src2)? rs2_data : (J_type_1) ? 32'h00000004 : imm_data;
+ 
+ wire [1:0] logic_ctl;
+ wire [1:0] shift_ctl;
+@@ -82,7 +71,7 @@ assign BLT = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  & ~alu_crtl[0]);
+ assign BGE = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  &  alu_crtl[0]);
+ assign BNE = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  & ~alu_crtl[0]);
+ assign BEQ = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  &  alu_crtl[0]);
+-assign zero = (BLT & & branch  &  LESS_S)   |
++assign zero = (BLT &  branch  &  LESS_S)   |
+               (BGE & ~LESS_S)   |
+               (BNE & ~ADD_zero) |
+               (BEQ &  ADD_zero) ;
+diff --git a/npc/vsrc/ysyx_24070003_clint.v b/npc/vsrc/ysyx_24070003_clint.v
+index 50c0344..a4451ed 100644
+--- a/npc/vsrc/ysyx_24070003_clint.v
++++ b/npc/vsrc/ysyx_24070003_clint.v
+@@ -12,7 +12,7 @@ module ysyx_24070003_clint #(
+     
+     // AXI-Lite4 Read Data Channel
+     output  [DATA_WIDTH-1:0] AXI4_CLINT_RDATA,
+-    output                   AXI4_CLINT_RVALID,
++    output                   AXI4_CLINT_RVALID
+     //output reg [1:0]       AXI4_SRAM_BRESP 
+ );
+     //reg [DATA_WIDTH-1:0] mem [0:2**ADDR_WIDTH-1];
+diff --git a/npc/vsrc/ysyx_24070003_exu.v b/npc/vsrc/ysyx_24070003_exu.v
+index 49a107f..3ad63e1 100644
+--- a/npc/vsrc/ysyx_24070003_exu.v
++++ b/npc/vsrc/ysyx_24070003_exu.v
+@@ -12,17 +12,16 @@ module ysyx_24070003_exu(
+     input IDU_EXU_ebreak,
+     input IDU_EXU_jal,
+     input IDU_EXU_jalr,
+-    input IDU_EXU_lw,
+-    input IDU_EXU_lh,
+-    input IDU_EXU_lb,
+-    input IDU_EXU_lbu,
+-    input IDU_EXU_lhu,
+-    input IDU_EXU_sw,
+-    input IDU_EXU_sb,
+-    input IDU_EXU_sh,
+-    input IDU_EXU_csw,
+-    input IDU_EXU_csc,
+-    input IDU_EXU_css,
++    // input IDU_EXU_lw,
++    // input IDU_EXU_lh,
++    // input IDU_EXU_lb,
++    // input IDU_EXU_lbu,
++    // input IDU_EXU_lhu,
++    // input IDU_EXU_sw,
++    // input IDU_EXU_sb,
++    // input IDU_EXU_sh,
++    input [7:0] IDU_EXU_RW_sign,
++    input [2:0] csr_op,
+     input [31:0] csr_data,
+     input [31:0] IDU_EXU_pre_dnpc,
+ 
+@@ -61,14 +60,15 @@ module ysyx_24070003_exu(
+     output reg EXU_LSU_ebreak,
+     //output reg EXU_IFU_jal,
+     //output reg EXU_IFU_jalr,
+-    output reg EXU_LSU_lw,
+-    output reg EXU_LSU_lh,
+-    output reg EXU_LSU_lb,
+-    output reg EXU_LSU_lbu,
+-    output reg EXU_LSU_lhu,
+-    output reg EXU_LSU_sw,
+-    output reg EXU_LSU_sb,
+-    output reg EXU_LSU_sh,
++    // output reg EXU_LSU_lw,
++    // output reg EXU_LSU_lh,
++    // output reg EXU_LSU_lb,
++    // output reg EXU_LSU_lbu,
++    // output reg EXU_LSU_lhu,
++    // output reg EXU_LSU_sw,
++    // output reg EXU_LSU_sb,
++    // output reg EXU_LSU_sh,
++    output reg [7:0]  EXU_LSU_RW_sign,
+     output reg [31:0] EXU_LSU_csr_data,
+     output reg [31:0] EXU_LSU_csr_in,
+     output     [31:0] EXU_IFU_pc,
+@@ -108,26 +108,24 @@ assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2
+ //                 ( {32{IDU_EXU_csc}} & (RS1_data &csr_data)) |
+ //                 ( {32{IDU_EXU_css}} & (csr_data | RS1_data)) ;
+ 
+-wire [2:0] csr_op = {IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css};
++//wire [2:0] csr_op = {IDU_EXU_csw, IDU_EXU_csc, IDU_EXU_css};
+ 
+ assign  csr_in =     (csr_op == 3'b100) ? RS1_data        :
+                      (csr_op == 3'b010) ? RS1_data & csr_data :
+                      (csr_op == 3'b001) ? RS1_data | csr_data :
+                                         32'h0;   // 无效，理论上不会出现
++wire [31:0] opdata1;
++wire [31:0] opdata2;
++assign opdata1 = (alu_src1)? RS1_data : (U_type_1) ? 32'h00000000 : pc_data;
++assign opdata2 = (alu_src2)? RS2_data : (J_type_1) ? 32'h00000004 : imm_data;
++
+ 
+ ysyx_24070003_alu my_alu(
+     .clock          (clock      ),
+-    .rs1_data       (RS1_data   ),
+-    .rs2_data       (RS2_data   ),
+-    .imm_data       (imm_data        ),
+-    .pc_data        (pc_data       ),
+-    .alu_src1       (alu_src1   ),
+-    .alu_src2       (alu_src2   ),
+-    .branch         (branch     ),   
+-    .J_type_1       (J_type_1   ),
++    .opdata1        (opdata1   ),
++    .opdata2        (opdata2   ),
++    .branch         (branch     ), 
+     .u_alu_type     (u_alu_type ),
+-    //.mul_high       (mul_high   ),
+-    .U_type_1       (U_type_1   ),
+     .alu_crtl       (alu_op      ),
+     .alu_out        (alu_out    ),
+     .zero           (zero       )
+@@ -182,14 +180,15 @@ begin
+     EXU_LSU_ebreak               <=        1'b0;
+     //EXU_IFU_jal               <=        1'b0;
+     //EXU_IFU_jalr               <=        1'b0;
+-    EXU_LSU_lw               <=        1'b0;
+-    EXU_LSU_lh               <=        1'b0;
+-    EXU_LSU_lb               <=        1'b0;
+-    EXU_LSU_lbu               <=        1'b0;
+-    EXU_LSU_lhu               <=        1'b0;
+-    EXU_LSU_sw               <=        1'b0;
+-    EXU_LSU_sb               <=        1'b0;
+-    EXU_LSU_sh               <=        1'b0;
++    // EXU_LSU_lw               <=        1'b0;
++    // EXU_LSU_lh               <=        1'b0;
++    // EXU_LSU_lb               <=        1'b0;
++    // EXU_LSU_lbu               <=        1'b0;
++    // EXU_LSU_lhu               <=        1'b0;
++    // EXU_LSU_sw               <=        1'b0;
++    // EXU_LSU_sb               <=        1'b0;
++    // EXU_LSU_sh               <=        1'b0;
++    EXU_LSU_RW_sign            <=        8'b0;
+     EXU_LSU_csr_data           <=        32'b0;
+     EXU_LSU_ecall               <=        1'b0;
+     EXU_LSU_mret               <=        1'b0;
+@@ -210,16 +209,17 @@ begin
+     EXU_LSU_wen               <=        IDU_EXU_wen;
+     EXU_LSU_reg               <=        IDU_EXU_reg;
+     EXU_LSU_ebreak               <=        IDU_EXU_ebreak;
++    EXU_LSU_RW_sign             <=      IDU_EXU_RW_sign;
+     //EXU_IFU_jal               <=        IDU_EXU_jal;
+     //EXU_IFU_jalr               <=        IDU_EXU_jalr;
+-    EXU_LSU_lw               <=        IDU_EXU_lw;
+-    EXU_LSU_lh               <=        IDU_EXU_lh;
+-    EXU_LSU_lb               <=        IDU_EXU_lb;
+-    EXU_LSU_lbu               <=        IDU_EXU_lbu;
+-    EXU_LSU_lhu               <=        IDU_EXU_lhu;
+-    EXU_LSU_sw               <=        IDU_EXU_sw;
+-    EXU_LSU_sb               <=        IDU_EXU_sb;
+-    EXU_LSU_sh               <=        IDU_EXU_sh;
++    // EXU_LSU_lw               <=        IDU_EXU_lw;
++    // EXU_LSU_lh               <=        IDU_EXU_lh;
++    // EXU_LSU_lb               <=        IDU_EXU_lb;
++    // EXU_LSU_lbu               <=        IDU_EXU_lbu;
++    // EXU_LSU_lhu               <=        IDU_EXU_lhu;
++    // EXU_LSU_sw               <=        IDU_EXU_sw;
++    // EXU_LSU_sb               <=        IDU_EXU_sb;
++    // EXU_LSU_sh               <=        IDU_EXU_sh;
+     EXU_LSU_csr_data           <=        csr_data;
+     EXU_LSU_ecall               <=        IDU_EXU_ecall;
+     EXU_LSU_mret               <=        IDU_EXU_mret;
+@@ -242,14 +242,15 @@ begin
+     EXU_LSU_ebreak               <=        EXU_LSU_ebreak;
+     //EXU_IFU_jal               <=        1'b0;
+     //EXU_IFU_jalr               <=        1'b0;
+-    EXU_LSU_lw               <=        EXU_LSU_lw;
+-    EXU_LSU_lh               <=        EXU_LSU_lh;
+-    EXU_LSU_lb               <=        EXU_LSU_lb;
+-    EXU_LSU_lbu               <=        EXU_LSU_lbu;
+-    EXU_LSU_lhu               <=        EXU_LSU_lhu;
+-    EXU_LSU_sw               <=        EXU_LSU_sw;
+-    EXU_LSU_sb               <=        EXU_LSU_sb;
+-    EXU_LSU_sh               <=        EXU_LSU_sh;
++    // EXU_LSU_lw               <=        EXU_LSU_lw;
++    // EXU_LSU_lh               <=        EXU_LSU_lh;
++    // EXU_LSU_lb               <=        EXU_LSU_lb;
++    // EXU_LSU_lbu               <=        EXU_LSU_lbu;
++    // EXU_LSU_lhu               <=        EXU_LSU_lhu;
++    // EXU_LSU_sw               <=        EXU_LSU_sw;
++    // EXU_LSU_sb               <=        EXU_LSU_sb;
++    // EXU_LSU_sh               <=        EXU_LSU_sh;
++    EXU_LSU_RW_sign            <=       EXU_LSU_RW_sign;
+     EXU_LSU_csr_data           <=        EXU_LSU_csr_data;
+     EXU_LSU_ecall               <=        EXU_LSU_ecall;
+     EXU_LSU_mret               <=        EXU_LSU_mret;
+diff --git a/npc/vsrc/ysyx_24070003_exu_test.v b/npc/vsrc/ysyx_24070003_exu_test.v
+index 242a385..42a2e04 100644
+--- a/npc/vsrc/ysyx_24070003_exu_test.v
++++ b/npc/vsrc/ysyx_24070003_exu_test.v
+@@ -101,9 +101,23 @@ wire zero;
+ wire [31:0] alu_out;
+ wire [31:0] csr_in;
+ 
+-assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
+-assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
++// assign RS1_data = (IDU_EXU_exu_raw_rs1) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs1) ? LSU_forward_data : rs1_data;
++// assign RS2_data = (IDU_EXU_exu_raw_rs2) ? EXU_LSU_alu_out : (IDU_EXU_lsu_raw_rs2) ? LSU_forward_data : rs2_data;
++mux2_32bit my_mux2_32bit1(
++    .sel                ({IDU_EXU_exu_raw_rs1, IDU_EXU_lsu_raw_rs1}),
++    .a                  (EXU_LSU_alu_out),  
++    .b                  (LSU_forward_data),
++    .default_data       (rs1_data),
++    .out                (RS1_data)
++);
+ 
++mux2_32bit my_mux2_32bit2(
++    .sel                ({IDU_EXU_exu_raw_rs2, IDU_EXU_lsu_raw_rs2}),
++    .a                  (EXU_LSU_alu_out),  
++    .b                  (LSU_forward_data),
++    .default_data       (rs2_data),
++    .out                (RS2_data)
++);
+ // assign csr_in = ( {32{IDU_EXU_csw}} & (RS1_data)) |
+ //                 ( {32{IDU_EXU_csc}} & (RS1_data &csr_data)) |
+ //                 ( {32{IDU_EXU_css}} & (csr_data | RS1_data)) ;
+@@ -114,20 +128,30 @@ assign  csr_in =     (csr_op == 3'b100) ? RS1_data        :
+                      (csr_op == 3'b010) ? RS1_data & csr_data :
+                      (csr_op == 3'b001) ? RS1_data | csr_data :
+                                         32'h0;   // 无效，理论上不会出现
+-
++wire [31:0] opdata1;
++wire [31:0] opdata2;
++assign opdata1 = (alu_src1)? rs1_data : (U_type_1) ? 32'h00000000 : pc_data;
++assign opdata2 = (alu_src2)? rs2_data : (J_type_1) ? 32'h00000004 : imm_data;
++mux2_32bit my_mux2_32bit3(
++    .sel                ({alu_src1, U_type_1}),
++    .a                  (RS1_data),  
++    .b                  (32'h00000000),
++    .default_data       (pc_data),
++    .out                (opdata1)
++);
++mux2_32bit my_mux2_32bit4(
++    .sel                ({alu_src2, J_type_1}),
++    .a                  (rs2_data),  
++    .b                  (32'h00000004),
++    .default_data       (imm_data),
++    .out                (opdata2)
++);
+ ysyx_24070003_alu my_alu(
+     .clock          (clock      ),
+-    .rs1_data       (RS1_data   ),
+-    .rs2_data       (RS2_data   ),
+-    .imm_data       (imm_data        ),
+-    .pc_data        (pc_data       ),
+-    .alu_src1       (alu_src1   ),
+-    .alu_src2       (alu_src2   ),
+-    .branch         (branch     ),   
+-    .J_type_1       (J_type_1   ),
++    .opdata1        (opdata1   ),
++    .opdata2        (opdata2   ),
++    .branch         (branch     ), 
+     .u_alu_type     (u_alu_type ),
+-    //.mul_high       (mul_high   ),
+-    .U_type_1       (U_type_1   ),
+     .alu_crtl       (alu_op      ),
+     .alu_out        (alu_out    ),
+     .zero           (zero       )
+@@ -176,20 +200,20 @@ begin
+     //EXU_IFU_zero              <=        1'b0;
+     EXU_LSU_alu_out           <=        32'b0;
+     EXU_LSU_rd                <=        5'b0;
+-    // EXU_LSU_ren               <=        1'b0;
+-    // EXU_LSU_wen               <=        1'b0;
+-    // //EXU_LSU_reg               <=        1'b0;
+-    // EXU_LSU_ebreak               <=        1'b0;
+-    // //EXU_IFU_jal               <=        1'b0;
+-    // //EXU_IFU_jalr               <=        1'b0;
+-    // EXU_LSU_lw               <=        1'b0;
+-    // EXU_LSU_lh               <=        1'b0;
+-    // EXU_LSU_lb               <=        1'b0;
+-    // EXU_LSU_lbu               <=        1'b0;
+-    // EXU_LSU_lhu               <=        1'b0;
+-    // EXU_LSU_sw               <=        1'b0;
+-    // EXU_LSU_sb               <=        1'b0;
+-    // EXU_LSU_sh               <=        1'b0;
++    EXU_LSU_ren               <=        1'b0;
++    EXU_LSU_wen               <=        1'b0;
++    //EXU_LSU_reg               <=        1'b0;
++    EXU_LSU_ebreak               <=        1'b0;
++    //EXU_IFU_jal               <=        1'b0;
++    //EXU_IFU_jalr               <=        1'b0;
++    EXU_LSU_lw               <=        1'b0;
++    EXU_LSU_lh               <=        1'b0;
++    EXU_LSU_lb               <=        1'b0;
++    EXU_LSU_lbu               <=        1'b0;
++    EXU_LSU_lhu               <=        1'b0;
++    EXU_LSU_sw               <=        1'b0;
++    EXU_LSU_sb               <=        1'b0;
++    EXU_LSU_sh               <=        1'b0;
+     EXU_LSU_csr_data           <=        32'b0;
+     EXU_LSU_ecall               <=        1'b0;
+     EXU_LSU_mret               <=        1'b0;
+diff --git a/npc/vsrc/ysyx_24070003_idu.v b/npc/vsrc/ysyx_24070003_idu.v
+index 455da23..749ef6d 100755
+--- a/npc/vsrc/ysyx_24070003_idu.v
++++ b/npc/vsrc/ysyx_24070003_idu.v
+@@ -30,17 +30,16 @@ module ysyx_24070003_idu(
+     output reg IDU_EXU_reg_write     ,
+     output reg IDU_EXU_jal           ,
+     output reg IDU_EXU_jalr          ,
+-    output reg IDU_EXU_lw            ,
+-    output reg IDU_EXU_lh            ,
+-    output reg IDU_EXU_lb            ,
+-    output reg IDU_EXU_lbu           ,
+-    output reg IDU_EXU_lhu           ,
+-    output reg IDU_EXU_sw            ,
+-    output reg IDU_EXU_sb            ,
+-    output reg IDU_EXU_sh            ,
+-    output reg IDU_EXU_csw           ,
+-    output reg IDU_EXU_csc           ,
+-    output reg IDU_EXU_css           ,
++    // output reg IDU_EXU_lw            ,
++    // output reg IDU_EXU_lh            ,
++    // output reg IDU_EXU_lb            ,
++    // output reg IDU_EXU_lbu           ,
++    // output reg IDU_EXU_lhu           ,
++    // output reg IDU_EXU_sw            ,
++    // output reg IDU_EXU_sb            ,
++    // output reg IDU_EXU_sh            ,
++    output reg [7:0] IDU_EXU_RW_sign,
++    output reg [2:0]IDU_EXU_csr_op,
+     output reg IDU_EXU_ebreak        ,
+     output reg IDU_EXU_ecall         ,
+     output reg IDU_EXU_mret          ,
+@@ -168,7 +167,8 @@ wire sw   = (S_type && funct3 == 3'b010);
+ wire sb   = (S_type && funct3 == 3'b000);
+ wire sh   = (S_type && funct3 == 3'b001);
+ 
+-
++wire [7:0] rw_sign;
++assign rw_sign = {lh,lw,lb,lbu,lhu,sw,sb,sh};
+ // wire remu = (R_type && funct7 == 7'b0000001 && funct3 == 3'b111);
+ // wire mulh = (R_type && funct7 == 7'b0000001 && funct3 == 3'b001);
+ // wire mulhu= (R_type && funct7 == 7'b0000001 && funct3 == 3'b011);
+@@ -246,7 +246,7 @@ assign fence_i = (INSTR == 32'h0000100F) && IFU_IDU_valid && IDU_IFU_ready;
+ //wire pcsrc = (branch /*& zero*/) | jump | ecall | mret;
+ 
+ 
+-
++wire [2:0] csr_op = {csw, csc, css};
+ 
+ assign IDU_IFU_ready = EXU_IDU_ready  && (~stall);    // 设置IDU到IFU的就绪信号
+ 
+@@ -287,17 +287,16 @@ begin
+     IDU_EXU_reg_write           <=        1'b0;   
+     IDU_EXU_jal                 <=        1'b0;
+     IDU_EXU_jalr                <=        1'b0;
+-    IDU_EXU_lw                  <=        1'b0;  
+-    IDU_EXU_lh                  <=        1'b0;
+-    IDU_EXU_lb                  <=        1'b0;    
+-    IDU_EXU_lbu                 <=        1'b0;
+-    IDU_EXU_lhu                 <=        1'b0;     
+-    IDU_EXU_sw                  <=        1'b0;   
+-    IDU_EXU_sb                  <=        1'b0;
+-    IDU_EXU_sh                  <=        1'b0;
+-    IDU_EXU_csw                 <=        1'b0;  
+-    IDU_EXU_csc                 <=        1'b0;
+-    IDU_EXU_css                 <=        1'b0;    
++    IDU_EXU_RW_sign             <=        8'b0;
++    // IDU_EXU_lw                  <=        1'b0;  
++    // IDU_EXU_lh                  <=        1'b0;
++    // IDU_EXU_lb                  <=        1'b0;    
++    // IDU_EXU_lbu                 <=        1'b0;
++    // IDU_EXU_lhu                 <=        1'b0;     
++    // IDU_EXU_sw                  <=        1'b0;   
++    // IDU_EXU_sb                  <=        1'b0;
++    // IDU_EXU_sh                  <=        1'b0;
++    IDU_EXU_csr_op              <=        3'b0;  
+     IDU_EXU_ebreak              <=        1'b0;
+     IDU_EXU_ecall               <=        1'b0;     
+     IDU_EXU_mret                <=        1'b0;   
+@@ -341,17 +340,16 @@ begin
+     IDU_EXU_reg_write           <=        1'b0;   
+     IDU_EXU_jal                 <=        1'b0;
+     IDU_EXU_jalr                <=        1'b0;
+-    IDU_EXU_lw                  <=        1'b0;  
+-    IDU_EXU_lh                  <=        1'b0;
+-    IDU_EXU_lb                  <=        1'b0;    
+-    IDU_EXU_lbu                 <=        1'b0;
+-    IDU_EXU_lhu                 <=        1'b0;     
+-    IDU_EXU_sw                  <=        1'b0;   
+-    IDU_EXU_sb                  <=        1'b0;
+-    IDU_EXU_sh                  <=        1'b0;
+-    IDU_EXU_csw                 <=        1'b0;  
+-    IDU_EXU_csc                 <=        1'b0;
+-    IDU_EXU_css                 <=        1'b0;    
++    // IDU_EXU_lw                  <=        1'b0;  
++    // IDU_EXU_lh                  <=        1'b0;
++    // IDU_EXU_lb                  <=        1'b0;    
++    // IDU_EXU_lbu                 <=        1'b0;
++    // IDU_EXU_lhu                 <=        1'b0;     
++    // IDU_EXU_sw                  <=        1'b0;   
++    // IDU_EXU_sb                  <=        1'b0;
++    // IDU_EXU_sh                  <=        1'b0;
++    IDU_EXU_RW_sign             <=        8'b0;
++    IDU_EXU_csr_op              <=        3'b0;     
+     IDU_EXU_ebreak              <=        1'b0;
+     IDU_EXU_ecall               <=        1'b0;     
+     IDU_EXU_mret                <=        1'b0;   
+@@ -394,17 +392,16 @@ begin
+     IDU_EXU_reg_write           <=        reg_write    ;   
+     IDU_EXU_jal                 <=        jal          ;
+     IDU_EXU_jalr                <=        jalr   ;
+-    IDU_EXU_lw                  <=        lw     ;  
+-    IDU_EXU_lh                  <=        lh     ;
+-    IDU_EXU_lb                  <=        lb     ;    
+-    IDU_EXU_lbu                 <=        lbu    ;
+-    IDU_EXU_lhu                 <=        lhu    ;     
+-    IDU_EXU_sw                  <=        sw     ;   
+-    IDU_EXU_sb                  <=        sb     ;
+-    IDU_EXU_sh                  <=        sh     ;
+-    IDU_EXU_csw                 <=        csw       ;  
+-    IDU_EXU_csc                 <=        csc       ;
+-    IDU_EXU_css                 <=        css       ;    
++    IDU_EXU_RW_sign             <=        rw_sign;
++    // IDU_EXU_lw                  <=        lw     ;  
++    // IDU_EXU_lh                  <=        lh     ;
++    // IDU_EXU_lb                  <=        lb     ;    
++    // IDU_EXU_lbu                 <=        lbu    ;
++    // IDU_EXU_lhu                 <=        lhu    ;     
++    // IDU_EXU_sw                  <=        sw     ;   
++    // IDU_EXU_sb                  <=        sb     ;
++    // IDU_EXU_sh                  <=        sh     ;
++    IDU_EXU_csr_op              <=        csr_op;     
+     IDU_EXU_ebreak              <=        ebreak    ;
+     IDU_EXU_ecall               <=        ecall     ;     
+     IDU_EXU_mret                <=        mret      ;   
+@@ -442,17 +439,16 @@ begin
+     IDU_EXU_reg_write           <=  IDU_EXU_reg_write    ;
+     IDU_EXU_jal                 <=  IDU_EXU_jal         ;
+     IDU_EXU_jalr                <=  IDU_EXU_jalr        ;
+-    IDU_EXU_lw                  <=  IDU_EXU_lw          ;
+-    IDU_EXU_lh                  <=  IDU_EXU_lh          ;
+-    IDU_EXU_lb                  <=  IDU_EXU_lb          ;
+-    IDU_EXU_lbu                 <=  IDU_EXU_lbu         ;
+-    IDU_EXU_lhu                 <=  IDU_EXU_lhu         ;
+-    IDU_EXU_sw                  <=  IDU_EXU_sw          ;
+-    IDU_EXU_sb                  <=  IDU_EXU_sb          ;
+-    IDU_EXU_sh                  <=  IDU_EXU_sh        ;  
+-    IDU_EXU_csw                 <=  IDU_EXU_csw       ;  
+-    IDU_EXU_csc                 <=  IDU_EXU_csc       ;  
+-    IDU_EXU_css                 <=  IDU_EXU_css       ;  
++    IDU_EXU_RW_sign             <=  IDU_EXU_RW_sign;
++    // IDU_EXU_lw                  <=  IDU_EXU_lw          ;
++    // IDU_EXU_lh                  <=  IDU_EXU_lh          ;
++    // IDU_EXU_lb                  <=  IDU_EXU_lb          ;
++    // IDU_EXU_lbu                 <=  IDU_EXU_lbu         ;
++    // IDU_EXU_lhu                 <=  IDU_EXU_lhu         ;
++    // IDU_EXU_sw                  <=  IDU_EXU_sw          ;
++    // IDU_EXU_sb                  <=  IDU_EXU_sb          ;
++    // IDU_EXU_sh                  <=  IDU_EXU_sh        ;  
++    IDU_EXU_csr_op              <=        IDU_EXU_csr_op;  
+     IDU_EXU_ebreak              <=  IDU_EXU_ebreak    ;  
+     IDU_EXU_ecall               <=  IDU_EXU_ecall     ;  
+     IDU_EXU_mret                <=  IDU_EXU_mret      ;  
+diff --git a/npc/vsrc/ysyx_24070003_lsu.v b/npc/vsrc/ysyx_24070003_lsu.v
+index 58ce089..34da79b 100755
+--- a/npc/vsrc/ysyx_24070003_lsu.v
++++ b/npc/vsrc/ysyx_24070003_lsu.v
+@@ -10,14 +10,15 @@ module ysyx_24070003_lsu(
+     output           LSU_EXU_ready,
+     output     reg      LSU_WBU_valid,
+     input           LSU_WBU_ready,
+-    input           EXU_LSU_lw,
+-    input           EXU_LSU_lh,
+-    input           EXU_LSU_lb,
+-    input           EXU_LSU_lbu,
+-    input           EXU_LSU_lhu,
+-    input           EXU_LSU_sw,
+-    input           EXU_LSU_sb,
+-    input           EXU_LSU_sh,
++    input       [7:0] EXU_LSU_RW_sign,
++    // input           EXU_LSU_lw,
++    // input           EXU_LSU_lh,
++    // input           EXU_LSU_lb,
++    // input           EXU_LSU_lbu,
++    // input           EXU_LSU_lhu,
++    // input           EXU_LSU_sw,
++    // input           EXU_LSU_sb,
++    // input           EXU_LSU_sh,
+     input      [31:0] EXU_LSU_PC,
+     input      [31:0] EXU_LSU_dnpc,
+     input      [31:0] EXU_LSU_csr_data,
+@@ -101,7 +102,8 @@ assign LSU_IDU_REG_ADDR = EXU_LSU_rd;
+ assign LSU_IDU_REG_WEN = EXU_LSU_reg && LSU_EXU_ready && EXU_LSU_valid;
+ //assign LSU_IDU_REN   = EXU_LSU_ren && LSU_EXU_ready && EXU_LSU_valid;
+ assign LSU_forward_data = LSU_WBU_DATA;
+-
++wire EXU_LSU_lh,EXU_LSU_lw,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh;
++assign {EXU_LSU_lh,EXU_LSU_lw,EXU_LSU_lb,EXU_LSU_lbu,EXU_LSU_lhu,EXU_LSU_sw,EXU_LSU_sb,EXU_LSU_sh} = EXU_LSU_RW_sign;
+ parameter  IDLE = 0,
+             START = 1,
+             READ_START = 2,
+@@ -122,7 +124,6 @@ reg [2:0] state;
+     wire [3:0] lsu_wstrb;
+     wire [31:0] lsu_wdata;
+     wire [31:0] lsu_rdata;
+-    wire [31:0] lsu_rdata_;
+     wire [2:0] lsu_arsize;
+     reg skip;
+     wire skip1 = (((EXU_LSU_result >= 32'h10000000) && (EXU_LSU_result < 32'h30000000)) && (EXU_LSU_ren || EXU_LSU_wen)) ? 1'b1 : 1'b0;
+diff --git a/yosys-sta/Makefile b/yosys-sta/Makefile
+index c898149..22f69e7 100644
+--- a/yosys-sta/Makefile
++++ b/yosys-sta/Makefile
+@@ -2,7 +2,7 @@ PROJ_PATH = $(shell pwd)
+ SHELL := /bin/bash
+ 
+ O ?= $(PROJ_PATH)/result
+-DESIGN ?= ysyx_24070003_alu
++DESIGN ?= ysyx_24070003
+ SDC_FILE ?= $(PROJ_PATH)/scripts/default.sdc
+ #RTL_FILES ?= $(shell find $(PROJ_PATH)/example -name "*.v")
+ RTL_FILES ?= $(shell find $(NPC_HOME)/vsrc -name "*.v")
+-- 
+2.34.1
+
