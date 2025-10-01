@@ -1904,6 +1904,7 @@ begin
 //     IDU_EXU_lsu_raw_rs1           <=        1'b0;
 //     IDU_EXU_lsu_raw_rs2           <=        1'b0;
 //     end
+
     else if(IFU_IDU_valid && IDU_IFU_ready)begin
         // if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
         // else if(J_type) begin Jump_type_count <= Jump_type_count + 1'b1; end
