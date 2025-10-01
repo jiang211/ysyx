@@ -1,7 +1,7 @@
 From 3e6a60dc3eff5a8afdad3213588fe61f2545ac68 Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Tue, 12 Aug 2025 18:35:32 +0800
-Subject: [PATCH 10/28] "Before B3"
+Subject: [PATCH 10/30] "Before B3"
 
 ---
  abstract-machine/am/src/riscv/ysyxSoC/gpu.c   |  59 ++++++++

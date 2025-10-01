@@ -1,7 +1,7 @@
 From fc6186dbbd9367f7fbadeed84c9ddb2173939aaf Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Wed, 8 Jan 2025 19:15:14 +0800
-Subject: [PATCH 04/28] NJU-ProjectN/nanos-lite ics2021 initialized
+Subject: [PATCH 04/30] NJU-ProjectN/nanos-lite ics2021 initialized
 
 NJU-ProjectN/nanos-lite 2a141760e31be246a7316942293a97873925bc2f Makefile: use header files in newlib-navy
 ---

@@ -1,7 +1,7 @@
 From 9ac0fc1ae86493e900c8b9ee4cd1dd79e78ade9b Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Sun, 17 Aug 2025 11:56:02 +0800
-Subject: [PATCH 15/28] "icache with brust"
+Subject: [PATCH 15/30] "icache with brust"
 
 ---
  nemu/src/cpu/cpu-exec.c                       |  28 +--

@@ -1,7 +1,7 @@
 From 3c01b0194ca2c39303e97687effcf400a0084045 Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Fri, 15 Aug 2025 11:03:17 +0800
-Subject: [PATCH 12/28] "icacheing"
+Subject: [PATCH 12/30] "icacheing"
 
 ---
  npc/Makefile                     |   9 ++-

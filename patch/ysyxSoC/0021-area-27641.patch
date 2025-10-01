@@ -1,7 +1,7 @@
 From 1bfe5801e3632ce771a7c6d626a3e98ec2f1f845 Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Wed, 3 Sep 2025 22:08:06 +0800
-Subject: [PATCH 21/28] "area : 27641"
+Subject: [PATCH 21/30] "area : 27641"
 
 ---
  Makefile                          |   2 +-

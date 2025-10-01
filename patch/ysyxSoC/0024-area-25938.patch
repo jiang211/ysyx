@@ -1,7 +1,7 @@
 From 9e01758337176a82bf17d268ec4fade637e46256 Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Fri, 5 Sep 2025 20:51:54 +0800
-Subject: [PATCH 24/28] "area:25938"
+Subject: [PATCH 24/30] "area:25938"
 
 ---
  npc/vsrc/ysyx_24070003.v          |  38 +--

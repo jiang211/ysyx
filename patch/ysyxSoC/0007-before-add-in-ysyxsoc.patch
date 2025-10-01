@@ -1,7 +1,7 @@
 From 7890b1ed479b83e07f843427b3ece0901ee6bbfc Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Thu, 31 Jul 2025 09:11:17 +0800
-Subject: [PATCH 07/28] "before add in ysyxsoc"
+Subject: [PATCH 07/30] "before add in ysyxsoc"
 
 ---
  abstract-machine/am/src/riscv/npc/timer.c     |   2 +-

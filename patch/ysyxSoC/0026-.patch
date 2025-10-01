@@ -1,7 +1,7 @@
 From 5d652014f42bca74a900d7a28d493b8fd7824d65 Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Fri, 5 Sep 2025 20:59:35 +0800
-Subject: [PATCH 26/28] '
+Subject: [PATCH 26/30] '
 
 ---
  npc/vsrc/ysyx_24070003.v              |  8 +--

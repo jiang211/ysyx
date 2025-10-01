@@ -183,7 +183,7 @@ gdb : $(BIN)
 
 run: $(BIN)
 	@echo "YSYXSOC = $(YSYXSOC)"
-	$(call git_commit, "run npc") # DO NOT REMOVE THIS LINE!!!
+	$(call git_commit, "RTL simulation") # DO NOT REMOVE THIS LINE!!!
 	@$(BIN) $(NPC_FLAGS) 2>&1 | tee $(SIM_LOG)
 	
 

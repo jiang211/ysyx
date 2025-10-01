@@ -1,7 +1,7 @@
 From bb89d411f0c17c8393f441308af8ac81a01f4f7e Mon Sep 17 00:00:00 2001
 From: 221220000-Zhang San <zhangsan@foo.com>
 Date: Fri, 12 Sep 2025 00:00:16 +0800
-Subject: [PATCH 27/28] "1"
+Subject: [PATCH 27/30] "1"
 
 ---
  abstract-machine/am/src/riscv/npc/cte.c       |    1 +
