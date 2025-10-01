@@ -21,10 +21,7 @@ extern char _pmem_start;
 #define PMEM_END  ((uintptr_t)&_pmem_start + PMEM_SIZE)
 
 Area heap = RANGE(&_heap_start, &_psram_end);
-#ifndef MAINARGS
-#define MAINARGS ""
-#endif
-static const char mainargs[] = MAINARGS;
+static const char mainargs[MAINARGS_MAX_LEN] = MAINARGS_PLACEHOLDER; // defined in CFLAGS
 
 void init_uart(uint32_t rate){
   *(volatile uint8_t *)(UART_BASE + UART_LC) = *(volatile uint8_t  *)(UART_BASE + UART_LC) | 0b10000000;    // 1停止位，无校验位，禁止中断，开始写divisor
