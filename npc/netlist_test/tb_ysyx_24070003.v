@@ -10,8 +10,8 @@ always #5 clock = !clock;
 
 reg reset = 0;
 initial begin
-     # 100 reset = 1;
-     # 10 reset = 0;
+     # 10 reset = 1;
+     # 155 reset = 0;
      
 end
 
@@ -163,21 +163,16 @@ ysyx_24070003 dut (
     .io_slave_rdata    (io_slave_rdata),
     .io_slave_rlast    (io_slave_rlast),
     .io_slave_rid      (io_slave_rid)
+    
 );
 always @(posedge clock) begin
     if (dut.ebreak) begin
-        if(dut.rf1.rf[10] == 1'b0) begin
-        $display("\n=== EBREAK GOOD ===");
-        end else begin
-        $display("\n=== EBREAK BAD ===");
+       
+        $display("\n=== EBREAK ===");
+
         
-        end
         $stop;   // 立即停仿真
     end
-    // else if(ifu_count >= 'd100000)begin
-    //     $display("\n=== TIME OUT ===");
-    //     $stop; 
-    // end
 end 
 //----------------------------------------------------------------------
 //  外部 ram

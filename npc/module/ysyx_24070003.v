@@ -1,5 +1,19 @@
 module ysyx_24070003(
-    
+    /*
+    input clk,
+    input rstn,
+    //input [31:0] instr1,
+    output [31:0] instr,
+    //output reg[31:0] pc,
+    output [31:0] dnpc,
+    output [31:0] pc,
+    output ebreak,
+    output reg difftest_valid
+    */
+    `ifdef __ICARUS__
+    output  wire        ebreak ,
+    output  wire [31:0]  a0,
+    `endif
     input   wire        clock,
     input   wire        reset,
     input   wire        io_interrupt,
@@ -60,11 +74,11 @@ module ysyx_24070003(
     output  wire        [1:0] io_slave_rresp,   
     output  wire            [31:0] io_slave_rdata ,
     output  wire      io_slave_rlast ,
-    output  wire        [3:0] io_slave_rid
+    output  wire        [3:0] io_slave_rid   
 );
- wire         ebreak;
+
 reg [63:0]                           lsu_count                      ;
-//reg [63:0]                           ifu_count                      ;
+reg [63:0]                           ifu_count                      ;
 reg [63:0]                           calcu_type_count               ;
 reg [63:0]                           Jump_type_count                ;
 reg [63:0]                           BJump_type_count               ;
@@ -150,7 +164,7 @@ wire [1:0]                                alu_src1                       ;
 wire [1:0]                                alu_src2                       ;
 wire                                 U_type_1                       ;  
 wire                                 J_type_1                       ;
-
+wire                                 ebreak                         ;
 reg                                  difftest_valid                 ;
 wire                                 IFU_IDU_valid                  ;
 wire                                 IDU_EXU_valid                  ;
@@ -165,12 +179,12 @@ wire                                 EXU_LSU_valid                  ;
 wire                                 IFU_AXI4_arvalid               ;
 // wire                                 IFU_AXI4_arready               ;
 wire                                 IFU_AXI4_rvalid                ;
-wire                                 IFU_AXI4_rready                ;
+(* keep *)wire                                 IFU_AXI4_rready                ;
 wire                                 ICACHE_IFU_stall               ;
 wire                                 flush                          ;
 wire                                 BTB_pred_valid                 ;
 wire                                 ICACHE_AXI4_arvalid            ;
-wire                                 ICACHE_AXI4_arready            ;
+(* keep *)wire                                 ICACHE_AXI4_arready            ;
 wire                                 ICACHE_AXI4_rvalid             ;
 wire                                 ICACHE_AXI4_rready             ;
 wire                                 LSU_IFU_stall                  ;
@@ -396,20 +410,20 @@ ysyx_24070003_ifu my_ifu(
    // .inst_addr_o                  (inst_addr_o        ),
     .IFU_IDU_PC                     (IFU_IDU_PC         ),
     .cur_pc                         (ifu_current_pc     ),
-    //.BTB_pred_pc                    (BTB_pred_pc        ),
-    //.BTB_pred_valid                 (BTB_pred_valid     ),
+    .BTB_pred_pc                    (BTB_pred_pc        ),
+    .BTB_pred_valid                 (BTB_pred_valid     ),
     .IFU_IDU_INSTR                  (instr              ),
     //.instr_in                     (instr_in           ),
-    //.BTB_pre_DNPC                   (BTB_pre_DNPC       ),
+    .BTB_pre_DNPC                   (BTB_pre_DNPC       ),
 
     .ifu_count                      (ifu_count          ),
 
-    .IFU_ICACHE_araddr                (IFU_AXI4_araddr    ),
-    .IFU_ICACHE_arvalid               (IFU_AXI4_arvalid   ),
+    .IFU_AXI4_araddr                (IFU_AXI4_araddr    ),
+    .IFU_AXI4_arvalid               (IFU_AXI4_arvalid   ),
     //.IFU_AXI4_arready               (IFU_AXI4_arready   ),
-    .ICACHE_IFU_rdata                 (IFU_AXI4_rdata     ),
+    .IFU_AXI4_rdata                 (IFU_AXI4_rdata     ),
     .ICACHE_IFU_rvalid              (IFU_AXI4_rvalid    ),
-    .IFU_ICACHE_rready                (IFU_AXI4_rready    ),
+    .IFU_AXI4_rready                (IFU_AXI4_rready    ),
     .ICACHE_IFU_raddr               (ICACHE_IFU_raddr   ),
     .ICACHE_IFU_stall               (ICACHE_IFU_stall   )
     
@@ -421,20 +435,20 @@ ysyx_24070003_icache  my_icache(
     .reset                          (reset              ),
     .fence_i                        (fence_i            ),
     .flush                          (flush              ),
-    .IFU_ICACHE_araddr                (IFU_AXI4_araddr    ),
-    .IFU_ICACHE_arvalid               (IFU_AXI4_arvalid   ),
+    .IFU_AXI4_araddr                (IFU_AXI4_araddr    ),
+    .IFU_AXI4_arvalid               (IFU_AXI4_arvalid   ),
    // .IFU_AXI4_rdata               (IFU_AXI4_rdata     ),
     //.IFU_AXI4_rvalid              (IFU_AXI4_rvalid    ),
-    .IFU_ICACHE_rready                (IFU_AXI4_rready    ),
+    .IFU_AXI4_rready                (IFU_AXI4_rready    ),
 
-    //.BTB_pre_DNPC                   (BTB_pre_DNPC       ),
+    .BTB_pre_DNPC                   (BTB_pre_DNPC       ),
     .IDU_IFU_STALL                  (stall              ),
     .LSU_IFU_stall                  (LSU_IFU_stall      ),
 
 
     .ICACHE_IFU_rdata               (IFU_AXI4_rdata     ),
     .ICACHE_IFU_raddr               (ICACHE_IFU_raddr   ),
-    //.ICACHE_IFU_pre_dnpc            (ICACHE_IFU_pre_dnpc),
+    .ICACHE_IFU_pre_dnpc            (ICACHE_IFU_pre_dnpc),
     .ICACHE_IFU_valid               (IFU_AXI4_rvalid    ),
     .ICACHE_IFU_stall               (ICACHE_IFU_stall   ),
 
@@ -455,17 +469,17 @@ ysyx_24070003_icache  my_icache(
 );
 
 
-// ysyx_24070003_btb my_btb(
-//     .clock                          (clock              ),
-//     .reset                          (reset              ),
-//     .cur_pc                         (ifu_current_pc     ),
-//     .update_pc                      (IDU_EXU_PC         ),
-//     .target_pc                      (EXU_BTB_PC         ),
-//     .update_valid                   (EXU_BTB_updata_valid),
+ysyx_24070003_btb my_btb(
+    .clock                          (clock              ),
+    .reset                          (reset              ),
+    .cur_pc                         (ifu_current_pc     ),
+    .update_pc                      (IDU_EXU_PC         ),
+    .target_pc                      (EXU_BTB_PC         ),
+    .update_valid                   (EXU_BTB_updata_valid),
 
-//     .pred_pc                        (BTB_pred_pc        ),
-//     .pred_valid                     (BTB_pred_valid     )
-// );
+    .pred_pc                        (BTB_pred_pc        ),
+    .pred_valid                     (BTB_pred_valid     )
+);
 
 
 ysyx_24070003_axi_arbiter my_axi_arbiter(
@@ -555,7 +569,7 @@ ysyx_24070003_idu my_idu(
     .rst_n                          (reset              ),
     .flush                          (flush              ),
     .fence_i                        (fence_i            ),
-    //.IFU_IDU_pre_dnpc               (ICACHE_IFU_pre_dnpc),
+    .IFU_IDU_pre_dnpc               (ICACHE_IFU_pre_dnpc),
    // .IFU_IDU_STALL                (IFU_IDU_STALL      ),
     .IFU_IDU_valid                  (IFU_IDU_valid      ),
     .IDU_IFU_ready                  (IDU_IFU_ready      ),
@@ -600,7 +614,7 @@ ysyx_24070003_idu my_idu(
     .IDU_EXU_B_type                 (IDU_EXU_B_type     ),
     //.IDU_EXU_STALL                (IDU_EXU_STALL      ),
     .IDU_EXU_PC                     (IDU_EXU_PC         ),
-    //.IDU_EXU_pre_dnpc               (IDU_EXU_pre_dnpc   ),
+    .IDU_EXU_pre_dnpc               (IDU_EXU_pre_dnpc   ),
 
     .IDU_EXU_exu_raw_rs1            (IDU_EXU_exu_raw_rs1),
     .IDU_EXU_exu_raw_rs2            (IDU_EXU_exu_raw_rs2),
@@ -639,7 +653,7 @@ ysyx_24070003_exu my_exu(
     .IDU_EXU_lsu_raw_rs1            (IDU_EXU_lsu_raw_rs1),
     .IDU_EXU_lsu_raw_rs2            (IDU_EXU_lsu_raw_rs2),
     .LSU_forward_data               (LSU_forward_data   ),
-    //.IDU_EXU_pre_dnpc               (IDU_EXU_pre_dnpc   ),
+    .IDU_EXU_pre_dnpc               (IDU_EXU_pre_dnpc   ),
     //.IDU_EXU_STALL                (IDU_EXU_STALL      ),
     .IDU_EXU_ebreak                 (IDU_EXU_ebreak     ),
     .IDU_EXU_csr_rst                (IDU_EXU_csr_rst    ),
@@ -714,9 +728,9 @@ ysyx_24070003_exu my_exu(
 
     .EXU_IDU_REG_ADDR               (EXU_IDU_REG_ADDR   )     ,
     .EXU_IDU_REG_WEN                (EXU_IDU_REG_WEN    ),
-    .EXU_IDU_REN                    (EXU_IDU_REN        )
-   // .EXU_BTB_PC                     (EXU_BTB_PC         ),
-    //.EXU_BTB_updata_valid           (EXU_BTB_updata_valid)
+    .EXU_IDU_REN                    (EXU_IDU_REN        ),
+    .EXU_BTB_PC                     (EXU_BTB_PC         ),
+    .EXU_BTB_updata_valid           (EXU_BTB_updata_valid)
 );
 
 assign LSU_RDATA = (LSU_AXI4_ARADDR >= 32'h02000000 && LSU_AXI4_ARADDR <= 32'h02000004) ? AXI4_CLINT_RDATA : LSU_AXI4_RDATA;
@@ -848,10 +862,13 @@ ysyx_24070003_wbu my_wbu(
     .WBU_TOP_skip                   (WBU_TOP_skip       )
 );
     
-
+wire [31:0] a0;
 ysyx_24070003_RegisterFile #(.ADDR_WIDTH(4), .DATA_WIDTH(32)) rf1(
         .clock                        (clock              ),
         .reset                        (reset              ),
+    `ifdef __ICARUS__
+        .a0                          (a0              ),
+    `endif
         .wdata                      (wbu_data           ),
         .waddr                      (wbu_addr[3:0]      ),
         .wen                        (WBU_wen            ),
@@ -891,16 +908,11 @@ always @(posedge clock ) begin
     end
 end
 
-// always @(posedge clock ) begin
-//     if(reset) begin
-//         total_count <= 0;
-//     end else begin
-//         total_count <= total_count + 1;
-//     end
-// end
 always @(posedge clock ) begin
-    if(EXU_LSU_ebreak) begin
-        $display("ifu_count = %010d",ifu_count);
+    if(reset) begin
+        total_count <= 0;
+    end else begin
+        total_count <= total_count + 1;
     end
 end
 // always @(posedge clock ) begin
@@ -930,12 +942,12 @@ end
 // reg [31:0] dpi_monitor_data[0:5];
 // // 初始化时绑定指针
 // initial set_monitor_ptr(dpi_monitor_data);
-// assign dpi_monitor_data[0] = {31'b0,difftest_valid};
-// assign dpi_monitor_data[1] = TO_top_pc;
-// assign dpi_monitor_data[2] = TO_top_dnpc;
-// assign dpi_monitor_data[3] = instr;
-// assign dpi_monitor_data[4] = {31'b0,ebreak};
-// assign dpi_monitor_data[5] = {31'b0,ref_skip};
+assign dpi_monitor_data[0] = {31'b0,difftest_valid};
+assign dpi_monitor_data[1] = TO_top_pc;
+assign dpi_monitor_data[2] = TO_top_dnpc;
+assign dpi_monitor_data[3] = instr;
+assign dpi_monitor_data[4] = {31'b0,ebreak};
+assign dpi_monitor_data[5] = {31'b0,ref_skip};
 
 
 
@@ -1116,8 +1128,8 @@ module ysyx_24070003_ifu(
     input  IDU_IFU_ready, //IDU是否准备好接收IFU的指令
     input [31:0]EXU_IFU_pc,
     input       EXU_IFU_flush,
-    //input [31:0] BTB_pred_pc,
-    //input       BTB_pred_valid,
+    input [31:0] BTB_pred_pc,
+    input       BTB_pred_valid,
     input [1:0] resp,
     //output [31:0] inst_addr_o,
     output [31:0]IFU_IDU_INSTR,
@@ -1130,27 +1142,27 @@ module ysyx_24070003_ifu(
 
     input  fence_i,
     input  stall,
-    //output [31:0]     BTB_pre_DNPC,
+    output [31:0]     BTB_pre_DNPC,
 
     output reg [63:0] ifu_count,
 
     // AXI-Lite4 Interface
-    output reg [31:0] IFU_ICACHE_araddr,
-    output            IFU_ICACHE_arvalid,
+    output reg [31:0] IFU_AXI4_araddr,
+    output            IFU_AXI4_arvalid,
     // input             IFU_AXI4_arready,
-    input  [31:0]     ICACHE_IFU_rdata,
+    input  [31:0]     IFU_AXI4_rdata,
     input             ICACHE_IFU_rvalid,
-    output reg        IFU_ICACHE_rready,
+    output reg        IFU_AXI4_rready,
     input  [31:0]     ICACHE_IFU_raddr,
     input             ICACHE_IFU_stall
     
 );
-reg [31:0] pc;
+(* keep *)reg [31:0] pc;
 
 
 
 assign cur_pc = pc;
-//assign BTB_pre_DNPC = BTB_pred_pc;
+assign BTB_pre_DNPC = BTB_pred_pc;
 always@(posedge clock)
 begin 
    if(rstn | (resp != 2'b00))begin
@@ -1166,27 +1178,29 @@ begin
     else if(stall) begin
     pc <= pc;
     end
-    //else if(BTB_pred_valid && IDU_IFU_ready && (~ICACHE_IFU_stall)) begin
-    //pc <= BTB_pred_pc;
-    //end
+    else if(BTB_pred_valid && IDU_IFU_ready && (~ICACHE_IFU_stall)) begin
+    pc <= BTB_pred_pc;
+    end
     else if(IDU_IFU_ready && (~ICACHE_IFU_stall))begin
     pc <= pc + 32'h4;
     end
+    
 end
+
 
 
 assign IFU_IDU_valid = ICACHE_IFU_rvalid;
 
-assign IFU_ICACHE_araddr = pc;
+assign IFU_AXI4_araddr = pc;
 
-assign IFU_ICACHE_arvalid = (~stall && !EXU_IFU_flush && !fence_i);
+assign IFU_AXI4_arvalid = (~stall && !EXU_IFU_flush && !fence_i);
 
 
-assign IFU_IDU_INSTR = ICACHE_IFU_rdata;
+assign IFU_IDU_INSTR = IFU_AXI4_rdata;
 assign IFU_IDU_PC   = ICACHE_IFU_raddr;   // 早就发出的地址
 
 
-assign IFU_ICACHE_rready = IDU_IFU_ready;
+assign IFU_AXI4_rready = IDU_IFU_ready;
 
 always @(posedge clock) begin
     if (rstn) begin
@@ -1207,23 +1221,22 @@ sram_inst inst_sram(
 );*/
 endmodule
 
-
 module ysyx_24070003_icache(
     input clock,
     input reset,
     input fence_i,
     input flush,
-    input  [31:0]  IFU_ICACHE_araddr,
-    input          IFU_ICACHE_arvalid,
+    input  [31:0]  IFU_AXI4_araddr,
+    input          IFU_AXI4_arvalid,
     // output reg        IFU_AXI4_rvalid,
-    input             IFU_ICACHE_rready,
-    //input  [31:0]     BTB_pre_DNPC,
+    input             IFU_AXI4_rready,
+    input  [31:0]     BTB_pre_DNPC,
     input             IDU_IFU_STALL,
     input             LSU_IFU_stall,
 
     output    [31:0]  ICACHE_IFU_rdata,
     output    [31:0]  ICACHE_IFU_raddr,
-    //output    [31:0]  ICACHE_IFU_pre_dnpc,
+    output    [31:0]  ICACHE_IFU_pre_dnpc,
     output            ICACHE_IFU_valid,
 
     // output reg [63:0] ICACHE_hit_count,
@@ -1234,14 +1247,14 @@ module ysyx_24070003_icache(
     // output reg [63:0] ifu_during_count,
 
     output reg [31:0] ICACHE_AXI4_araddr,
-    output            ICACHE_AXI4_arvalid,
+    output reg        ICACHE_AXI4_arvalid,
     input             ICACHE_AXI4_arready,
     input  [31:0]     ICACHE_AXI4_rdata,
     input             ICACHE_AXI4_rvalid,
     input             ICACHE_AXI4_rlast,
     output            ICACHE_IFU_stall,
     output            ICACHE_AXI4_rready,
-    output     [7:0]  ICACHE_AXI4_arlen
+    output reg [7:0]  ICACHE_AXI4_arlen
     
 );
 
@@ -1258,11 +1271,9 @@ reg [SDRAM_NUM_BLOCKS-1:0]valid ;                // 有效位
 
               // 有效位
 parameter  IDLE = 0,
-            FLUSH_WAIT = 1,
-            AXI_WAIT = 2,
-            AXI_READ = 3,
-            UPDATED_CACHE = 4;
-(* keep *)reg [2:0] state;
+            AXI_WAIT = 1,
+            AXI_READ = 2;
+reg [1:0] state;
 // typedef enum logic [2:0] {
 //     IDLE,        // 空闲状态
 //     AXI_WAIT,
@@ -1276,14 +1287,14 @@ reg [1:0] burst_count;
 integer i;
 
 //reg hit_reg1;
-reg [31:0]  pc_reg1;
+(* keep *)reg [31:0]  pc_reg1;
 reg reg1_valid;
-reg [31:0] reg1_pre_dnpc;
-wire hit;
-wire hit_reg1;
+(* keep *)reg [31:0] reg1_pre_dnpc;
+
+(* keep *)wire hit_reg1;
 
 
-reg [31:0] addr_reg3;
+(* keep *)reg [31:0] addr_reg3;
 reg [31:0] data_reg3;
 reg [31:0] per_pc_reg3;
 reg data_valid;
@@ -1292,45 +1303,84 @@ reg flush_r;
 
 
 
-wire [SDRAM_TAG_BITS-1:0] tag_reg1 = IFU_ICACHE_araddr[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
-wire [SDRAM_INDEX_BITS-1:0] index_reg1 = IFU_ICACHE_araddr[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
+wire [SDRAM_TAG_BITS-1:0] tag_reg1 = pc_reg1[31:SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS];
+wire [SDRAM_INDEX_BITS-1:0] index_reg1 = pc_reg1[SDRAM_OFFSET_BITS+SDRAM_INDEX_BITS-1:SDRAM_OFFSET_BITS];
 
 
 wire icache_stall = LSU_IFU_stall || IDU_IFU_STALL;
 
-assign hit = (valid[index_reg1] && (tags[index_reg1] == tag_reg1) && IFU_ICACHE_arvalid);
+assign hit_reg1 = (valid[index_reg1] && (tags[index_reg1] == tag_reg1));
+reg first_req;
+reg reset_r;
+(* keep *)wire negedeg_reset;
+always @(posedge clock) begin
+    reset_r <= reset;
+end
+assign negedeg_reset = reset_r & ~reset;
+always @(posedge clock) begin
+    if (reset | flush | flush_r)                    first_req <= 1'b1;
+    else if (reg1_valid && hit_reg1)
+                                  first_req <= 1'b0;  // 只要曾经命中过，就退出首次
+end
 
+// 更新条件
+wire allow_update;
+assign allow_update = (!icache_stall && IFU_AXI4_rready && !fence_i &&
+                      (state == IDLE) &&
+                      (first_req & (~reg1_valid) || hit_reg1)) | (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast & ~(flush | flush_r)); 
 
 always @(posedge clock) begin
-    if(!icache_stall && IFU_ICACHE_rready && hit && state == IDLE) begin
-            case (IFU_ICACHE_araddr[3:2])
+    if(reset) begin
+        pc_reg1 <= 0;
+        reg1_pre_dnpc <= 0;
+    end
+    else if(allow_update) begin
+        pc_reg1 <= IFU_AXI4_araddr;
+        reg1_pre_dnpc <= BTB_pre_DNPC;
+    end
+end
+
+always @(posedge clock) begin
+    if(reset) begin
+        reg1_valid  <= 0;
+    end
+    else if(flush) begin
+        reg1_valid <= 0;
+    end
+    else if(!icache_stall && IFU_AXI4_rready && !fence_i) begin
+        reg1_valid <= 1'b1;
+    end
+end
+
+always @(posedge clock) begin
+    if(!icache_stall && IFU_AXI4_rready && reg1_valid && hit_reg1 && state == IDLE) begin
+            case (pc_reg1[3:2])
                 2'b00: data_reg3 <= data[index_reg1][31:0];
                 2'b01: data_reg3 <= data[index_reg1][63:32];
                 2'b10: data_reg3 <= data[index_reg1][95:64];
                 2'b11: data_reg3 <= data[index_reg1][127:96];
             endcase
-            addr_reg3 <= IFU_ICACHE_araddr;
-            //per_pc_reg3 <= reg1_pre_dnpc;
+            addr_reg3 <= pc_reg1;
+            per_pc_reg3 <= reg1_pre_dnpc;
        
     end
     else if(!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)begin
-        case (IFU_ICACHE_araddr[3:2])
+        case (pc_reg1[3:2])
             2'b00: data_reg3 <= data[index_reg1][31:0];
             2'b01: data_reg3 <= data[index_reg1][63:32];
             2'b10: data_reg3 <= data[index_reg1][95:64];
             2'b11: data_reg3 <= ICACHE_AXI4_rdata;
         endcase
-        addr_reg3 <= IFU_ICACHE_araddr;
-        //per_pc_reg3 <= reg1_pre_dnpc;
+        addr_reg3 <= pc_reg1;
+        per_pc_reg3 <= reg1_pre_dnpc;
     end
 end
 
 assign ICACHE_IFU_rdata = data_reg3;
 assign ICACHE_IFU_raddr = addr_reg3;
-//assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
+assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
 assign ICACHE_IFU_valid = data_valid & (~flush);
 
-wire allow_update = (state == IDLE && !icache_stall && IFU_ICACHE_rready && hit) || (state == AXI_READ && ICACHE_AXI4_rlast);
 assign ICACHE_IFU_stall = ~allow_update;
 
 
@@ -1338,13 +1388,13 @@ always @(posedge clock) begin
     if(reset)begin
         data_valid <= 0;
     end
-    else if(flush || fence_i) begin
+    else if(flush || flush_r || fence_i) begin
         data_valid <= 0;
     end
-    else if((!icache_stall && state == IDLE && hit && (~flush)) || (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)) begin
+    else if((!icache_stall && state == IDLE && reg1_valid && hit_reg1 && (~flush)) || (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)) begin
         data_valid <= 1'b1;
     end
-    else if(ICACHE_IFU_valid && IFU_ICACHE_rready)begin
+    else if(ICACHE_IFU_valid && IFU_AXI4_rready)begin
         data_valid <= 1'b0;
     end
 end
@@ -1368,21 +1418,13 @@ always @(posedge clock) begin
     else begin
         case (state)
         IDLE: begin
-            if(IFU_ICACHE_arvalid && (!icache_stall) && IFU_ICACHE_rready) begin
-                if(hit)begin
+            if(reg1_valid && (!(LSU_IFU_stall || IDU_IFU_STALL)) && IFU_AXI4_rready) begin
+                if(hit_reg1)begin
                     state <= IDLE;
                 end
                 else if(!flush)begin
-                    state <= FLUSH_WAIT;
+                    state <= AXI_WAIT;
                 end
-            end
-        end
-        FLUSH_WAIT: begin //防止前面最后一下指令需要冲刷，然后进入状态机，白跑一个访存
-            if(flush) begin
-                state <= IDLE;
-            end
-            else if(!icache_stall)begin
-                state <= AXI_WAIT;
             end
         end
         AXI_WAIT: begin
@@ -1400,9 +1442,6 @@ always @(posedge clock) begin
             else begin
                 state <= AXI_READ;
             end
-        end
-        UPDATED_CACHE: begin
-            state <= IDLE;
         end
         default: begin
             state <= IDLE;
@@ -1505,14 +1544,23 @@ always @(posedge clock) begin
     end
 end
 
-(* keep *) reg app;
-assign ICACHE_AXI4_arvalid = (state == AXI_WAIT);
+always @(posedge clock) begin
+    if(reset) begin
+        ICACHE_AXI4_arvalid <= 0;
+    end
+    else if((ICACHE_AXI4_arready && ICACHE_AXI4_arvalid))begin
+        ICACHE_AXI4_arvalid <= 1'b0;
+    end
+    else if(state == IDLE && (!hit_reg1) && reg1_valid && (!flush) && IFU_AXI4_rready)begin
+        ICACHE_AXI4_arvalid <= 1'b1;
+    end
+end
 always @(posedge clock) begin
     if(reset)begin
-        ICACHE_AXI4_araddr <= 0;
+        ICACHE_AXI4_araddr <= 32'b0;
     end
-    else if(state == FLUSH_WAIT && (!flush) && (!icache_stall))begin
-        ICACHE_AXI4_araddr <= {IFU_ICACHE_araddr[31:4], 4'b0} ; 
+    else  if(state == IDLE && (!hit_reg1) && reg1_valid && (!flush) && IFU_AXI4_rready)begin
+        ICACHE_AXI4_araddr <= {pc_reg1[31:4], 4'b0} ; 
     end
     
 end
@@ -1521,13 +1569,101 @@ end
 
 endmodule
 
+module ysyx_24070003_btb(
+    input clock,
+    input reset,
+    input [31:0] cur_pc,
+    input [31:0] update_pc,
+    input [31:0] target_pc,
+    input        update_valid,
+
+    output [31:0] pred_pc,
+    output        pred_valid
+);
 
 
+localparam WAY_NUM = 2;
+localparam INDEX_WIDTH = 2;
+localparam ADDR_WIDTH = 32;
+localparam OFFSET_WITH = 2;
+localparam TAG_WIDTH = ADDR_WIDTH - OFFSET_WITH - INDEX_WIDTH;
+
+wire [INDEX_WIDTH-1:0] cur_index;
+wire [TAG_WIDTH-1:0] cur_tag;
+wire [INDEX_WIDTH-1:0] update_index;
+wire [TAG_WIDTH-1:0] update_tag;
+wire [WAY_NUM-1:0] hit;
+wire [WAY_NUM-1:0] update_hit;
+//wire cur_hit;
+wire upd_hit;
+
+reg [TAG_WIDTH-1:0] btb_tag [2 ** INDEX_WIDTH -1:0][WAY_NUM-1:0];     // 标签存储
+reg [29:0] btb_target [2 ** INDEX_WIDTH -1:0][WAY_NUM-1:0];  // 目标地址存储
+reg btb_valid [2 ** INDEX_WIDTH -1:0][WAY_NUM-1:0];          // 有效位
+
+reg [3:0] hit_valid;
+reg [3:0] hit_valid1;
+
+assign cur_index = cur_pc[INDEX_WIDTH+OFFSET_WITH-1:OFFSET_WITH];
+assign cur_tag = cur_pc[ADDR_WIDTH-1:INDEX_WIDTH+OFFSET_WITH];
+assign update_index = update_pc[INDEX_WIDTH+OFFSET_WITH-1:OFFSET_WITH];
+assign update_tag = update_pc[ADDR_WIDTH-1:INDEX_WIDTH+OFFSET_WITH];
+
+assign hit[0] = btb_valid[cur_index][0] && (btb_tag[cur_index][0] == cur_tag);
+assign hit[1] = btb_valid[cur_index][1] && (btb_tag[cur_index][1] == cur_tag);
+
+assign pred_valid = (hit_valid[cur_index]) ? hit[0] : (hit_valid1[update_index]) ? hit[1] : 0;
+
+assign update_hit[0] = ~btb_valid[update_index][0] ;
+assign update_hit[1] = ~btb_valid[update_index][1] ;
+
+
+
+assign pred_pc = (pred_valid) ? {btb_target[cur_index][hit[1]],2'b00} : cur_pc;
+
+reg update_way;
+always @(posedge clock) begin
+    if(reset)begin 
+        update_way <= 0;
+    end
+    else if(update_valid)begin
+        update_way <= ~update_way;
+    end
+end
+
+integer i,j;
+always @(posedge clock) begin
+    if(reset)begin
+        hit_valid <= 4'b0000;
+        hit_valid1 <= 4'b0000;
+    end
+    else if(update_valid)begin
+        if(update_hit[0]) begin
+            hit_valid[update_index] <= 1;
+            btb_tag[update_index][0] <= update_tag;
+            btb_target[update_index][0] <= target_pc[31:2];
+            btb_valid[update_index][0] <= 1;
+        end
+        else if(update_hit[1]) begin
+            hit_valid1[update_index] <= 1;
+            btb_tag[update_index][1] <= update_tag;
+            btb_target[update_index][1] <= target_pc[31:2];
+            btb_valid[update_index][1] <= 1;
+        end
+        else begin
+            btb_tag[update_index][update_way] <= update_tag;
+            btb_target[update_index][update_way] <= target_pc[31:2];
+            btb_valid[update_index][update_way] <= 1;
+        end
+    end
+end
+
+endmodule
 
 module ysyx_24070003_idu(
     input wire [31:0] INSTR,
     input wire [31:0] IFU_IDU_PC,
-    //input [31:0]IFU_IDU_pre_dnpc,
+    input [31:0]IFU_IDU_pre_dnpc,
     input       flush,
     //input wire EXU_IFU_flush,
     input clock,
@@ -1537,7 +1673,7 @@ module ysyx_24070003_idu(
     input               IFU_IDU_valid,          // 从IFU到IDU的有效信号
     output           IDU_IFU_ready,          // IDU到IFU的就绪信号
     input               EXU_IDU_ready,          // 从执行单元(EXU)到IDU的就绪信号
-    output              IDU_EXU_valid,          // IDU到EXU的有效信号
+    output reg          IDU_EXU_valid,          // IDU到EXU的有效信号
     //output reg[6:0] IDU_EXU_opcode,
     output reg[4:0] IDU_EXU_rd,
     output reg[4:0] IDU_EXU_rs1,
@@ -1576,7 +1712,7 @@ module ysyx_24070003_idu(
     output reg IDU_EXU_C_type        ,
     //output reg IDU_EXU_STALL         ,
     output reg [31:0] IDU_EXU_PC  ,
-    //output reg [31:0] IDU_EXU_pre_dnpc,
+    output reg [31:0] IDU_EXU_pre_dnpc,
 
     output reg IDU_EXU_exu_raw_rs1,
     output reg IDU_EXU_exu_raw_rs2,
@@ -1672,7 +1808,7 @@ wire J_type_1;
 wire [1:0] alu_op;
 wire I_type_2 = (opcode == 7'b1100111);
 assign J_type_1 = (opcode == 7'b1101111) || I_type_2; 
-
+assign C_type = (opcode == 7'b1110011);
 
 wire I_type_3 = (opcode == 7'b0000011);
 wire I_type_4 = (opcode == 7'b1010011);
@@ -1839,7 +1975,7 @@ begin
 
     //IDU_EXU_STALL               <=        1'b0;
     IDU_EXU_PC                  <=        32'b0;
-    //IDU_EXU_pre_dnpc                <=        32'b0;
+    IDU_EXU_pre_dnpc                <=        32'b0;
     // calcu_type_count               <=        64'b0;
     // Jump_type_count               <=        64'b0;
     // BJump_type_count               <=        64'b0;
@@ -1847,7 +1983,53 @@ begin
     // LOAD_type_count               <=        64'b0;
     // STORE_type_count               <=        64'b0;
     end
+    else if(stall || flush)begin
+   // IDU_EXU_opcode        <=        opcode   ;     
+    IDU_EXU_rd            <=        5'b0;
+    IDU_EXU_rs1           <=        5'b0;  
+    IDU_EXU_rs2           <=        5'b0;
+    IDU_EXU_csr_rst       <=        3'b0;    
+    IDU_EXU_imm           <=        32'b0;
 
+    IDU_EXU_alu_op              <=        4'b0;     
+    IDU_EXU_u_alu_type          <=        1'b0;   
+    //IDU_EXU_mul_high            <=        1'b0;
+    IDU_EXU_alu_src1            <=       2'b0;
+    IDU_EXU_alu_src2            <=        2'b0;  
+    IDU_EXU_branch              <=        1'b0;
+ //   IDU_EXU_mem_to_reg          <=        1'b0;    
+    IDU_EXU_mem_read            <=        1'b0;
+    //IDU_EXU_mem_write           <=        1'b0;     
+    IDU_EXU_reg_write           <=        1'b0;   
+    IDU_EXU_jal                 <=        1'b0;
+    IDU_EXU_jalr                <=        1'b0;
+    // IDU_EXU_lw                  <=        1'b0;  
+    // IDU_EXU_lh                  <=        1'b0;
+    // IDU_EXU_lb                  <=        1'b0;    
+    // IDU_EXU_lbu                 <=        1'b0;
+    // IDU_EXU_lhu                 <=        1'b0;     
+    // IDU_EXU_sw                  <=        1'b0;   
+    // IDU_EXU_sb                  <=        1'b0;
+    // IDU_EXU_sh                  <=        1'b0;
+    IDU_EXU_RW_sign             <=        8'b0;
+    IDU_EXU_csr_op              <=        3'b0;     
+    IDU_EXU_ebreak              <=        1'b0;
+    IDU_EXU_ecall               <=        1'b0;     
+    IDU_EXU_mret                <=        1'b0;   
+    //IDU_EXU_U_type_1            <=        1'b0;
+    //IDU_EXU_J_type_1            <=        1'b0;
+    //IDU_EXU_pcsrc               <=        1'b0;  
+    IDU_EXU_C_type              <=        1'b0;
+    IDU_EXU_B_type              <=        1'b0;
+    //IDU_EXU_STALL               <=        1'b0;
+    IDU_EXU_PC                  <=        32'b0;
+    IDU_EXU_pre_dnpc                <=        32'b0;
+
+    IDU_EXU_exu_raw_rs1           <=        1'b0;
+    IDU_EXU_exu_raw_rs2           <=        1'b0;
+    IDU_EXU_lsu_raw_rs1           <=        1'b0;
+    IDU_EXU_lsu_raw_rs2           <=        1'b0;
+    end
     else if(IFU_IDU_valid && IDU_IFU_ready)begin
         // if(U_type|R_type|I_type_1|I_type_4) begin calcu_type_count <= calcu_type_count + 1'b1; end
         // else if(J_type) begin Jump_type_count <= Jump_type_count + 1'b1; end
@@ -1893,7 +2075,7 @@ begin
     IDU_EXU_B_type              <=        B_type    ;
     //IDU_EXU_STALL               <=        IFU_IDU_STALL;
     IDU_EXU_PC                  <=        IFU_IDU_PC;
-    //IDU_EXU_pre_dnpc                <=        IFU_IDU_pre_dnpc;
+    IDU_EXU_pre_dnpc                <=        IFU_IDU_pre_dnpc;
 
     IDU_EXU_exu_raw_rs1           <=        rs1_raw_exu;
     IDU_EXU_exu_raw_rs2           <=        rs2_raw_exu;
@@ -1940,7 +2122,7 @@ begin
     IDU_EXU_B_type              <=  IDU_EXU_B_type    ;
     //IDU_EXU_STALL               <=//IDU_EXU_STALL   ;  
     IDU_EXU_PC                  <=  IDU_EXU_PC        ;  
-    //IDU_EXU_pre_dnpc                <=  IDU_EXU_pre_dnpc      ;  
+    IDU_EXU_pre_dnpc                <=  IDU_EXU_pre_dnpc      ;  
 
     IDU_EXU_exu_raw_rs1           <=        IDU_EXU_exu_raw_rs1;
     IDU_EXU_exu_raw_rs2           <=        IDU_EXU_exu_raw_rs2;
@@ -2122,7 +2304,6 @@ module ysyx_24070003_exuop_ctrl(
     */
 endmodule
 
-
 module ysyx_24070003_exu(
     input clock,
     input rstn,
@@ -2148,7 +2329,7 @@ module ysyx_24070003_exu(
     input [8:0] IDU_EXU_RW_sign,
     input [2:0] csr_op,
     input [31:0] csr_data,
-    //input [31:0] IDU_EXU_pre_dnpc,
+    input [31:0] IDU_EXU_pre_dnpc,
 
     input IDU_EXU_exu_raw_rs1,
     input IDU_EXU_exu_raw_rs2,
@@ -2210,10 +2391,10 @@ module ysyx_24070003_exu(
 
     output [4:0]  EXU_IDU_REG_ADDR,
     output        EXU_IDU_REG_WEN,
-    output        EXU_IDU_REN
+    output        EXU_IDU_REN,
 
-    //output [31:0] EXU_BTB_PC,
-    //output        EXU_BTB_updata_valid
+    output [31:0] EXU_BTB_PC,
+    output        EXU_BTB_updata_valid
     
 );
 wire [31:0] RS1_data;
@@ -2286,21 +2467,21 @@ ysyx_24070003_alu my_alu(
     .alu_out        (alu_out    ),
     .zero           (zero       )
 );
-wire [2:0] pc_sel = {IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal || zero, IDU_EXU_jalr};
+wire [3:0] pc_sel = {IDU_EXU_jal || IDU_EXU_B_type, IDU_EXU_ecall || IDU_EXU_mret, IDU_EXU_jal || zero, IDU_EXU_jalr};
 wire [31:0] pc_opdata1;
 wire [31:0] pc_opdata2;
 
-assign pc_opdata1 = (pc_sel[1]) ? pc_data : RS1_data;
+assign pc_opdata1 = (pc_sel[1] || pc_sel[3]) ? pc_data : RS1_data;
 assign pc_opdata2 = imm_data;
 wire [31:0] next_pc = pc_opdata1 + pc_opdata2;
-//wire btb_pre_error = (IDU_EXU_pre_dnpc != EXU_IFU_pc) && (IDU_EXU_jal || IDU_EXU_B_type);
-assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jalr || IDU_EXU_jal || (zero)) && (IDU_EXU_valid && EXU_IDU_ready);
+wire btb_pre_error = (IDU_EXU_pre_dnpc != EXU_IFU_pc) && (IDU_EXU_jal || IDU_EXU_B_type);
+assign EXU_flush = (IDU_EXU_ecall || IDU_EXU_mret || IDU_EXU_jalr || btb_pre_error) && (IDU_EXU_valid && EXU_IDU_ready);
 
 assign EXU_IDU_ready = LSU_EXU_ready;  
 
 ///assign EXU_BTB_PC = (pc_sel[3]) ? next_pc_jal : next_pc_jalr;
-//assign EXU_BTB_PC = next_pc;
-//assign EXU_BTB_updata_valid = (IDU_EXU_jal || IDU_EXU_B_type) && (IDU_EXU_valid && EXU_IDU_ready);
+assign EXU_BTB_PC = next_pc;
+assign EXU_BTB_updata_valid = (IDU_EXU_jal || IDU_EXU_B_type) && (IDU_EXU_valid && EXU_IDU_ready);
 
 always @(posedge clock) begin 
     if(rstn) begin
@@ -2480,7 +2661,7 @@ ysyx_24070003_Adder Adder(.A(opdata1),
 			.Cin(sub_ctl),
 			.ALU_CTL(alu_crtl),
 			.ADD_carry(ADD_carry),
-			.ADD_OverFlow(ADD_OverFlow),
+			//.ADD_OverFlow(ADD_OverFlow),
 			.ADD_zero(ADD_zero),
 			.ADD_result(ADD_result));
 
@@ -2491,7 +2672,7 @@ ysyx_24070003_Adder Adder(.A(opdata1),
 wire [31:0] SLT_result;
 wire LESS_M1,LESS_M2,LESS_S,SLT_M;
 wire BLT,BGE,BNE,BEQ;
-
+//assign ADD_OverFlow = (opdata1[31] & ~opdata2[31]) | ((opdata1[31] ~^ opdata2[31]) & ADD_result[31]); 
 assign BLT = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  & ~alu_crtl[0]);
 assign BGE = (alu_crtl[3]  & ~alu_crtl[2]  &  ~alu_crtl[1]  &  alu_crtl[0]);
 assign BNE = (alu_crtl[3]  & ~alu_crtl[2]  &   alu_crtl[1]  & ~alu_crtl[0]);
@@ -2505,7 +2686,7 @@ assign LESS_M1 = ADD_carry ^ sub_ctl;
 assign LESS_M2 = (opdata1[31] & ~opdata2[31]) | ((opdata1[31] ~^ opdata2[31]) & ADD_result[31]);
 assign LESS_S = (u_alu_type)?LESS_M1:LESS_M2;
 assign SLT_result = (LESS_S)?32'h00000001:32'h00000000;
-
+//708,687,567
 always @(*) 
 begin
   case(data_choice)
@@ -2515,7 +2696,7 @@ begin
      2'b11:alu_out=shift_result; 
   endcase
 end
- 
+
 endmodule
 
 module ysyx_24070003_Shifter(input [31:0] ALU_DA,
@@ -2545,7 +2726,7 @@ module ysyx_24070003_Adder(input [31:0] A,
 			 input Cin,
 			 input [3:0] ALU_CTL,
 			 output ADD_carry,
-			 output ADD_OverFlow,
+			 //output ADD_OverFlow,
 			 output ADD_zero,
 			 output [31:0] ADD_result);
 
@@ -2554,10 +2735,11 @@ module ysyx_24070003_Adder(input [31:0] A,
 
 
    assign ADD_zero = ~(|ADD_result);
-   assign ADD_OverFlow=((ALU_CTL==4'b0001) & ~A[31] & ~B[31] & ADD_result[31]) 
-                      | ((ALU_CTL==4'b0001) & A[31] & B[31] & ~ADD_result[31])
-                      | ((ALU_CTL==4'b0011) & A[31] & ~B[31] & ~ADD_result[31]) 
-					  | ((ALU_CTL==4'b0011) & ~A[31] & B[31] & ADD_result[31]);
+//    assign ADD_OverFlow=((~Cin) & ~A[31] & ~B[31] & ADD_result[31]) 
+//                       | ((~Cin) & A[31] & B[31] & ~ADD_result[31])
+//                       | ((Cin) & A[31] & ~B[31] & ~ADD_result[31]) 
+// 					  | ((Cin) & ~A[31] & B[31] & ADD_result[31]);
+     
 endmodule
 
 module ysyx_24070003_lsu(
@@ -2812,7 +2994,6 @@ always @(posedge clock) begin
         LSU_AXI4_BREADY <= 1'b0;
 
         LSU_WBU_valid <= 1'b0;
-        LSU_RDATA <= 32'b0;
 
         LSU_AXI_wlast <= 1'b0;
         // lsu_count <=  64'd0;
@@ -3082,6 +3263,9 @@ module ysyx_24070003_RegisterFile #(
 ) (
     input clock,
     input reset,
+    `ifdef __ICARUS__
+    output [DATA_WIDTH-1:0] a0,
+    `endif
     input [DATA_WIDTH-1:0] wdata,
     input [ADDR_WIDTH-1:0] waddr,
     input wen,
@@ -3104,10 +3288,11 @@ module ysyx_24070003_RegisterFile #(
         if(reset) rf[0] <= 32'h0;
         if (wen & waddr != 0) rf[waddr] <= wdata; 
     end
-    
+    `ifdef __ICARUS__
+    assign a0  = rf[10];
+    `endif
     assign rdata1 = rf[raddr1];
     assign rdata2 = rf[raddr2];
- 
    
 endmodule
 

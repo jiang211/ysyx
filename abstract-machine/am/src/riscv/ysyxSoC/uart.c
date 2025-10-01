@@ -11,6 +11,7 @@
 void __am_uart_rx(AM_UART_RX_T *cfg){
     if((*(volatile uint8_t  *)(UART_BASE + UART_LS) & 0x1) == 0x1){
         cfg->data = *(volatile uint8_t  *)(UART_BASE );
+        
     }
     else {
         cfg->data = 0xff;
