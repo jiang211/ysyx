@@ -1,14 +1,14 @@
-AM_SRCS := riscv/ysyxSoC/start.S \
-           riscv/ysyxSoC/trm.c \
-           riscv/ysyxSoC/ioe.c \
-           riscv/ysyxSoC/timer.c \
-           riscv/ysyxSoC/input.c \
-           riscv/ysyxSoC/cte.c \
-           riscv/ysyxSoC/trap.S \
+AM_SRCS := riscv/ysyxsoc/start.S \
+           riscv/ysyxsoc/trm.c \
+           riscv/ysyxsoc/ioe.c \
+           riscv/ysyxsoc/timer.c \
+           riscv/ysyxsoc/input.c \
+           riscv/ysyxsoc/cte.c \
+           riscv/ysyxsoc/trap.S \
            platform/dummy/vme.c \
            platform/dummy/mpe.c \
-           riscv/ysyxSoC/uart.c\
-           riscv/ysyxSoC/gpu.c
+           riscv/ysyxsoc/uart.c\
+           riscv/ysyxsoc/gpu.c
 
 CFLAGS    += -fdata-sections -ffunction-sections # 让编译器将每个函数和数据段分别放置在独立的节（section）
 CFLAGS    += -Os

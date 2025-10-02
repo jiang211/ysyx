@@ -34,7 +34,7 @@ VERILATOR_FLAGS += --autoflush
 ARCH ?= riscv32e-npc
 
 # 2. 根据 ARCH 决定复位地址
-ifeq ($(ARCH),riscv32e-ysyxSoC)
+ifeq ($(ARCH),riscv32e-ysyxsoc)
   BOOT_PC := 1
 else
   BOOT_PC := 0
