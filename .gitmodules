@@ -3,4 +3,4 @@
 	url = ./rt-thread-am
 [submodule "ysyxSoC"]
 	path = ysyxSoC
-	url = https://github.com/jiang211/ysyxsoc.git
+	url = ./ysyxSoC
