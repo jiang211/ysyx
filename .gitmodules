@@ -1,6 +1,6 @@
 [submodule "rt-thread-am"]
 	path = rt-thread-am
-	url = https://github.com/yourname/rt-thread-am.git
+	url = ./rt-thread-am
 [submodule "ysyxSoC"]
 	path = ysyxSoC
 	url = https://github.com/jiang211/ysyxsoc.git
