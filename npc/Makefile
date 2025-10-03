@@ -15,8 +15,8 @@ VERILATOR_FLAGS += --MMD
 VERILATOR_FLAGS += --build
 #VERILATOR_FLAGS += --lint-only
 VERILATOR_FLAGS += --trace-fst
-VERILATOR_FLAGS += -I$(YSYXSOC)/perip/uart16550/rtl
-VERILATOR_FLAGS += -I$(YSYXSOC)/perip/spi/rtl
+VERILATOR_FLAGS += -I$(YSYX_HOME)/ysyxSoC/perip/uart16550/rtl
+VERILATOR_FLAGS += -I$(YSYX_HOME)/ysyxSoC/perip/spi/rtl
 VERILATOR_FLAGS += --timescale "1ns/1ns"
 VERILATOR_FLAGS += --no-timing
 VERILATOR_FLAGS += --top-module $(TOPNAME)
@@ -65,8 +65,8 @@ $(SRC_AUTO_BIND): $(NXDC_FILES)
 ysyxsoc = $(YSYXSOC)
 VS_DIR = $(WORK_DIR)/vsrc
 VSRCS = $(shell find $(VS_DIR) -name "*.v")
-VSRCS += $(shell find $(YSYXSOC)/perip -name "*.v")
-VSRCS += $(YSYXSOC)/build/ysyxSoCFull.v
+VSRCS += $(shell find $(YSYX_HOME)/ysyxSoC/perip -name "*.v")
+VSRCS += $(YSYX_HOME)/ysyxSoC/build/ysyxSoCFull.v
 
 CXXFLAGS += $(shell llvm-config --cxxflags) -fPIE
 CS_DIR = $(WORK_DIR)/csrc
