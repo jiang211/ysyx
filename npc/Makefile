@@ -125,8 +125,8 @@ WAVEFLAGS = gtkwave $(BUILD_DIR)/logs/$(TOPNAME).fst
 
 ########################sim-iverilog        sim-verilog-netlist#########################################
 
-CROSS_COMPILE = riscv64-unknown-elf-
-OBJCOPY = $(CROSS_COMPILE)objcopy
+#CROSS_COMPILE = riscv64-unknown-elf-
+OBJCOPY = objcopy
 SIMULATOR = iverilog
 SIM_OPTIONS = -g2012 
 TARGET = my_design
