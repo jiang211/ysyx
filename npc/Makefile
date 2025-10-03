@@ -40,7 +40,7 @@ else
   BOOT_PC := 0
 endif
 VERILATOR_FLAGS += -DBOOT_PC=$(BOOT_PC)
-YSYXSOC ?= $(HOME)/ysyx-workbench/ysyxSoC  # 默认路径，按需修改
+YSYXSOC ?= $(YSYX_HOME)/ysyxSoC  # 默认路径，按需修改
 WORK_DIR = $(shell pwd)
 BUILD_DIR = $(WORK_DIR)/build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
