@@ -938,16 +938,16 @@ end
 //         $display("miss_penalty              = %040d\n",miss_penalty);
 //     end
 // end
-import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
-reg [31:0] dpi_monitor_data[0:5];
-// 初始化时绑定指针
-initial set_monitor_ptr(dpi_monitor_data);
-assign dpi_monitor_data[0] = {31'b0,difftest_valid};
-assign dpi_monitor_data[1] = TO_top_pc;
-assign dpi_monitor_data[2] = TO_top_dnpc;
-assign dpi_monitor_data[3] = instr;
-assign dpi_monitor_data[4] = {31'b0,ebreak};
-assign dpi_monitor_data[5] = {31'b0,ref_skip};
+// import "DPI-C" function void set_monitor_ptr(input logic [31:0] data []);
+// reg [31:0] dpi_monitor_data[0:5];
+// // 初始化时绑定指针
+// initial set_monitor_ptr(dpi_monitor_data);
+// assign dpi_monitor_data[0] = {31'b0,difftest_valid};
+// assign dpi_monitor_data[1] = TO_top_pc;
+// assign dpi_monitor_data[2] = TO_top_dnpc;
+// assign dpi_monitor_data[3] = instr;
+// assign dpi_monitor_data[4] = {31'b0,ebreak};
+// assign dpi_monitor_data[5] = {31'b0,ref_skip};
 
 
 

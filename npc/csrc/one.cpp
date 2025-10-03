@@ -13,6 +13,7 @@
 #include <VysyxSoCFull.h>
 #include "svdpi.h"
 #include "VysyxSoCFull__Dpi.h"
+#include "VysyxSoCFull___024root.h"
 //#include <cpu.h>
 
 
@@ -81,14 +82,14 @@ void init_module() {
   return ;
 
 }
-uint32_t *cpu_gpr = NULL;
-  extern "C" void set_gpr_ptr(const svOpenArrayHandle r) {
-    cpu_gpr = (uint32_t *)(((VerilatedDpiOpenVar*)r)->datap());
-  }
-uint32_t *cpu_csr = NULL;
-extern "C" void set_csr_ptr(const svOpenArrayHandle r) {
-  cpu_csr = (uint32_t *)(((VerilatedDpiOpenVar*)r)->datap());
-}
+// uint32_t *cpu_gpr = NULL;
+//   extern "C" void set_gpr_ptr(const svOpenArrayHandle r) {
+//     cpu_gpr = (uint32_t *)(((VerilatedDpiOpenVar*)r)->datap());
+//   }
+// uint32_t *cpu_csr = NULL;
+// extern "C" void set_csr_ptr(const svOpenArrayHandle r) {
+//   cpu_csr = (uint32_t *)(((VerilatedDpiOpenVar*)r)->datap());
+// }
 
 uint32_t *monitor_data = NULL;
 extern "C" void set_monitor_ptr(const svOpenArrayHandle r) {
@@ -219,26 +220,25 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
         main_time ++;
       #endif
 
+       *difftest = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__difftest_valid;
+        s->dnpc = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_dnpc;
+        s->pc = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_pc;
+        s->snpc = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_pc + 4;
         
-       *difftest = monitor_data[0];
-        s->dnpc = monitor_data[2];
-        s->pc = monitor_data[1];
-        s->snpc = monitor_data[1] + 4;
-        
-        s->isa.inst.val = monitor_data[3];
+        //s->isa.inst.val = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__instr;
         //printf("pc = %08x, dnpc = %08x, snpc = %08x, isa = %08x\n",s->pc,s->dnpc,s->snpc,s->isa.inst.val);
-        if(monitor_data[0]){
-          if(monitor_data[5]){ difftest_skip_ref();}
+        if(top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__difftest_valid){
+          if(top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ref_skip){ difftest_skip_ref();}
           for (int i=0; i<16; i++) {
-            cpu->gpr[i] = cpu_gpr[i];
+            cpu->gpr[i] =  top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__rf1__DOT__rf[i];
           }
           for (int i=0; i<4; i++) {
-            cpu->csr[i] = cpu_csr[i];
+            cpu->csr[i] = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__csr1__DOT__csr[i];
           }
         }
       
-      if(monitor_data[4])  { 
-        npc_trap(NPC_END , monitor_data[1], cpu_gpr[10]);
+      if(top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ebreak)  { 
+        npc_trap(NPC_END , top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_pc, top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__rf1__DOT__rf[10]);
         return ;
       }
       
