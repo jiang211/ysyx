@@ -20,19 +20,17 @@ module ysyx_24070003_RegisterFile #(
     input [ADDR_WIDTH-1:0] raddr2
 );
 
-    reg [DATA_WIDTH-1:0] rf[15:0];
+    reg [DATA_WIDTH-1:0] rf[14:0];
     // import "DPI-C" function void set_gpr_ptr(input logic [31:0] a []);
     // initial set_gpr_ptr(rf); 
 
     
     always @(posedge clock) begin
-        if(reset) rf[0] <= 32'h0;
-        if (wen & waddr != 0) rf[waddr] <= wdata; 
+        //if(reset) rf[0] <= 32'h0;
+        if (wen & waddr != 0) rf[waddr - 1'b1] <= wdata; 
     end
-    `ifdef __ICARUS__
-    assign a0  = rf[10];
-    `endif
-    assign rdata1 = rf[raddr1];
-    assign rdata2 = rf[raddr2];
+    
+    assign rdata1 = (raddr1 == 'b0) ? 32'h0 : rf[raddr1 - 1'b1];
+    assign rdata2 = (raddr2 == 'b0) ? 32'h0 : rf[raddr2 - 1'b1];
    
 endmodule
