@@ -20,7 +20,7 @@ index 8d70f310b..c40343207 100644
  CFLAGS += -DHAVE_CCONFIG_H -D__RTTHREAD__
  CFLAGS += -Wno-nonnull-compare
 -LDFLAGS += -T extra.ld
-+LDFLAGS += -T $(if $(findstring ysyxsoc,$(ARCH)),extra_ysyxsoc.ld,extra.ld)
++LDFLAGS += -T $(if $(findstring ysyxSoC,$(ARCH)),extra_ysyxsoc.ld,extra.ld)
  -include $(FILE_MK)
  -include $(AM_APPS_MK)
  include $(AM_HOME)/Makefile
