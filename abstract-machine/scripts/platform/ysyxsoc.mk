@@ -16,7 +16,7 @@ LDFLAGS   += -T $(AM_HOME)/scripts/ysyxSoclinker.ld \
 						 --defsym=_pmem_start=0x80000000 --defsym=_entry_offset=0x0 
 LDFLAGS   += --gc-sections -e _start #告诉链接器移除未被使用的节
 #LDFLAGS   += --print-map
-#SOCFLAGS  += -b 
+SOCFLAGS  += -b 
 MAINARGS_MAX_LEN = 64
 MAINARGS_PLACEHOLDER = The insert-arg rule in Makefile will insert mainargs here.
 CFLAGS += -DMAINARGS_MAX_LEN=$(MAINARGS_MAX_LEN) -DMAINARGS_PLACEHOLDER=\""$(MAINARGS_PLACEHOLDER)"\"
