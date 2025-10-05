@@ -23,11 +23,11 @@ extern char _pmem_start;
 Area heap = RANGE(&_heap_start, &_psram_end);
 static const char mainargs[MAINARGS_MAX_LEN] = MAINARGS_PLACEHOLDER; // defined in CFLAGS
 
-void init_uart(uint32_t rate){
+void init_uart(){
   *(volatile uint8_t *)(UART_BASE + UART_LC) = *(volatile uint8_t  *)(UART_BASE + UART_LC) | 0b10000000;    // 1停止位，无校验位，禁止中断，开始写divisor
-  uint16_t divisor = 50000000/(16*rate);
-  *(volatile uint8_t  *)(UART_BASE + UART_dL2) = divisor >> 8;    // 
-  *(volatile uint8_t  *)(UART_BASE + UART_dL1) = divisor ;    // 
+  //uint16_t divisor = 50000000/(16*rate);
+  *(volatile uint8_t  *)(UART_BASE + UART_dL2) = (char)0x00;    // 
+  *(volatile uint8_t  *)(UART_BASE + UART_dL1) = (char)0x01; ;    // 
   *(volatile uint8_t *)(UART_BASE + UART_LC) = *(volatile uint8_t  *)(UART_BASE + UART_LC) & (~0b10000000); 
 }
 
@@ -186,7 +186,7 @@ void _bootloader_2 (void) {
 }
 void _trm_init() {
   //printf_ysyx();
-  init_uart(115200);
+  init_uart();
   //_memcpy(&_sdata, &_sidata, &_edata - &_sdata);
   int ret = main(mainargs);
   halt(ret);
