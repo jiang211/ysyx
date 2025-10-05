@@ -30,7 +30,7 @@ module ysyx_24070003_RegisterFile #(
         if (wen & waddr != 0) rf[waddr - 1'b1] <= wdata; 
     end
     
-    assign rdata1 = (raddr1 == 'b0) ? 32'h0 : rf[raddr1 - 1'b1];
-    assign rdata2 = (raddr2 == 'b0) ? 32'h0 : rf[raddr2 - 1'b1];
+    assign rdata1 = (raddr1 == 4'b0) ? 32'h0 : rf[raddr1 - 1'b1];
+    assign rdata2 = (raddr2 == 4'b0) ? 32'h0 : rf[raddr2 - 1'b1];
    
 endmodule

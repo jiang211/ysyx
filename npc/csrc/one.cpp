@@ -9,7 +9,7 @@
 #include "verilated_fst_c.h"
 #endif
 // Inculde model header, generated from Verilating "top.v"
-//#include <nvboard.h>
+#include <nvboard.h>
 #include <VysyxSoCFull.h>
 #include "svdpi.h"
 #include "VysyxSoCFull__Dpi.h"
@@ -34,7 +34,7 @@ vluint64_t main_time = 0;
 void difftest_skip_ref();
 void npc_trap(int state, vaddr_t pc, int halt_ret);
 
-//void nvboard_bind_all_pins(TOP_NAME* top);
+void nvboard_bind_all_pins(TOP_NAME* top);
    
 void init_verilator(int argc, char** argv, char** env) {
   
@@ -43,8 +43,8 @@ void init_verilator(int argc, char** argv, char** env) {
   contextp = new VerilatedContext;
   contextp->commandArgs(argc, argv);
   top = new VysyxSoCFull{contextp};
-  //nvboard_bind_all_pins(top);
-  //nvboard_init();
+  nvboard_bind_all_pins(top);
+  nvboard_init();
   //VCD波形设置  start
   #ifdef WAVE_ON
     Verilated::traceEverOn(true);
@@ -212,7 +212,7 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
         main_time ++;
       #endif
       top->clock  = !top->clock;
-      //nvboard_update();
+      nvboard_update();
       top->eval(); 
 
       #ifdef WAVE_ON
@@ -229,8 +229,8 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
         //printf("pc = %08x, dnpc = %08x, snpc = %08x, isa = %08x\n",s->pc,s->dnpc,s->snpc,s->isa.inst.val);
         if(top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__difftest_valid){
           if(top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ref_skip){ difftest_skip_ref();}
-          for (int i=0; i<16; i++) {
-            cpu->gpr[i] =  top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__rf1__DOT__rf[i];
+          for (int i=1; i<16; i++) {
+            cpu->gpr[i] =  top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__rf1__DOT__rf[i - 1];
           }
           for (int i=0; i<4; i++) {
             cpu->csr[i] = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__csr1__DOT__csr[i];
@@ -238,7 +238,7 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
         }
       
       if(top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ebreak)  { 
-        npc_trap(NPC_END , top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_pc, top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__rf1__DOT__rf[10]);
+        npc_trap(NPC_END , top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_pc, top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__rf1__DOT__rf[10 - 1]);
         return ;
       }
       
@@ -246,7 +246,7 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
 
 
 void delete_module() {
-  //nvboard_quit();
+  nvboard_quit();
   //end_sim(); 
   #ifdef WAVE_ON
     tfp->close();

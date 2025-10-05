@@ -1,7 +1,7 @@
 TOPNAME = ysyxSoCFull
 
 INC_PATH ?=
-NVBOARD_HOME ?= $(HOME)/ysyx-workbench/nvboard
+NVBOARD_HOME ?= $(YSYX_HOME)/nvboard
 
 VERILATOR = verilator
 
@@ -71,12 +71,12 @@ VSRCS += $(YSYX_HOME)/ysyxSoC/build/ysyxSoCFull.v
 CXXFLAGS += $(shell llvm-config --cxxflags) -fPIE
 CS_DIR = $(WORK_DIR)/csrc
 CSRCS = $(shell find $(CS_DIR) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
-#CSRCS += $(SRC_AUTO_BIND)
+CSRCS += $(SRC_AUTO_BIND)
 
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 INC_PATH += $(abspath ./csrc/include)
 INC_PATH += $(abspath ./obj_dir)
-#INC_PATH += $(NVBOARD_HOME)/include
+INC_PATH += $(NVBOARD_HOME)/include
 INCFLAGS = $(addprefix -I, $(INC_PATH))
 
 CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
@@ -99,7 +99,7 @@ VERILATOR_OUTFLAGS += -o $(abspath $(BIN))
 
 #riscv64-unknown-elf-gcc -march=rv32g -mabi=ilp32 -fno-pic -c -O2 char-test.c 
 
-$(BIN): $(VSRCS) $(CSRCS) #$(NVBOARD_ARCHIVE)
+$(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 	@rm -rf $(OBJ_DIR)
 	@$(VERILATOR) $(VERILATOR_FLAGS) \
 		--top-module $(TOPNAME) $^ \
