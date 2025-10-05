@@ -196,19 +196,19 @@ end
     //     $write("lsu_wstrb = %04b,EXU_LSU_result = %08x\n",lsu_wstrb,EXU_LSU_result);
     //     end
     // end
-    // assign lsu_wstrb = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WLEN << 2'd0) :
-    //                    (EXU_LSU_result[1:0]  == 2'b01) ? (LSU_WLEN << 2'd1) :
-    //                    (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WLEN << 2'd2) :
-    //                    (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WLEN << 2'd3) : (LSU_WLEN << 2'd0);
+    assign lsu_wstrb = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WLEN << 2'd0) :
+                       (EXU_LSU_result[1:0]  == 2'b01) ? (LSU_WLEN << 2'd1) :
+                       (EXU_LSU_result[1:0]  == 2'b10) ? (LSU_WLEN << 2'd2) :
+                       (EXU_LSU_result[1:0]  == 2'b11) ? (LSU_WLEN << 2'd3) : (LSU_WLEN << 2'd0);
 
-ysyx_24070003_mux4_32bit my7(
-    .sel            (EXU_LSU_result[1:0]),
-    .a              (LSU_WLEN << 32'd0), 
-    .b              (LSU_WLEN << 32'd1),
-    .c              (LSU_WLEN << 32'd2),
-    .d              (LSU_WLEN << 32'd3),
-    .out            (lsu_wstrb)
-);
+// ysyx_24070003_mux4_32bit my7(
+//     .sel            (EXU_LSU_result[1:0]),
+//     .a              (LSU_WLEN << 32'd0), 
+//     .b              (LSU_WLEN << 32'd1),
+//     .c              (LSU_WLEN << 32'd2),
+//     .d              (LSU_WLEN << 32'd3),
+//     .out            (lsu_wstrb)
+// );
 
     //assign lsu_wstrb = (LSU_WLEN << EXU_LSU_result[1:0] );
     // assign lsu_wdata = (EXU_LSU_result[1:0]  == 2'b00) ? (LSU_WDATA << 32'd0) :
