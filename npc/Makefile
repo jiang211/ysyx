@@ -133,11 +133,8 @@ TARGET = my_design
 IVERILOG_SRCS = $(shell find $(WORK_DIR)/iverilog_test -name "*.v")
 NETLIST  ?=
 CELLS    ?=
-ifeq ($(NETLIST)$(CELLS),)
+
 IVERILOG_NETLIST_SRCS := $(shell find $(WORK_DIR)/netlist_test -name "*.v" 2>/dev/null)
-else
-IVERILOG_NETLIST_SRCS := $(NETLIST) $(CELLS)
-endif
 
 IVERILOG_NETLIST_SRCS += $(NETLIST) $(CELLS)
 NPC_VSRCS = $(shell find $(VS_DIR) -name "*.v")
@@ -152,7 +149,7 @@ $(VOUT): $(NPC_VSRCS)
 	done >> $@
 
 
-
+#make sim-iverilog-netlist IMG=~/ysyx-workbench/am-kernels/benchmarks/microbench/build/microbench-riscv32e-npc.bin NETLIST=~/ysyx-workbench/yosys-sta/result/ysyx_24070003/ysyx_24070003.netlist.fixed.v CELLS=~/ysyx-workbench/yosys-sta/pdk/nangate45/sim/cells.v
 verilog: $(VOUT)
 #make sim-iverilog IMG=~/ysyx-workbench/rt-thread-am/bsp/abstract-machine/build/rtthread-riscv32e-npc.bin
 # 使用objcopy从.bin文件生成.hex文件的规则
