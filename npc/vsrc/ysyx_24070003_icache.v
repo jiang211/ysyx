@@ -36,10 +36,10 @@ module ysyx_24070003_icache(
 );
 
 parameter SDRAM_BLOCK_SIZE = 16;     
-parameter SDRAM_NUM_BLOCKS = 4;    
+parameter SDRAM_NUM_BLOCKS = 2;    
 parameter SDRAM_OFFSET_BITS = 4;    
-parameter SDRAM_INDEX_BITS = 2;     
-parameter SDRAM_TAG_BITS = 26;       
+parameter SDRAM_INDEX_BITS = 1;     
+parameter SDRAM_TAG_BITS = 27;       
 
 
 reg [SDRAM_TAG_BITS-1:0] tags [0:SDRAM_NUM_BLOCKS-1];  // 标签存储
