@@ -4,9 +4,6 @@ module ysyx_24070003_RegisterFile #(
 ) (
     input clock,
     input reset,
-    `ifdef __ICARUS__
-    output [DATA_WIDTH-1:0] a0,
-    `endif
     input [DATA_WIDTH-1:0] wdata,
     input [ADDR_WIDTH-1:0] waddr,
     input wen,

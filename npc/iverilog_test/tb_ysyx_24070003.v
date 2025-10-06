@@ -166,7 +166,7 @@ ysyx_24070003 dut (
 );
 always @(posedge clock) begin
     if (dut.ebreak) begin
-        if(dut.rf1.rf[10] == 1'b0) begin
+        if(dut.rf1.rf[9] == 1'b0) begin
         $display("\n=== EBREAK GOOD ===");
         end else begin
         $display("\n=== EBREAK BAD ===");

@@ -34,12 +34,14 @@ VERILATOR_FLAGS += --autoflush
 ARCH ?= riscv32e-npc
 
 # 2. 根据 ARCH 决定复位地址
-ifeq ($(ARCH),riscv32e-ysyxsoc)
-  BOOT_PC := 1
+ifeq ($(ARCH),riscv32e-npc)
+    VERILATOR_FLAGS += -DBOOT_PC_8000
 else
-  BOOT_PC := 0
+    VERILATOR_FLAGS += -DBOOT_PC_3000   # 或者干脆不定义，走 else 分支
 endif
-VERILATOR_FLAGS += -DBOOT_PC=$(BOOT_PC)
+
+
+#VERILATOR_FLAGS += -DBOOT_PC=$(BOOT_PC)
 YSYXSOC ?= $(YSYX_HOME)/ysyxSoC  # 默认路径，按需修改
 WORK_DIR = $(shell pwd)
 BUILD_DIR = $(WORK_DIR)/build
@@ -129,8 +131,10 @@ WAVEFLAGS = gtkwave $(BUILD_DIR)/logs/$(TOPNAME).fst
 OBJCOPY = objcopy
 SIMULATOR = iverilog
 SIM_OPTIONS = -g2012 
+#SIM_OPTIONS += -DBOOT_PC_8000=1 # reset = 0x80000000
 TARGET = my_design
 IVERILOG_SRCS = $(shell find $(WORK_DIR)/iverilog_test -name "*.v")
+IVERILOG_SRCS += $(shell find $(WORK_DIR)/vsrc -name "*.v")
 NETLIST  ?=
 CELLS    ?=
 

@@ -68,6 +68,7 @@ localparam read_idle       = 2'b00;        //waiting for arvalid
 localparam read_send_rdata = 2'b01;        //sending read data after read address handshake
 //localparam read_last_send  = 2'b11;        //sending the last data and 'rlast'
 
+
 reg [31:0]r_addr;
 reg  [7:0]r_len;
 reg  [2:0]r_size;
@@ -123,7 +124,12 @@ wire [7:0] data1 = mem[a];
 wire [7:0] data2 = mem[a+1];
 wire [7:0] data3 = mem[a+2];
 wire [7:0] data4 = mem[a+3];
-wire [31:0] r_cache = (r_addr == 32'ha0000048) ? mtime_low : (r_addr == 32'ha000004c) ? mtime_high : {data4,data3,data2,data1};
+wire [31:0] r_cache = (r_addr == 32'h30000000) ? 32'h800000b7 :     // lui ra 0x80000 :
+                      (r_addr == 32'h30000004) ? 32'h00008067 : 
+                      (r_addr == 32'ha0000048) ? mtime_low : 
+                      (r_addr == 32'ha000004c) ? mtime_high : 
+                      {data4,data3,data2,data1};
+//wire [31:0] r_cache = (r_addr == 32'ha0000048) ? mtime_low : (r_addr == 32'ha000004c) ? mtime_high : {data4,data3,data2,data1};
 assign rdata = r_cache;
 assign arready = read_current_state == read_idle;
 assign rlast  = (r_count == r_len) && (read_current_state == read_send_rdata);

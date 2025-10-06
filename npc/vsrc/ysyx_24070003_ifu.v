@@ -45,10 +45,10 @@ assign cur_pc = pc;
 always@(posedge clock)
 begin 
    if(rstn | (resp != 2'b00))begin
-    `ifdef BOOT_PC
-    pc<=32'h30000000 ;
-    `else
+    `ifdef BOOT_PC_8000
     pc<=32'h80000000 ;
+    `else
+    pc<=32'h30000000 ;
     `endif
     end
     else if(EXU_IFU_flush)begin 

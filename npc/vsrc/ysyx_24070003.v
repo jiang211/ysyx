@@ -10,10 +10,7 @@ module ysyx_24070003(
     output ebreak,
     output reg difftest_valid
     */
-    `ifdef __ICARUS__
-    output  wire        ebreak ,
-    output  wire [31:0]  a0,
-    `endif
+    
     input   wire        clock,
     input   wire        reset,
     input   wire        io_interrupt,
@@ -866,9 +863,6 @@ wire [31:0] a0;
 ysyx_24070003_RegisterFile #(.ADDR_WIDTH(4), .DATA_WIDTH(32)) rf1(
         .clock                        (clock              ),
         .reset                        (reset              ),
-    `ifdef __ICARUS__
-        .a0                          (a0              ),
-    `endif
         .wdata                      (wbu_data           ),
         .waddr                      (wbu_addr[3:0]      ),
         .wen                        (WBU_wen            ),
