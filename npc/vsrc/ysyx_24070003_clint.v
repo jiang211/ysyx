@@ -44,7 +44,7 @@ always @(posedge clock) begin
 end
 
 // wire [31:0] rdata;
-assign AXI4_CLINT_RDATA = (AXI4_CLINT_ARADDR == 32'h02000000) ? mtime_low : (AXI4_CLINT_ARADDR == 32'h02000004) ? mtime_high : 32'b0;
+assign AXI4_CLINT_RDATA = (AXI4_CLINT_ARADDR[3:0] == 4'h0) ? mtime_low : mtime_high;
 
 assign AXI4_CLINT_RVALID = 1'b1;
 assign AXI4_CLINT_ARREADY = 1'b1;
