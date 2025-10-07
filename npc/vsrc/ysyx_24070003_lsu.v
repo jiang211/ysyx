@@ -249,7 +249,7 @@ always @(posedge clock) begin
         LSU_AXI4_WVALID <= 1'b0;
         LSU_AXI4_BREADY <= 1'b0;
 
-        LSU_WBU_valid <= 1'b0;
+    
 
         LSU_AXI_wlast <= 1'b0;
         // lsu_count <=  64'd0;
