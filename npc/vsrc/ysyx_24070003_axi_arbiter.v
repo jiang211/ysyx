@@ -96,7 +96,7 @@ reg [ADDR_WIDTH-1:0] saved_araddr;
 //reg [DATA_WIDTH-1:0] saved_wdata;
 //reg [3:0]            saved_wstrb;
 
-wire clint = (lsu_araddr >= 32'h02000000 && lsu_araddr <= 32'h02000004);
+wire clint = (lsu_araddr >= 32'h02000000 && lsu_araddr <= 32'h0200ffff);
 // 状态机
 always @(posedge clock ) begin
     if (rstn) begin
