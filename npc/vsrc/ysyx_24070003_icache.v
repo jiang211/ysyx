@@ -103,16 +103,16 @@ always @(posedge clock) begin
             //per_pc_reg3 <= reg1_pre_dnpc;
        
     end
-    else if(!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)begin
-        case (IFU_ICACHE_araddr[3:2])
-            2'b00: data_reg3 <= data[index_reg1][31:0];
-            2'b01: data_reg3 <= data[index_reg1][63:32];
-            2'b10: data_reg3 <= data[index_reg1][95:64];
-            2'b11: data_reg3 <= ICACHE_AXI4_rdata;
-        endcase
-        addr_reg3 <= IFU_ICACHE_araddr;
-        //per_pc_reg3 <= reg1_pre_dnpc;
-    end
+    // else if(!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)begin
+    //     case (IFU_ICACHE_araddr[3:2])
+    //         2'b00: data_reg3 <= data[index_reg1][31:0];
+    //         2'b01: data_reg3 <= data[index_reg1][63:32];
+    //         2'b10: data_reg3 <= data[index_reg1][95:64];
+    //         2'b11: data_reg3 <= ICACHE_AXI4_rdata;
+    //     endcase
+    //     addr_reg3 <= IFU_ICACHE_araddr;
+    //     //per_pc_reg3 <= reg1_pre_dnpc;
+    // end
 end
 
 assign ICACHE_IFU_rdata = data_reg3;
@@ -120,7 +120,7 @@ assign ICACHE_IFU_raddr = addr_reg3;
 //assign ICACHE_IFU_pre_dnpc  = per_pc_reg3;
 assign ICACHE_IFU_valid = data_valid & (~flush);
 
-wire allow_update = (state == IDLE && !icache_stall && IFU_ICACHE_rready && hit) || (state == AXI_READ && ICACHE_AXI4_rlast);
+wire allow_update = (state == IDLE && !icache_stall && IFU_ICACHE_rready && hit) ;//|| (state == AXI_READ && ICACHE_AXI4_rlast);
 assign ICACHE_IFU_stall = ~allow_update;
 
 
@@ -131,7 +131,7 @@ always @(posedge clock) begin
     else if(flush || fence_i) begin
         data_valid <= 0;
     end
-    else if((!icache_stall && state == IDLE && hit && (~flush)) || (!icache_stall && state == AXI_READ && ICACHE_AXI4_rlast)) begin
+    else if((!icache_stall && state == IDLE && hit && (~flush))) begin
         data_valid <= 1'b1;
     end
     else if(IFU_ICACHE_rready)begin
