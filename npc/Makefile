@@ -1,4 +1,3 @@
-TOPNAME = ysyxSoCFull
 
 INC_PATH ?=
 NVBOARD_HOME ?= $(YSYX_HOME)/nvboard
@@ -34,14 +33,16 @@ VERILATOR_FLAGS += --autoflush
 ARCH ?= riscv32e-npc
 
 # 2. 根据 ARCH 决定复位地址
-ifeq ($(ARCH),riscv32e-npc)
-    VERILATOR_FLAGS += -DBOOT_PC_8000
+ifeq ($(ARCH),riscv32e-ysyxsoc)
+    VERILATOR_FLAGS += -DSOC_PC
+	CXXFLAGS += -DYSYXSOC
 else
-    VERILATOR_FLAGS += -DBOOT_PC_3000   # 或者干脆不定义，走 else 分支
+    VERILATOR_FLAGS += -DNPC_PC
+	CXXFLAGS += -DNPC
 endif
 
 
-#VERILATOR_FLAGS += -DBOOT_PC=$(BOOT_PC)
+
 YSYXSOC ?= $(YSYX_HOME)/ysyxSoC  # 默认路径，按需修改
 WORK_DIR = $(shell pwd)
 BUILD_DIR = $(WORK_DIR)/build
@@ -66,14 +67,29 @@ $(SRC_AUTO_BIND): $(NXDC_FILES)
 
 ysyxsoc = $(YSYXSOC)
 VS_DIR = $(WORK_DIR)/vsrc
-VSRCS = $(shell find $(VS_DIR) -name "*.v")
-VSRCS += $(shell find $(YSYX_HOME)/ysyxSoC/perip -name "*.v")
-VSRCS += $(YSYX_HOME)/ysyxSoC/build/ysyxSoCFull.v
+VSRCS = $(shell find $(VS_DIR)/ysyx_24070003_npc -name "*.v")
+
+ifeq ($(ARCH),riscv32e-ysyxsoc)
+    VSRCS += $(shell find $(YSYX_HOME)/ysyxSoC/perip -name "*.v")
+	VSRCS += $(YSYX_HOME)/ysyxSoC/build/ysyxSoCFull.v
+	TOPNAME = ysyxSoCFull
+else
+ifeq ($(ARCH),riscv32e-npc)
+    VSRCS += $(shell find $(VS_DIR)/ysyx_24070003_perip -name "*.v")
+	TOPNAME = ysyx_24070003_npc
+endif
+endif
 
 CXXFLAGS += $(shell llvm-config --cxxflags) -fPIE
 CS_DIR = $(WORK_DIR)/csrc
 CSRCS = $(shell find $(CS_DIR) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
-CSRCS += $(SRC_AUTO_BIND)
+ifeq ($(ARCH),riscv32e-ysyxsoc)
+	CSRCS += $(SRC_AUTO_BIND)
+else
+ifeq ($(ARCH),riscv32e-npc)
+endif
+endif
+
 
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 INC_PATH += $(abspath ./csrc/include)
@@ -134,14 +150,14 @@ SIM_OPTIONS = -g2012
 #SIM_OPTIONS += -DBOOT_PC_8000=1 # reset = 0x80000000
 TARGET = my_design
 IVERILOG_SRCS = $(shell find $(WORK_DIR)/iverilog_test -name "*.v")
-IVERILOG_SRCS += $(shell find $(WORK_DIR)/vsrc -name "*.v")
+IVERILOG_SRCS += $(shell find $(WORK_DIR)/vsrc/ysyx_24070003_npc -name "*.v")
 NETLIST  ?=
 CELLS    ?=
 
 IVERILOG_NETLIST_SRCS := $(shell find $(WORK_DIR)/netlist_test -name "*.v" 2>/dev/null)
 
 IVERILOG_NETLIST_SRCS += $(NETLIST) $(CELLS)
-NPC_VSRCS = $(shell find $(VS_DIR) -name "*.v")
+NPC_VSRCS = $(shell find $(VS_DIR)/ysyx_24070003_npc -name "*.v")
 VOUT    := $(BUILD_DIR)/ysyx_24070003.v
 
 $(VOUT): $(NPC_VSRCS) 

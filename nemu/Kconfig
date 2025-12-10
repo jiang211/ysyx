@@ -154,6 +154,10 @@ config FTRACE
   bool "Eable ftrace"
   default y
   
+config YSYXSOC
+  bool "Eable ysyxsoc_difftest"
+  default n
+
 config TRACE_START
   depends on TRACE
   int "When tracing is enabled (unit: number of instructions)"

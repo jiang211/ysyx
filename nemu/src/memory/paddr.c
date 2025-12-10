@@ -18,8 +18,8 @@
 #include <device/mmio.h>
 #include <isa.h>
 
-#define YSYXSOC
-#ifndef YSYXSOC
+
+#ifndef CONFIG_YSYXSOC
 
 #ifndef CONFIG_TARGET_SHARE  
 #if   defined(CONFIG_PMEM_MALLOC)

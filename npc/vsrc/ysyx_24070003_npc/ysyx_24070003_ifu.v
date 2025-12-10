@@ -44,10 +44,12 @@ assign cur_pc = pc;
 //assign BTB_pre_DNPC = BTB_pred_pc;
 always@(posedge clock)
 begin 
-   if(rstn | (resp != 2'b00))begin
-  
+   if(rstn)begin
+    `ifdef NPC_PC
+    pc<=32'h80000000 ;
+    `else
     pc<=32'h30000000 ;
- 
+   `endif
     end
     else if(EXU_IFU_flush)begin 
     pc <= EXU_IFU_pc;

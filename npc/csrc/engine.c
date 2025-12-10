@@ -285,7 +285,11 @@ static const uint32_t img [] = {
 
 static void restart() {  
   /* Set the initial program counter. */
+  #ifdef YSYXSOC
   cpu.pc = 0x30000000;
+  #else
+  cpu.pc = 0x80000000;
+  #endif
   printf("Reset PC: 0x%08x\n", cpu.pc);
   /* The zero register is always 0. */
   cpu.gpr[0] = 0;
@@ -295,7 +299,11 @@ static void restart() {
 
 void init_isa() {
   /* Load build-in image. */
+  #ifdef YSYXSOC
   memcpy(guest_to_host(0x30000000), img, sizeof(img));
+  #else
+  memcpy(guest_to_host(0x80000000), img, sizeof(img));
+  #endif
   /* Initialize this vertual computer system. */
   restart();
 }

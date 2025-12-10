@@ -10,14 +10,36 @@
 #endif
 // Inculde model header, generated from Verilating "top.v"
 #include <nvboard.h>
-#include <VysyxSoCFull.h>
 #include "svdpi.h"
+#ifdef YSYXSOC
+#include <VysyxSoCFull.h>
 #include "VysyxSoCFull__Dpi.h"
 #include "VysyxSoCFull___024root.h"
+VysyxSoCFull* top = new VysyxSoCFull("top");
+#define difftest top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__difftest_valid
+#define cpu_dnpc top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_dnpc
+#define cpu_pc top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_pc
+#define skip top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ref_skip
+#define cpu_rf top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__rf1__DOT__rf
+#define cpu_csr top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__csr1__DOT__csr
+#define cpu_ebreak top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ebreak
+#else
+#include <Vysyx_24070003_npc.h>
+#include "Vysyx_24070003_npc__Dpi.h"
+#include "Vysyx_24070003_npc___024root.h"
+Vysyx_24070003_npc* top = new Vysyx_24070003_npc("top");
+#define difftest top->rootp->ysyx_24070003_npc__DOT__cpu__DOT__difftest_valid
+#define cpu_dnpc top->rootp->ysyx_24070003_npc__DOT__cpu__DOT__TO_top_dnpc
+#define cpu_pc top->rootp->ysyx_24070003_npc__DOT__cpu__DOT__TO_top_pc
+#define skip top->rootp->ysyx_24070003_npc__DOT__cpu__DOT__ref_skip
+#define cpu_rf top->rootp->ysyx_24070003_npc__DOT__cpu__DOT__rf1__DOT__rf
+#define cpu_csr top->rootp->ysyx_24070003_npc__DOT__cpu__DOT__csr1__DOT__csr
+#define cpu_ebreak top->rootp->ysyx_24070003_npc__DOT__cpu__DOT__ebreak
+#endif
 //#include <cpu.h>
 
 
-//#define MTRACE
+#define MTRACE
 #define RTC_ADDR1   0xa0000048
 #define RTC_ADDR2   0xa000004c
 #define SERIAL_ADDR 0xa00003f8
@@ -25,7 +47,8 @@
 uint64_t get_time();
 
 VerilatedContext* contextp;
-VysyxSoCFull* top;
+
+
  
 #ifdef WAVE_ON
 VerilatedFstC* tfp;  // 仅在WAVE_ON时声明
@@ -42,9 +65,10 @@ void init_verilator(int argc, char** argv, char** env) {
   Verilated::commandArgs(argc, argv);
   contextp = new VerilatedContext;
   contextp->commandArgs(argc, argv);
-  top = new VysyxSoCFull{contextp};
+  #ifdef YSYXSOC
   nvboard_bind_all_pins(top);
   nvboard_init();
+  #endif
   //VCD波形设置  start
   #ifdef WAVE_ON
     Verilated::traceEverOn(true);
@@ -121,7 +145,9 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
 
 extern "C" void vpmem_read(int raddr,char ren, int *rdata) {
   if(ren && raddr>=0x80000000 && raddr <= 0x88000000){
-    
+    #ifdef MTRACE
+      printf("addr = %08x\n",raddr);
+    #endif
       *rdata = paddr_read((paddr_t)(raddr),4);
     
     #ifdef MTRACE
@@ -196,7 +222,7 @@ extern "C" void call(word_t pc , word_t dnpc);
 
 extern "C" ret(word_t pc );
 */
-void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
+void run_step(Decode *s, CPU_state *cpu,bool *difftest_flag) {
 
        
 
@@ -212,7 +238,11 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
         main_time ++;
       #endif
       top->clock  = !top->clock;
+
+      #ifdef YSYXSOC
       nvboard_update();
+      #endif
+      
       top->eval(); 
 
       #ifdef WAVE_ON
@@ -220,25 +250,25 @@ void run_step(Decode *s, CPU_state *cpu,bool *difftest) {
         main_time ++;
       #endif
 
-       *difftest = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__difftest_valid;
-        s->dnpc = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_dnpc;
-        s->pc = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_pc;
-        s->snpc = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_pc + 4;
+       *difftest_flag = difftest;
+        s->dnpc = cpu_dnpc;
+        s->pc = cpu_pc;
+        s->snpc = cpu_pc + 4;
         
         //s->isa.inst.val = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__instr;
         //printf("pc = %08x, dnpc = %08x, snpc = %08x, isa = %08x\n",s->pc,s->dnpc,s->snpc,s->isa.inst.val);
-        if(top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__difftest_valid){
-          if(top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ref_skip){ difftest_skip_ref();}
+        if(difftest){
+          if(skip){ difftest_skip_ref();}
           for (int i=1; i<16; i++) {
-            cpu->gpr[i] =  top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__rf1__DOT__rf[i - 1];
+            cpu->gpr[i] =  cpu_rf[i - 1];
           }
           for (int i=0; i<4; i++) {
-            cpu->csr[i] = top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__csr1__DOT__csr[i];
+            cpu->csr[i] = cpu_csr[i];
           }
         }
       
-      if(top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__ebreak)  { 
-        npc_trap(NPC_END , top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_pc, top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__rf1__DOT__rf[10 - 1]);
+      if(cpu_ebreak)  { 
+        npc_trap(NPC_END , cpu_pc, cpu_rf[10 - 1]);
         return ;
       }
       

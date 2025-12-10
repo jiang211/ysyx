@@ -1,9 +1,16 @@
 #include <common.h>
 //#include <isa.h>
 #include <paddr.h>
-#include <VysyxSoCFull.h>
 #include "svdpi.h"
+#ifdef YSYXSOC
+#include <VysyxSoCFull.h>
 #include "VysyxSoCFull__Dpi.h"
+extern VysyxSoCFull* top;
+#else 
+#include <Vysyx_24070003_npc.h>
+#include "Vysyx_24070003_npc__Dpi.h"
+extern Vysyx_24070003_npc* top;
+#endif
 #define CONFIG_MTRACE
 #define PG_ALIGN __attribute((aligned(4096))) 
 
@@ -12,7 +19,11 @@
 
 static uint8_t pmem[0x10000000] PG_ALIGN = {};
 static uint8_t psram_mem[0x20000000] = {};
+#ifdef YSYXSOC
 uint8_t* guest_to_host(paddr_t paddr) {  return pmem + paddr - 0x30000000; }
+#else 
+uint8_t* guest_to_host(paddr_t paddr) {  return pmem + paddr - 0x80000000; }
+#endif
 uint8_t* guest_to_host_psram(paddr_t paddr) {  return psram_mem + paddr ; }
 uint8_t* mrom_to_host(paddr_t paddr) {
     return pmem + paddr - 0x20000000;
@@ -65,7 +76,7 @@ static void pmem_write(paddr_t addr, int len, word_t data) {
 }
 
 void delete_module();
-extern VysyxSoCFull* top;
+
 
 
 static void out_of_bound(paddr_t addr) {
