@@ -21,7 +21,7 @@
 
 #ifndef CONFIG_YSYXSOC
 
-#ifndef CONFIG_TARGET_SHARE  
+
 #if   defined(CONFIG_PMEM_MALLOC)
 static uint8_t *pmem = NULL;
 #else // CONFIG_PMEM_GARRAY
@@ -88,7 +88,7 @@ void paddr_write(paddr_t addr, int len, word_t data) {
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
   out_of_bound(addr);
 }
-#endif
+
 #else
 
 

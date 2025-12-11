@@ -86,7 +86,7 @@ import "DPI-C" function void vpmem_write(input int waddr, input byte wmask,input
 reg [63:0]r_data;
 wire [31:0] a = addr2w(r_addr);
 always @(*) begin
-    vpmem_read(r_addr,{7'b0, 1'b1},rdata);
+    vpmem_read({r_addr[31:2],2'b00},{7'b0, 1'b1},rdata);
 end
 assign arready = read_current_state == read_idle;
 assign rlast  = (r_count == r_len) && (read_current_state == read_send_rdata);
@@ -182,16 +182,16 @@ reg [31:0] w_data_cache;
 integer byte_idx;
 always @(posedge clk) begin
     if (wvalid && wready) begin
-        if(w_addr != 32'ha00003f8)begin
+        //if(w_addr != 32'ha00003f8)begin
             // if(wstrb[0]) mem[addr2w(w_addr)] <= wdata[7:0];
             // if(wstrb[1]) mem[addr2w(w_addr) + 1] <= wdata[15:8];
             // if(wstrb[2]) mem[addr2w(w_addr) + 2] <= wdata[23:16];
             // if(wstrb[3]) mem[addr2w(w_addr) + 3]<= wdata[31:24];
-            vpmem_write(w_addr, {4'b0, 4'd4},wdata,{7'b0, 1'b1});
-        end
-        else begin
-            $write("%c",wdata[7:0]);
-        end
+        vpmem_write({w_addr[31:2],2'b00}, {4'b0, wstrb},wdata,{7'b0, 1'b1});
+        // end
+        // else begin
+        //     $write("%c",wdata[7:0]);
+        // end
     end
 end
 

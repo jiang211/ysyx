@@ -1,4 +1,4 @@
-//#define WAVE_ON  //
+#define WAVE_ON  //
 #include <common.h>
 #include <paddr.h>
 
@@ -15,7 +15,6 @@
 #include <VysyxSoCFull.h>
 #include "VysyxSoCFull__Dpi.h"
 #include "VysyxSoCFull___024root.h"
-VysyxSoCFull* top = new VysyxSoCFull("top");
 #define difftest top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__difftest_valid
 #define cpu_dnpc top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_dnpc
 #define cpu_pc top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__TO_top_pc
@@ -27,7 +26,6 @@ VysyxSoCFull* top = new VysyxSoCFull("top");
 #include <Vysyx_24070003_npc.h>
 #include "Vysyx_24070003_npc__Dpi.h"
 #include "Vysyx_24070003_npc___024root.h"
-Vysyx_24070003_npc* top = new Vysyx_24070003_npc("top");
 #define difftest top->rootp->ysyx_24070003_npc__DOT__cpu__DOT__difftest_valid
 #define cpu_dnpc top->rootp->ysyx_24070003_npc__DOT__cpu__DOT__TO_top_dnpc
 #define cpu_pc top->rootp->ysyx_24070003_npc__DOT__cpu__DOT__TO_top_pc
@@ -39,7 +37,7 @@ Vysyx_24070003_npc* top = new Vysyx_24070003_npc("top");
 //#include <cpu.h>
 
 
-#define MTRACE
+//#define MTRACE
 #define RTC_ADDR1   0xa0000048
 #define RTC_ADDR2   0xa000004c
 #define SERIAL_ADDR 0xa00003f8
@@ -48,7 +46,11 @@ uint64_t get_time();
 
 VerilatedContext* contextp;
 
-
+#ifdef YSYXSOC
+VysyxSoCFull* top;
+#else
+Vysyx_24070003_npc* top;
+#endif
  
 #ifdef WAVE_ON
 VerilatedFstC* tfp;  // 仅在WAVE_ON时声明
@@ -65,6 +67,11 @@ void init_verilator(int argc, char** argv, char** env) {
   Verilated::commandArgs(argc, argv);
   contextp = new VerilatedContext;
   contextp->commandArgs(argc, argv);
+  #ifdef YSYXSOC
+  top = new VysyxSoCFull{contextp};
+  #else
+  top = new Vysyx_24070003_npc{contextp};
+  #endif
   #ifdef YSYXSOC
   nvboard_bind_all_pins(top);
   nvboard_init();
@@ -120,7 +127,7 @@ extern "C" void set_monitor_ptr(const svOpenArrayHandle r) {
   monitor_data = (uint32_t *)(((VerilatedDpiOpenVar*)r)->datap());
 }
 
-extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
+extern "C" void vpmem_write(int waddr, char wmask,int wdata,char wen) {
   // 总是往地址为`waddr & ~0x3u`的4字节按写掩码`wmask`写入`wdata`
   // `wmask`中每比特表示`wdata`中1个字节的掩码,
   // 如`wmask = 0x3`代表只写入最低2个字节, 内存中的其它字节保持不变
@@ -128,15 +135,27 @@ extern "C" void vpmem_write(int waddr, char wlen,int wdata,char wen) {
      #ifdef MTRACE
       printf("write at pc = %08x, data = %08x\n",waddr,wdata);
   #endif
-    
-      paddr_write((paddr_t)(waddr), wlen, wdata);
-  
+    //paddr_write((paddr_t)(waddr), len, data);
+    uint32_t line_addr = waddr & ~0x3u;
+
+    uint32_t old_val = paddr_read(line_addr, 4);
+    uint32_t new_val = old_val;
+
+    for (int i = 0; i < 4; ++i) {
+        if (wmask & (1 << i)) {                   
+            uint8_t byte = (wdata >> (i * 8)) & 0xFF;    
+            new_val = (new_val & ~(0xFFu << (i * 8)))     
+                    | (byte << (i * 8));                 
+        }
+    }
+
+    paddr_write(line_addr, 4, new_val);           
   }
   else if( wen && waddr == SERIAL_ADDR){
       #ifdef MTRACE
       printf("write at pc = %08x, data = %08x\n",waddr,wdata);
   #endif
-      //putchar(wdata);
+      putchar(wdata);
       difftest_skip_ref();
     }
     else if(wen && waddr == RTC_ADDR2) {

@@ -52,8 +52,11 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
   Log("The result of every instruction will be compared with %s. ", ref_so_file);
 
   ref_difftest_init(port);
-
-  ref_difftest_memcpy(RESET_VECTOR, guest_to_host(RESET_VECTOR), img_size, DIFFTEST_TO_REF);
+  #ifdef YSYXSOC
+  ref_difftest_memcpy(0x30000000, guest_to_host(0x30000000), img_size, DIFFTEST_TO_REF);
+  #else 
+  ref_difftest_memcpy(0x80000000, guest_to_host(0x80000000), img_size, DIFFTEST_TO_REF);
+  #endif
 
   ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
   
