@@ -167,7 +167,7 @@ void _bootloader_2 (void) {
     _memcpy1(_text_SA, _text_MA, (_text_end - _text_SA));
     
     // 2. 复制只读数据段到SRAM
-    _memcpy1(_rodata_SA, _rodata_MA, (_rodata_end - _rodata_SA));
+    //_memcpy1(_rodata_SA, _rodata_MA, (_rodata_end - _rodata_SA));
     
     // 3. 复制初始化数据段到SRAM
     if(_data_extra_start_VMA != 0){

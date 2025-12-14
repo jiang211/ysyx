@@ -11,6 +11,8 @@ MEMORY {
 
 SECTIONS {
   /* _pmem_start and _entry_offset are defined in LDFLAGS */
+  _sram_start = ORIGIN(sram);
+  _sram_end = _sram_start + LENGTH(sram);
   . = ORIGIN(flash);
   .entry : {
     _entry_start = .;
@@ -25,7 +27,7 @@ SECTIONS {
     *(.ssbl)
     *(.scommon)
     _ssbl_end = .;
-  } > sdram AT> flash
+  } > sram AT> flash
   .text : {
     _text_MA = LOADADDR(.text);
     _text_SA = .;
@@ -40,7 +42,7 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*)
     _rodata_end = .;
-  } > sdram AT> flash
+  } > flash 
   _data_lma_start = LOADADDR(.rodata) + SIZEOF(.rodata);
  
   .data : {
@@ -56,13 +58,18 @@ SECTIONS {
     *(.bss*)
     *(.sbss*)
     *(.scommon)
-  } > sdram AT> flash
-  _stack_top = ALIGN(0x1000);
-  . = _stack_top + 0x8000;
-  _stack_pointer = .;
-  end = .;
-  _end = .;
+  } > sdram
+
   _heap_start = ORIGIN(psram);
   _psram_end = ORIGIN(psram) + LENGTH(psram);
+
+  .stack (NOLOAD) : ALIGN(8) {
+    . = ORIGIN(sram) + LENGTH(sram) - 0x800;
+    . = ALIGN(8);
+    _stack_top = .;
+    . += 0x800;
+    _stack_pointer = .;
+  } > sram
+  
   
 }

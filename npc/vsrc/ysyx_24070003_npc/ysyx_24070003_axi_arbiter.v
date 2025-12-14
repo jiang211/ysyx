@@ -154,14 +154,14 @@ always @(posedge clock ) begin
             
             // LSU写操作
             LSU_WRITE_START: begin
-                if (master_awready && master_wready) begin
+                if (master_bvalid && master_bready) begin
+                    state <= IDLE;
+                end
+                else if (master_awready && master_wready) begin
                     state <= LSU_WRITE_RESP;
                 end
                 else if (master_awready) begin
                     state <= LSU_WRITE_DATA;
-                end
-                else if (master_bvalid && master_bready) begin
-                    state <= IDLE;
                 end
             end
             
