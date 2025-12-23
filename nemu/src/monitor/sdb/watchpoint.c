@@ -138,6 +138,7 @@ void create_watchpoint(char* args){
     int tmp = expr(args, &success, &division_by_zero);
    if(success) {
    	WP* p =  new_wp();
+   	if (!p) return;
     	strcpy(p -> expr, args);
     	p -> old_value = tmp;
     	printf("Create watchpoint No.%d success.\n", p -> NO);

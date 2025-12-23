@@ -21,7 +21,7 @@
 typedef struct {
   word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)];
   vaddr_t pc;
-  word_t csr[3]; //0 is 341 with  MEPC;1 is 300 with Mstatus; 2 is 342 mean MCAUSE ;3 is 305 mtvec
+  word_t csr[4]; //0 is 341 with  MEPC;1 is 300 with Mstatus; 2 is 342 mean MCAUSE ;3 is 305 mtvec
 } MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state);
 
 // decode
