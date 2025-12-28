@@ -136,23 +136,23 @@ config TRACE
 
 config ETRACE
   bool "Enable etrace"
-  default y
+  default n
 
 config IRINGBUF
   bool "Eable print buf"
-  default y
+  default n
   
 config IMTRACE
   bool "Eable mtrace"
-  default y
+  default n
   
 config IDTRACE
   bool "Eable dtrace"
-  default y
+  default n
 
 config FTRACE
   bool "Eable ftrace"
-  default y
+  default n
   
 config YSYXSOC
   bool "Eable ysyxsoc_difftest"
