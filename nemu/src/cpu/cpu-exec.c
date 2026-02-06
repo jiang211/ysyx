@@ -19,7 +19,7 @@
 #include <locale.h>
 #include "isa.h"
 #include <elf.h>
-#include "/home/jx/ysyx-workbench/nemu/src/monitor/sdb/watchpoint.h"
+#include "../monitor/sdb/watchpoint.h"
 void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 /////////////////解析elf///////////
 

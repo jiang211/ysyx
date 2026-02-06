@@ -208,8 +208,8 @@ run: $(BIN)
 
 PERF_FILE = PERF.md
 SIM_LOG = $(BUILD_DIR)/sim.log
-TIME_FILE = /home/jx/ysyx-workbench/yosys-sta/result/ysyx_24070003_/ysyx_24070003.rpt
-FACE_FILE = /home/jx/ysyx-workbench/yosys-sta/result/ysyx_24070003/synth_stat.txt
+TIME_FILE = ../yosys-sta/result/ysyx_24070003_/ysyx_24070003.rpt
+FACE_FILE = ../yosys-sta/result/ysyx_24070003/synth_stat.txt
 #  要先在yosys-sta下运行出综合文件，再运行perf.sh脚本
 # 初始化性能记录文件（首次运行时创建表头）
 init-perf:
